@@ -1,0 +1,50 @@
+Textures
+	https://polyhaven.com/textures
+	https://ambientcg.com/list
+	http://texturelib.com/
+
+	https://www.textures.com/
+	https://itch.io/
+
+	https://github.com/Miziziziz/Retro3DG...
+
+	https://www.textures-resource.com/
+
+Models
+	https://polyhaven.com/models
+	https://sketchfab.com
+	https://www.cgtrader.com/
+	https://www.models-resource.com/
+	https://kenney.nl/
+
+	Shaders
+	https://godotshaders.com/
+	https://www.shadertoy.com/
+	   • Godot Custom Post Processing : A Comprehen...  
+
+Fonts / UI
+	https://fonts.google.com/
+	https://www.dafont.com/
+
+Sound effects
+	https://www.zapsplat.com
+	https://sfxr.me/
+
+Music & ambience
+	https://www.humblebundle.com/software...
+	https://pixabay.com/music/
+ 
+Software
+	https://www.blender.org/
+	https://www.getpaint.net/
+	https://krita.org/en/
+	https://kdenlive.org/en/
+	https://www.audacityteam.org/
+
+
+Video
+	https://youtu.be/rS88FPBtqBk
+	
+	
+Plugins
+	Gaea - generating terrain
