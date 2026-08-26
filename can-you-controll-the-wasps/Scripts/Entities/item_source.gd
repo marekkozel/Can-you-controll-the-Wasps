@@ -1,25 +1,26 @@
 class_name ItemSource
 extends Node2D
 
-# 资源产出点 / item spawner. 纸板和食物共用，换 piece_scene 就行。
-# 周围始终维持 max_pieces 个，被拿走一个就延时补一个。
+# 资源产出点 / item spawner. 纸板和食物共用，换 piece_scene 就行 / swap piece_scene.
+# 周围始终维持 max_pieces 个，被拿走一个就延时补一个 / refills after a delay.
 
 signal piece_spawned(piece: Node2D)
 
 @export var piece_scene: PackedScene
 @export_range(1, 12, 1) var max_pieces: int = 3
-## 秒。0 = 立刻补
+## 秒。0 = 立刻补 / seconds, 0 = refill immediately
 @export_range(0.0, 20.0, 0.1) var respawn_delay: float = 2.0
 @export_range(0.0, 200.0, 1.0) var scatter_radius: float = 48.0
 
 var _pieces: Array[Node] = []
 
-# 生成到父节点下而不是当自己的子节点，刚体挂在带位移的父节点下算全局坐标很绕
+# 生成到父节点下而不是自己的子节点 / spawn into the parent, not as our own child;
+# 刚体挂在带位移的父节点下算全局坐标很绕 / a translated parent makes global maths awkward
 @onready var _spawn_parent: Node = get_parent()
 
 
 func _ready() -> void:
-	# 父节点这会儿还在建自己的子节点，直接 add_child() 会被拒，得延后一帧
+	# 父节点这会儿还在建子节点，直接 add_child() 会被拒 / parent is busy, defer a frame
 	for i in max_pieces:
 		_spawn_piece.call_deferred()
 
@@ -58,7 +59,7 @@ func _random_offset() -> Vector2:
 
 func _on_piece_gone(piece: Node) -> void:
 	_pieces.erase(piece)
-	# 退出游戏时也会触发 tree_exited，这时候别再排补充
+	# 退出游戏时也会触发 tree_exited，这时别再排补充 / also fires on shutdown
 	if not is_inside_tree():
 		return
 	var tree: SceneTree = get_tree()

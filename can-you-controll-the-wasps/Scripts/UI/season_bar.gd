@@ -2,7 +2,7 @@ class_name SeasonBar
 extends PanelContainer
 
 # 底部季节条 / bottom season tracker.
-# 只管显示，推进季节的逻辑从外面驱动。
+# 只管显示，推进季节的逻辑从外面驱动 / display only, driven from outside.
 
 signal season_changed(index: int)
 
@@ -25,7 +25,7 @@ func _ready() -> void:
 	_refresh()
 
 
-# 外部的季节计时器调这个
+# 外部的季节计时器调这个 / called by whatever drives the season timer
 func set_time_left(seconds: float) -> void:
 	if _time_label == null:
 		return
@@ -34,7 +34,7 @@ func set_time_left(seconds: float) -> void:
 
 
 func _refresh() -> void:
-	if _slots == null:  # setter 可能在 _ready 之前跑
+	if _slots == null:  # setter 可能在 _ready 之前跑 / setter can fire before _ready
 		return
 	for i in _slots.get_child_count():
 		var slot: Label = _slots.get_child(i) as Label

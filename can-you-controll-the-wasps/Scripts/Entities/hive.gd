@@ -3,7 +3,7 @@ class_name Hive
 extends Node2D
 
 # 中央蜂巢 / the hive. 按 layout + radius 生成一片六边形格子。
-# 生成出来的格子不设 owner，所以不会被存进 Hive.tscn，场景文件保持干净。
+# 格子不设 owner，不会被存进 Hive.tscn / cells have no owner, scene file stays clean.
 
 signal cell_clicked(cell: HexCell)
 signal cell_hover_changed(cell: HexCell, is_hovered: bool)
@@ -13,11 +13,13 @@ signal cell_egg_laid(cell: HexCell)
 signal cell_larva_hatched(cell: HexCell)
 signal cell_larva_hungry(cell: HexCell)
 signal cell_larva_starved(cell: HexCell)
+signal cell_sealed(cell: HexCell)
+signal cell_wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cell_cleaned(cell: HexCell)
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
-## 改这个资源，整片网格实时重建
+## 改这个资源，整片网格实时重建 / editing it rebuilds the whole grid
 @export var layout: HexLayout = null:
 	set(value):
 		_disconnect_layout()
@@ -25,7 +27,7 @@ const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn"
 		_connect_layout()
 		_request_rebuild()
 
-## 半径。格子数 = 3N(N+1)+1
+## 半径。格子数 = 3N(N+1)+1 / radius, cell count is 3N(N+1)+1
 @export_range(0, 8, 1) var radius: int = 3:
 	set(value):
 		radius = value
@@ -51,7 +53,7 @@ func rebuild() -> void:
 
 	for coord in HexLayout.hex_area(radius):
 		var cell: HexCell = HEX_CELL_SCENE.instantiate()
-		_container.add_child(cell)  # 先入树，setup() 要用 @onready 拿到的子节点
+		_container.add_child(cell)  # 先入树，setup() 要用 @onready 拿到的子节点 / must be in tree before setup()
 		cell.setup(layout, coord)
 		cell.clicked.connect(_on_cell_clicked)
 		cell.hover_changed.connect(_on_cell_hover_changed)
@@ -61,6 +63,8 @@ func rebuild() -> void:
 		cell.larva_hatched.connect(func(c): cell_larva_hatched.emit(c))
 		cell.larva_hungry.connect(func(c): cell_larva_hungry.emit(c))
 		cell.larva_starved.connect(func(c): cell_larva_starved.emit(c))
+		cell.sealed.connect(func(c): cell_sealed.emit(c))
+		cell.wasp_emerged.connect(func(c, w): cell_wasp_emerged.emit(c, w))
 		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
 		_cells[coord] = cell
 
@@ -69,12 +73,16 @@ func get_cell(coord: Vector2i) -> HexCell:
 	return _cells.get(coord)
 
 
-# 全局坐标 -> 格子，纸板落点判定用
+# 全局坐标 -> 格子，纸板落点判定用 / global point to cell, used for drop targeting
 func cell_at_global(global_point: Vector2) -> HexCell:
 	if layout == null:
 		return null
 	var local_point: Vector2 = _container.to_local(global_point)
 	return get_cell(layout.local_to_axial(local_point))
+
+
+func all_cells() -> Array:
+	return _cells.values()
 
 
 func all_coords() -> Array:
@@ -89,7 +97,7 @@ func count_content(kind: HexCell.Content) -> int:
 	return total
 
 
-# 有幼虫正饿着的格子，喂食提示用
+# 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now
 func hungry_cells() -> Array:
 	return _cells.values().filter(func(c): return c.content == HexCell.Content.LARVA and c.is_hungry_larva())
 
@@ -118,7 +126,7 @@ func _clear() -> void:
 
 
 func _request_rebuild() -> void:
-	if not is_node_ready():  # setter 可能在 _ready 之前就跑了
+	if not is_node_ready():  # setter 可能在 _ready 之前就跑了 / setters can fire before _ready
 		return
 	rebuild()
 

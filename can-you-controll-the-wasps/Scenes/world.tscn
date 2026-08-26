@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Food.tscn" id="9_food"]
+[ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
 size = Vector2(1320, 40)
@@ -30,7 +31,7 @@ size = Vector2(1020, 40)
 
 [node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
 
-[node name="Entities" type="Node2D" parent="." unique_id=1986278641]
+[node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
 [node name="EnemySpawn" type="Marker2D" parent="Entities"]
 position = Vector2(640, 126)
@@ -43,11 +44,11 @@ position = Vector2(390, 0)
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 
-[node name="CardboardSource" parent="Resource_layer" instance=ExtResource("7_source")]
+[node name="CardboardSource" parent="Resource_layer" instance=ExtResource("7_source") groups=["item_source"]]
 position = Vector2(115, 126)
 piece_scene = ExtResource("8_cardboard")
 
-[node name="FoodSource" parent="Resource_layer" instance=ExtResource("7_source")]
+[node name="FoodSource" parent="Resource_layer" instance=ExtResource("7_source") groups=["item_source"]]
 position = Vector2(1165, 126)
 piece_scene = ExtResource("9_food")
 
@@ -322,3 +323,5 @@ offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="DebugPanel" parent="." instance=ExtResource("10_debug")]

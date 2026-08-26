@@ -2,7 +2,7 @@ class_name CollapsiblePanel
 extends Control
 
 # 可折叠侧边面板 / collapsible side panel.
-# Body 整体滑出屏幕，只把 ToggleButton 留在边上当抽屉把手。
+# Body 整体滑出屏幕，只把 ToggleButton 留在边上当把手 / body slides out, tab stays on screen.
 
 signal toggled(is_expanded: bool)
 
@@ -11,7 +11,7 @@ const COLLAPSE_RIGHT: int = 1
 
 @export_enum("Left", "Right") var collapse_side: int = COLLAPSE_LEFT
 @export var expanded: bool = true
-## 秒。0 = 瞬间切换
+## 秒。0 = 瞬间切换 / seconds, 0 = instant
 @export_range(0.0, 1.0, 0.01) var animation_duration: float = 0.22
 
 @onready var _body: Control = $Body
@@ -21,9 +21,9 @@ var _tween: Tween
 
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE  # 根节点只是个定位框，别吞掉底下的点击
+	mouse_filter = Control.MOUSE_FILTER_IGNORE  # 根节点只是个定位框，别吞掉底下的点击 / positioning frame only, must not eat clicks
 	_toggle.pressed.connect(_on_toggle_pressed)
-	await get_tree().process_frame  # 首帧布局没算完，size 不能用
+	await get_tree().process_frame  # 首帧布局没算完，size 不能用 / size is not valid on the first frame
 	_apply(false)
 
 
@@ -58,7 +58,7 @@ func _apply(animated: bool) -> void:
 	_tween.tween_property(_body, "position", target, animation_duration)
 
 
-# 少滑一个 tab 的宽度，折叠完把手正好贴在屏幕边上
+# 少滑一个 tab 的宽度，折叠完把手正好贴屏幕边 / leave the tab width so the handle stays visible
 func _slide_offset() -> Vector2:
 	if expanded:
 		return Vector2.ZERO

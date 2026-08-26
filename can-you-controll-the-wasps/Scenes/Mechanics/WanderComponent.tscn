@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/wander_component.gd" id="1_wander"]
+
+[node name="WanderComponent" type="Node"]
+script = ExtResource("1_wander")
+wander_radius = 200.0
+speed = 55.0
+retarget_interval = 3.0

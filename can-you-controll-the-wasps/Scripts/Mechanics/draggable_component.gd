@@ -1,25 +1,25 @@
 extends Area2D
 
 # 物理拖拽 / physics drag. 挂到任意 RigidBody2D 下就能拖。
-# 手感参数全走 profile。
+# 手感参数全走 profile / all feel params come from the DragProfile resource.
 
 signal grabbed
 signal released
 
 @export var profile: DragProfile
 
-# 同一时刻只允许一个，重叠的物体不会被一起抓起来
+# 同一时刻只允许一个，重叠的物体不会被一起抓起来 / only one at a time
 static var _active_component: Node = null
 
 const MOUSE_VELOCITY_SMOOTHING: float = 0.4
 
 var _body: RigidBody2D = null
 var _is_grabbed: bool = false
-var _grab_offset: Vector2 = Vector2.ZERO  # 抓在哪一点，别让物体中心跳到鼠标上
+var _grab_offset: Vector2 = Vector2.ZERO  # 抓在哪一点，别让物体中心跳到鼠标上 / keep grab point, don't snap centre to cursor
 var _previous_mouse_pos: Vector2 = Vector2.ZERO
 var _smoothed_mouse_velocity: Vector2 = Vector2.ZERO
 
-# 抓之前的刚体状态，松手时还原
+# 抓之前的刚体状态，松手时还原 / body state saved on grab, restored on release
 var _saved_gravity_scale: float = 1.0
 var _saved_linear_damp: float = 0.0
 var _saved_z_index: int = 0
@@ -39,7 +39,7 @@ func _ready() -> void:
 		profile = DragProfile.new()
 
 	input_pickable = true
-	set_physics_process(false)  # 只有抓着的时候才需要跑
+	set_physics_process(false)  # 只有抓着的时候才需要跑 / only runs while held
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -51,7 +51,7 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		return
 
 	_grab()
-	get_viewport().set_input_as_handled()  # 别让下面重叠的 Area2D 也收到
+	get_viewport().set_input_as_handled()  # 别让下面重叠的 Area2D 也收到 / stop the click reaching areas underneath
 
 
 func _input(event: InputEvent) -> void:
@@ -66,7 +66,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var mouse_pos: Vector2 = get_global_mouse_position()
-	# 单帧差分噪声太大，平滑之后再拿去算甩出和摆动
+	# 单帧差分噪声太大，平滑之后再用 / raw per-frame delta is too noisy
 	var raw_velocity: Vector2 = (mouse_pos - _previous_mouse_pos) / delta
 	_smoothed_mouse_velocity = _smoothed_mouse_velocity.lerp(raw_velocity, MOUSE_VELOCITY_SMOOTHING)
 	_previous_mouse_pos = mouse_pos
@@ -75,7 +75,7 @@ func _physics_process(delta: float) -> void:
 	_apply_wobble()
 
 
-# 拖着的时候物体退场、或者窗口失焦：兜底还原重力，不然会永远悬空
+# 拖着时退场或窗口失焦：兜底还原重力，不然会永远悬空 / safety net, else gravity stays 0
 func _exit_tree() -> void:
 	if _is_grabbed:
 		_release()
@@ -103,7 +103,7 @@ func _grab() -> void:
 	if profile.drag_linear_damp >= 0.0:
 		_body.linear_damp = profile.drag_linear_damp
 	_body.z_index = _saved_z_index + profile.grab_z_offset
-	_body.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE  # 高速拖拽别穿墙
+	_body.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE  # 高速拖拽别穿墙 / continuous collision so it can't tunnel
 
 	set_physics_process(true)
 	grabbed.emit()
@@ -123,7 +123,7 @@ func _release() -> void:
 		_body.linear_damp = _saved_linear_damp
 		_body.z_index = _saved_z_index
 		_body.continuous_cd = _saved_ccd
-		# 用手速甩出去，不是用刚体当前速度 —— 后者被弹簧带偏了，手感不可控
+		# 用手速甩出去，不用刚体当前速度——后者被弹簧带偏了 / spring-skewed velocity feels wrong
 		var throw: Vector2 = _smoothed_mouse_velocity * profile.throw_multiplier
 		_body.linear_velocity = throw.limit_length(profile.max_throw_speed)
 		_body.angular_velocity *= profile.spin_retention
@@ -131,7 +131,7 @@ func _release() -> void:
 	released.emit()
 
 
-# 弹簧 + 阻尼跟随：stiffness 管跟手程度，damping 管刚性还是果冻
+# 弹簧 + 阻尼跟随：stiffness 管跟手程度，damping 管刚性还是果冻 / spring-damper follow
 func _apply_follow(mouse_pos: Vector2, delta: float) -> void:
 	var target: Vector2 = mouse_pos + _grab_offset
 
@@ -140,13 +140,13 @@ func _apply_follow(mouse_pos: Vector2, delta: float) -> void:
 		stiffness /= maxf(_body.mass, 0.01)
 
 	var desired_velocity: Vector2 = (target - _body.global_position) * stiffness
-	# 换成和帧率无关的插值系数，60fps 时正好等于 damping
+	# 换成和帧率无关的插值系数，60fps 时正好等于 damping / framerate independent
 	var blend: float = 1.0 - pow(1.0 - clampf(profile.damping, 0.0, 1.0), delta * 60.0)
 	var velocity: Vector2 = _body.linear_velocity.lerp(desired_velocity, blend)
 	_body.linear_velocity = velocity.limit_length(profile.max_speed)
 
 
-# 走 angular_velocity 而不是直接写 rotation，旋转才还归物理管，松手后能带自旋
+# 走 angular_velocity 而不是直接写 rotation，松手后才能带自旋 / keeps physics in charge
 func _apply_wobble() -> void:
 	var target_rotation: float = clampf(
 		_smoothed_mouse_velocity.x * profile.wobble_multiplier,

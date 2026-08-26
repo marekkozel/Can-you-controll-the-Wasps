@@ -3,16 +3,16 @@ class_name HexLayout
 extends Resource
 
 # 六边形网格坐标换算 / hex grid math, axial (q, r) coords.
-# 约定照 Red Blob Games 那套。squash 是纵向压扁，做等距俯视的观感。
+# 约定照 Red Blob Games 那套。squash 是纵向压扁 / vertical squash for the isometric look.
 
 enum HexOrientation { POINTY_TOP, FLAT_TOP }
 
 const SQRT3: float = 1.7320508
 
 @export var orientation: HexOrientation = HexOrientation.POINTY_TOP
-## 中心到顶点的距离，压扁前 / center to corner
+## 中心到顶点的距离，压扁前 / center to corner, before squash
 @export_range(8.0, 200.0, 1.0) var cell_size: float = 42.0
-## 1.0 = 正六边形俯视，0.5~0.75 = 等距斜视感
+## 1.0 = 正六边形俯视，0.5~0.75 = 等距斜视感 / 1.0 = flat top-down
 @export_range(0.2, 1.0, 0.01) var squash: float = 0.7
 
 
@@ -28,9 +28,9 @@ func axial_to_local(hex: Vector2i) -> Vector2:
 	return point
 
 
-# 像素 -> 格子，拖拽吸附靠这个
+# 像素 -> 格子，拖拽吸附靠这个 / pixel to cell, used for drop targeting
 func local_to_axial(point: Vector2) -> Vector2i:
-	var p: Vector2 = Vector2(point.x, point.y / maxf(squash, 0.001))  # 先把压扁还原回去
+	var p: Vector2 = Vector2(point.x, point.y / maxf(squash, 0.001))  # 先把压扁还原回去 / undo the squash first
 	var q: float
 	var r: float
 	if orientation == HexOrientation.POINTY_TOP:
@@ -42,7 +42,7 @@ func local_to_axial(point: Vector2) -> Vector2i:
 	return _axial_round(q, r)
 
 
-# 单个六边形的 6 个顶点（相对自身中心，已压扁）
+# 单个六边形的 6 个顶点，已压扁 / the 6 corners, squash applied
 func corner_points() -> PackedVector2Array:
 	var points: PackedVector2Array = PackedVector2Array()
 	var start_angle: float = PI / 6.0 if orientation == HexOrientation.POINTY_TOP else 0.0
@@ -52,7 +52,7 @@ func corner_points() -> PackedVector2Array:
 	return points
 
 
-# 半径 radius 内的所有坐标，共 3N(N+1)+1 个
+# 半径 radius 内的所有坐标，共 3N(N+1)+1 个 / every coord within radius
 static func hex_area(radius: int) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for q in range(-radius, radius + 1):
@@ -63,14 +63,14 @@ static func hex_area(radius: int) -> Array[Vector2i]:
 	return out
 
 
-# 两格之间要走几步
+# 两格之间要走几步 / step distance between two cells
 static func axial_distance(a: Vector2i, b: Vector2i) -> int:
 	var dq: int = a.x - b.x
 	var dr: int = a.y - b.y
 	return int((absi(dq) + absi(dr) + absi(dq + dr)) / 2.0)
 
 
-# 必须走立方坐标取整，直接 round(q)/round(r) 在边界会取到隔壁格子
+# 必须走立方坐标取整，直接 round 在边界会取到隔壁格子 / cube rounding, plain round is wrong
 func _axial_round(q: float, r: float) -> Vector2i:
 	var s: float = -q - r
 	var rq: float = roundf(q)

@@ -2,9 +2,9 @@
 class_name Larva
 extends Node2D
 
-# 幼虫 / larva. 身体是一条 Line2D，每帧按正弦重算控制点，
-# 看起来就是从巢室里钻出来扭动的毛毛虫。根部不动，越往头部摆幅越大。
-# 摆动的幅度和频率直接绑在饥饿状态上——饿了扭得又急又大，不用看数字就知道该喂了。
+# 幼虫 / larva. 身体是一条 Line2D，每帧按正弦重算控制点 / spine rebuilt per frame.
+# 看起来是从巢室里钻出来扭动的毛毛虫，根部不动，越往头部摆幅越大 / root pinned, tip sways.
+# 摆幅和频率绑在饥饿状态上，饿了扭得又急又大 / wiggle doubles as the hunger tell.
 
 signal became_hungry(larva: Larva)
 signal fed(larva: Larva, current: int, required: int)
@@ -12,13 +12,13 @@ signal satisfied(larva: Larva)
 signal starved(larva: Larva)
 
 @export_group("Shape")
-## 体节数，越多越顺滑
+## 体节数，越多越顺滑 / segment count, more is smoother
 @export_range(3, 24, 1) var segment_count: int = 9
-## 从根部钻出来的长度
+## 从根部钻出来的长度 / how far it pokes out
 @export_range(6.0, 80.0, 1.0) var length: float = 26.0
-## 往哪边钻出来
+## 往哪边钻出来 / direction it emerges towards
 @export var emerge_direction: Vector2 = Vector2.UP
-## 整条身体上的相位差，越大扭得越"波浪"
+## 整条身体上的相位差，越大扭得越"波浪" / phase offset along the body
 @export_range(0.5, 8.0, 0.1) var wave_length: float = 2.2
 
 @export_group("Wiggle")
@@ -77,7 +77,7 @@ func is_hungry() -> bool:
 	return _hunger.is_hungry()
 
 
-# ---------------- 身体 ----------------
+# ---------------- 身体 / body ----------------
 
 func _rebuild_body() -> void:
 	var side: Vector2 = emerge_direction.orthogonal().normalized()
@@ -86,7 +86,7 @@ func _rebuild_body() -> void:
 	var pts: PackedVector2Array = PackedVector2Array()
 	for i in segment_count:
 		var f: float = float(i) / float(maxi(segment_count - 1, 1))
-		# 乘 f 让根部钉在巢室里，只有伸出去的部分在扭
+		# 乘 f 让根部钉在巢室里，只有伸出去的部分在扭 / f keeps the root still
 		var sway: float = sin(_t - f * wave_length) * _amplitude * f
 		pts.append(forward * (length * f) + side * sway)
 	_body.points = pts
@@ -106,7 +106,7 @@ func _build_ring() -> void:
 	_ring.set_progress(0.0)
 
 
-# ---------------- 状态反馈 ----------------
+# ---------------- 状态反馈 / state feedback ----------------
 
 func _on_became_hungry() -> void:
 	_amplitude = hungry_amplitude
@@ -141,7 +141,7 @@ func _on_starved() -> void:
 	starved.emit(self)
 
 
-# 死了就塌下去，长度缩一半，看起来是瘫在巢室里
+# 死了就塌下去，长度缩一半 / on death it slumps to half length
 func _slump() -> void:
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_method(_set_length, length, length * 0.45, 0.7)

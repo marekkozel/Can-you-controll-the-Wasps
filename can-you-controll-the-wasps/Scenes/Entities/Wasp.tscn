@@ -1,0 +1,76 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Entities/wasp.gd" id="1_wasp"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
+[ext_resource type="Resource" path="res://Resources/DragProfiles/default.tres" id="3_profile"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
+
+[sub_resource type="PhysicsMaterial" id="Material_wasp"]
+friction = 0.15
+bounce = 0.55
+
+[sub_resource type="CircleShape2D" id="Shape_wasp"]
+radius = 19.5
+
+[node name="Wasp" type="RigidBody2D"]
+physics_material_override = SubResource("Material_wasp")
+mass = 1.2
+continuous_cd = 2
+contact_monitor = true
+max_contacts_reported = 4
+linear_damp = 0.4
+angular_damp = 6.0
+lock_rotation = true
+script = ExtResource("1_wasp")
+bob_amount = 3.5
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Wings" type="Node2D" parent="Visual"]
+
+[node name="WingL" type="Polygon2D" parent="Visual/Wings"]
+color = Color(0.85, 0.9, 0.95, 0.4)
+polygon = PackedVector2Array(14, -6.342, 10.77, -3.93, 4.245, -3.68, -3.815, -5.659, -11.25, -9.338, -16.08, -13.73, -17, -17.66, -13.77, -20.07, -7.245, -20.32, 0.8146, -18.34, 8.254, -14.66, 13.08, -10.27)
+
+[node name="WingR" type="Polygon2D" parent="Visual/Wings"]
+color = Color(0.85, 0.9, 0.95, 0.4)
+polygon = PackedVector2Array(14, 6.342, 13.08, 10.27, 8.254, 14.66, 0.8146, 18.34, -7.245, 20.32, -13.77, 20.07, -17, 17.66, -16.08, 13.73, -11.25, 9.338, -3.815, 5.659, 4.245, 3.68, 10.77, 3.93)
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+color = Color(0.95, 0.76, 0.18, 1)
+polygon = PackedVector2Array(19.5, 0, 18.02, 4.592, 13.79, 8.485, 7.462, 11.09, 1.194e-15, 12, -7.462, 11.09, -13.79, 8.485, -18.02, 4.592, -19.5, 1.47e-15, -18.02, -4.592, -13.79, -8.485, -7.462, -11.09, -3.582e-15, -12, 7.462, -11.09, 13.79, -8.485, 18.02, -4.592)
+
+[node name="Stripe1" type="Polygon2D" parent="Visual"]
+color = Color(0.16, 0.13, 0.1, 1)
+polygon = PackedVector2Array(4.5, -9.6, 0, -10.5, 0, 10.5, 4.5, 9.6)
+
+[node name="Stripe2" type="Polygon2D" parent="Visual"]
+color = Color(0.16, 0.13, 0.1, 1)
+polygon = PackedVector2Array(-6, -8.4, -10.5, -6.6, -10.5, 6.6, -6, 8.4)
+
+[node name="Head" type="Polygon2D" parent="Visual"]
+color = Color(0.24, 0.2, 0.15, 1)
+polygon = PackedVector2Array(26.25, 0, 24.96, 3.968, 21.59, 6.42, 17.41, 6.42, 14.04, 3.968, 12.75, 8.266e-16, 14.04, -3.968, 17.41, -6.42, 21.59, -6.42, 24.96, -3.968)
+
+[node name="Outline" type="Line2D" parent="Visual"]
+points = PackedVector2Array(19.5, 0, 18.02, 4.592, 13.79, 8.485, 7.462, 11.09, 1.194e-15, 12, -7.462, 11.09, -13.79, 8.485, -18.02, 4.592, -19.5, 1.47e-15, -18.02, -4.592, -13.79, -8.485, -7.462, -11.09, -3.582e-15, -12, 7.462, -11.09, 13.79, -8.485, 18.02, -4.592)
+closed = true
+width = 2.25
+default_color = Color(0.36, 0.28, 0.12, 1)
+joint_mode = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_wasp")
+
+[node name="DraggableComponent" parent="." instance=ExtResource("2_draggable")]
+profile = ExtResource("3_profile")
+
+[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+shape = SubResource("Shape_wasp")
+
+[node name="WanderComponent" parent="." instance=ExtResource("4_wander")]
+
+[node name="JuiceComponent" parent="." instance=ExtResource("5_juice")]
+
+[editable path="DraggableComponent"]

@@ -3,9 +3,9 @@ class_name HexFrame
 extends Control
 
 # 画一个六边形边框 / draws a hexagon outline.
-# 当 Button 的子节点用（anchors 拉满 + mouse_filter = ignore），
-# 这样按钮还是普通 Button，不用为了改外观去继承它。
-# 顶点比例照参考稿的 clip-path。命中区仍是矩形，四角略微超出。
+# 当 Button 的子节点用，anchors 拉满 + mouse_filter = ignore / use as a child of a plain Button.
+# 这样按钮还是普通 Button，不用为了改外观去继承它 / composition instead of subclassing Button.
+# 顶点比例照参考稿的 clip-path。命中区仍是矩形 / hit area stays rectangular.
 
 @export var fill_color: Color = Color(0.145, 0.145, 0.145):
 	set(value):

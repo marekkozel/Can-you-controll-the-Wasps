@@ -2,8 +2,8 @@
 class_name HungerComponent
 extends Node
 
-# 饥饿循环 / hunger cycle：饱腹 → 饥饿窗口 → 窗口内没喂满就饿死。
-# 只管状态和计时，长什么样交给持有方。
+# 饥饿循环 / hunger cycle: 饱腹 -> 饥饿窗口 -> 窗口内没喂满就饿死。
+# 只管状态和计时，长什么样交给持有方 / timing only, visuals belong to the owner.
 
 signal became_hungry
 signal fed(current: int, required: int)
@@ -12,11 +12,11 @@ signal starved
 
 enum State { SATIATED, HUNGRY, DEAD }
 
-## 吃饱之后多久再饿
+## 吃饱之后多久再饿 / how long until hungry again
 @export_range(1.0, 600.0, 1.0) var satiated_duration: float = 60.0
-## 饿了之后有多久可以补救
+## 饿了之后有多久可以补救 / rescue window once hungry
 @export_range(1.0, 120.0, 1.0) var hunger_window: float = 20.0
-## 喂饱要几单位
+## 喂饱要几单位 / units needed to satisfy
 @export_range(1, 10, 1) var required_units: int = 3
 
 @export var active: bool = true:
@@ -38,14 +38,14 @@ func is_hungry() -> bool:
 	return state == State.HUNGRY
 
 
-# 饥饿窗口剩余比例 0~1，不在饥饿状态返回 0
+# 饥饿窗口剩余比例 0~1，不在饥饿状态返回 0 / remaining ratio, 0 when not hungry
 func hunger_ratio() -> float:
 	if state != State.HUNGRY:
 		return 0.0
 	return clampf(time_left / maxf(hunger_window, 0.01), 0.0, 1.0)
 
 
-# 喂一口。只有饿着的时候才吃，返回是否接受
+# 喂一口。只有饿着的时候才吃 / only eats while hungry, returns whether accepted
 func feed(amount: int = 1) -> bool:
 	if state != State.HUNGRY or amount <= 0:
 		return false
@@ -72,7 +72,7 @@ func _process(delta: float) -> void:
 		became_hungry.emit()
 		return
 
-	# 窗口走完还没喂满，攒的份数不保留
+	# 窗口走完还没喂满，攒的份数不保留 / partial units are lost on starve
 	state = State.DEAD
 	units = 0
 	time_left = 0.0

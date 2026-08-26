@@ -3,18 +3,18 @@ class_name JuiceComponent
 extends Node2D
 
 # 通用反馈效果 / feedback effects: punch, shake, flash, burst.
-# 挂到实体下，target 指向要被缩放/抖动的那一层。
-# 千万别把 target 指到 Area2D 上——命中区会跟着抖，鼠标会自己滑出去。
+# 挂到实体下，target 指向要被缩放/抖动的那一层 / target is the layer that gets animated.
+# 千万别把 target 指到 Area2D 上，命中区会跟着抖 / never target the Area2D, hitbox would shake.
 
-## 被 punch / shake 作用的节点，一般是实体的 Visual 层。
-## 在场景里连 NodePath 解析不出来，由持有方在 _ready() 里赋值
+## 被 punch / shake 作用的节点，一般是实体的 Visual 层 / usually the entity's Visual node.
+## 在场景里连 NodePath 解析不出来，由持有方在 _ready() 里赋值 / assign it from code
 @export var target: Node2D
 
-## 抖动频率（Hz）。逐帧取随机数等于 60Hz 白噪声，看着又刺又乱，
-## 所以走平滑正弦；x/y 频率错开一点，走的是小八字而不是一条斜线
+## 抖动频率 Hz。逐帧取随机数等于 60Hz 白噪声，又刺又乱 / per-frame random reads as harsh noise,
+## 所以走平滑正弦；x/y 频率错开，走小八字 / so use a smooth sine, x and y offset for a figure-eight
 @export_range(0.5, 30.0, 0.5) var shake_frequency: float = 5.0
 
-## 抖动幅度（像素）。设 0 停止；调用方按进度自己算幅度
+## 抖动幅度（像素），设 0 停止 / shake amplitude in px, 0 stops it
 var shake_amount: float = 0.0:
 	set(value):
 		shake_amount = maxf(value, 0.0)
@@ -48,7 +48,7 @@ func _process(delta: float) -> void:
 	target.position = _base_position + offset
 
 
-# 缩放弹一下。amount < 1 是按下去的感觉，> 1 是弹出来的感觉
+# 缩放弹一下。amount < 1 是按下去，> 1 是弹出来 / <1 presses in, >1 pops out
 func punch(amount: float = 1.15, duration: float = 0.25) -> void:
 	if target == null or Engine.is_editor_hint():
 		return
@@ -59,7 +59,7 @@ func punch(amount: float = 1.15, duration: float = 0.25) -> void:
 	_punch_tween.tween_property(target, "scale", Vector2.ONE, duration)
 
 
-# 把 item 刷成 color 再退回 restore
+# 把 item 刷成 color 再退回 restore / flash to color, tween back to restore
 func flash(item: CanvasItem, color: Color, restore: Color, duration: float = 0.45) -> void:
 	if item == null or Engine.is_editor_hint():
 		return
@@ -70,7 +70,7 @@ func flash(item: CanvasItem, color: Color, restore: Color, duration: float = 0.4
 	_flash_tween.tween_property(item, "color", restore, duration)
 
 
-# 闪色期间调用方别去抢同一个颜色属性
+# 闪色期间调用方别抢同一个颜色属性 / don't fight the flash tween over the same property
 func is_flashing() -> bool:
 	return _flash_tween != null and _flash_tween.is_valid()
 

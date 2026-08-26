@@ -28,7 +28,6 @@ Signal_Debugger="*uid://bf6x3w2mh5vl0"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [editor_plugins]
 
@@ -46,8 +45,8 @@ folder_colors={
 
 [physics]
 
-2d/default_gravity=0.0
 common/physics_jitter_fix=0.803
+2d/default_gravity=0.0
 
 [rendering]
 

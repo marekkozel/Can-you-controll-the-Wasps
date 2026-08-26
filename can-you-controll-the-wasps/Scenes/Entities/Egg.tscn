@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Entities/egg.gd" id="1_egg"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/MaturationComponent.tscn" id="2_mat"]
 
 [node name="Egg" type="Node2D"]
 script = ExtResource("1_egg")
@@ -19,3 +20,7 @@ joint_mode = 2
 [node name="Highlight" type="Polygon2D" parent="."]
 color = Color(1, 1, 1, 0.55)
 polygon = PackedVector2Array(0.2, -4, -0.2287, -1.8, -1.4, -0.1895, -3, 0.4, -4.6, -0.1895, -5.771, -1.8, -6.2, -4, -5.771, -6.2, -4.6, -7.811, -3, -8.4, -1.4, -7.811, -0.2287, -6.2)
+
+[node name="MaturationComponent" parent="." instance=ExtResource("2_mat")]
+duration = 10.0
+autostart = true

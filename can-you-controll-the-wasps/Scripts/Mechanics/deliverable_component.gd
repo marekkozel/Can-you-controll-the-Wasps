@@ -1,19 +1,19 @@
 class_name DeliverableComponent
 extends Node
 
-# 可交付物 / deliverable：松手时落在蜂巢格子上就把自己交出去。
-# 纸板和食物共用这一条路径，格子那边靠 payload 决定怎么处理。
+# 可交付物 / deliverable: 松手时落在蜂巢格子上就把自己交出去。
+# 纸板和食物共用这一条路径，格子那边靠 payload 决定怎么处理 / cell decides from payload.
 
 signal delivered(cell: HexCell)
 
 const HIVE_GROUP: StringName = &"hive"
 
-## 交给格子的东西：&"cardboard" 加建造进度，&"food" 喂幼虫
+## 交给格子的东西 / payload: &"cardboard" 加建造进度, &"food" 喂幼虫
 @export var payload: StringName = &"cardboard"
 @export_range(1, 5, 1) var amount: int = 1
-## 用 NodePath 而不是 Node 导出——后者在 .tscn 里存的路径解析不出来
+## 用 NodePath 不用 Node 导出——后者在 .tscn 里解析不出来 / typed Node exports don't resolve
 @export var draggable_path: NodePath = ^"../DraggableComponent"
-## 交付成功后是否销毁自己
+## 交付成功后是否销毁自己 / free itself after a successful delivery
 @export var consume_on_deliver: bool = true
 
 
@@ -34,7 +34,7 @@ func _on_released() -> void:
 	if hive == null:
 		return
 
-	# 没落在格子上，或者格子不收 —— 东西留在原地，还能再拖
+	# 没落在格子上或格子不收，东西留原地还能再拖 / not accepted, leave it where it is
 	var cell: HexCell = hive.cell_at_global(body.global_position)
 	if cell == null or not cell.deliver(payload, amount):
 		return
