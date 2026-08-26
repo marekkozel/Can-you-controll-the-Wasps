@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://biaqfgdgx0ki6"]
+
+[node name="World" type="Node2D" unique_id=78065329]
+
+[node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
+
+[node name="Entities" type="Node2D" parent="." unique_id=1986278641]
+
+[node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
+
+[node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
+
+[node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
