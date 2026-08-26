@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://1n6at31r3qsy"]
+
+[ext_resource type="Texture2D" uid="uid://cqbky705c0dgo" path="res://icon.svg" id="1_0f1xr"]
+[ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_oe8vs"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_oe8vs"]
+friction = 0.8
+bounce = 0.3
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u0qcp"]
+size = Vector2(313, 302)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oe8vs"]
+
+[node name="Entity" type="RigidBody2D" unique_id=334756669]
+physics_material_override = SubResource("PhysicsMaterial_oe8vs")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=252966327]
+position = Vector2(1.5, 2)
+scale = Vector2(0.44072312, 0.4058409)
+shape = SubResource("RectangleShape2D_u0qcp")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=996543772]
+scale = Vector2(1.06751, 0.9799345)
+texture = ExtResource("1_0f1xr")
+
+[node name="DraggableComponent" parent="." unique_id=1427568941 instance=ExtResource("2_oe8vs")]
+scale = Vector2(6.210967, 5.9729342)
+
+[node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
+shape = SubResource("RectangleShape2D_oe8vs")
+
+[connection signal="input_event" from="DraggableComponent" to="DraggableComponent" method="_on_input_event"]
+
+[editable path="DraggableComponent"]

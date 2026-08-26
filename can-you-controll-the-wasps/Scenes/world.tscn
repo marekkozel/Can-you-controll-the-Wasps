@@ -1,5 +1,13 @@
 [gd_scene format=3 uid="uid://biaqfgdgx0ki6"]
 
+[ext_resource type="PackedScene" uid="uid://1n6at31r3qsy" path="res://Scenes/Entities/Entity.tscn" id="1_a02cp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1xc2q"]
+size = Vector2(1159.5, 71)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u0qcp"]
+size = Vector2(7.200001, 78.899994)
+
 [node name="World" type="Node2D" unique_id=78065329]
 
 [node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
@@ -11,3 +19,26 @@
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
+
+[node name="Entity" parent="." unique_id=334756669 instance=ExtResource("1_a02cp")]
+position = Vector2(194, 174)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=1743521047]
+position = Vector2(583.75, -37.00002)
+shape = SubResource("RectangleShape2D_1xc2q")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=521589661]
+position = Vector2(584, 683)
+shape = SubResource("RectangleShape2D_1xc2q")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=1807340457]
+position = Vector2(-33, 320.00003)
+scale = Vector2(10, 10)
+shape = SubResource("RectangleShape2D_u0qcp")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D" unique_id=584240312]
+position = Vector2(1197.0001, 320)
+scale = Vector2(10, 10)
+shape = SubResource("RectangleShape2D_u0qcp")
