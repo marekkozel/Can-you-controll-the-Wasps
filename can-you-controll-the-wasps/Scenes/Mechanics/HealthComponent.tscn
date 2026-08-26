@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/health_component.gd" id="1_health"]
+
+[node name="HealthComponent" type="Node"]
+script = ExtResource("1_health")
+max_health = 1

@@ -13,9 +13,12 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F6  Feed all larvae", "method": "feed_all_larvae", "key": KEY_F6},
 	{"label": "F7  Time scale x2", "method": "cycle_time_scale", "key": KEY_F7},
 	{"label": "F8  Reset hive", "method": "reset_hive", "key": KEY_F8},
+	{"label": "F9  Spawn enemy", "method": "spawn_enemy", "key": KEY_F9},
+	{"label": "F10 Kill all enemies", "method": "kill_all_enemies", "key": KEY_F10},
 	{"label": "     Spawn cardboard", "method": "spawn_cardboard", "key": KEY_NONE},
 	{"label": "     Spawn food", "method": "spawn_food", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
+	{"label": "     Clear enemies", "method": "clear_enemies", "key": KEY_NONE},
 ]
 
 @onready var _actions: DebugActions = $DebugActions

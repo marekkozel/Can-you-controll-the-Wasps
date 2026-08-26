@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Food.tscn" id="9_food"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
@@ -33,14 +34,12 @@ size = Vector2(1020, 40)
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
-[node name="EnemySpawn" type="Marker2D" parent="Entities"]
+[node name="EnemySpawn" parent="Entities" instance=ExtResource("7_source") groups=["enemy_source"]]
 position = Vector2(640, 126)
-
-[node name="SpawnLeft" type="Marker2D" parent="Entities/EnemySpawn"]
-position = Vector2(-390, 0)
-
-[node name="SpawnRight" type="Marker2D" parent="Entities/EnemySpawn"]
-position = Vector2(390, 0)
+piece_scene = ExtResource("11_enemy")
+max_pieces = 4
+respawn_delay = 4.0
+scatter_size = Vector2(760, 170)
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 

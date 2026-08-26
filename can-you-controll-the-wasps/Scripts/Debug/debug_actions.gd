@@ -13,6 +13,7 @@ const SOURCE_GROUP: StringName = &"item_source"
 const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
 const FOOD_SCENE: PackedScene = preload("res://Scenes/Entities/Food.tscn")
+const ENEMY_SCENE: PackedScene = preload("res://Scenes/Entities/Enemy.tscn")
 
 ## 时间倍率循环用的档位 / time scale steps cycled by the hotkey
 const TIME_SCALES: Array[float] = [1.0, 2.0, 4.0, 8.0, 0.25, 0.5]
@@ -109,6 +110,34 @@ func spawn_wasp(count: int = 1) -> void:
 		wasp.global_position = origin + Vector2(randf_range(-80.0, 80.0), randf_range(-60.0, 60.0))
 		wasp.set_wander_home(origin)
 	_report("spawned %d wasps" % count)
+
+
+func spawn_enemy(count: int = 1) -> void:
+	for i in count:
+		var enemy: Enemy = ENEMY_SCENE.instantiate()
+		entities_root().add_child(enemy)
+		var spot: Vector2 = Vector2(randf_range(280.0, 1000.0), randf_range(50.0, 200.0))
+		enemy.global_position = spot
+		enemy.set_wander_home(spot)
+	_report("spawned %d enemies" % count)
+
+
+func kill_all_enemies() -> void:
+	var count: int = 0
+	for node in entities_root().get_children():
+		if node is Enemy:
+			node.get_node("HealthComponent").take_damage(99, node.global_position + Vector2(0, -30))
+			count += 1
+	_report("killed %d enemies" % count)
+
+
+func clear_enemies() -> void:
+	var count: int = 0
+	for node in entities_root().get_children():
+		if node is Enemy:
+			node.queue_free()
+			count += 1
+	_report("removed %d enemies" % count)
 
 
 func clear_wasps() -> void:
