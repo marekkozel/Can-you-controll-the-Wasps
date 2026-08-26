@@ -6,7 +6,7 @@ extends Area2D
 signal grabbed
 signal released
 
-@export var profile: DragProfile
+@export var profile:DragProfile
 
 # 同一时刻只允许一个，重叠的物体不会被一起抓起来 / only one at a time
 static var _active_component: Node = null

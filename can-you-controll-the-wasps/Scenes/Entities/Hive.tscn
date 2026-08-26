@@ -1,17 +1,16 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://s3x16rpani8"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/hive.gd" id="1_hive"]
-[ext_resource type="Resource" path="res://Resources/HexLayouts/hive_layout.tres" id="2_layout"]
+[ext_resource type="Script" uid="uid://dlblr0eu2qkm7" path="res://Scripts/Entities/hive.gd" id="1_hive"]
+[ext_resource type="Resource" uid="uid://bc13so0pv5qlk" path="res://Resources/HexLayouts/hive_layout.tres" id="2_layout"]
 
-[node name="Hive" type="Node2D" groups=["hive"]]
+[node name="Hive" type="Node2D" unique_id=249460737 groups=["hive"]]
 script = ExtResource("1_hive")
 layout = ExtResource("2_layout")
-radius = 3
 
-[node name="HexGrid" type="Node2D" parent="."]
+[node name="HexGrid" type="Node2D" parent="." unique_id=1735352004]
 
-[node name="Cells" type="Node2D" parent="HexGrid"]
+[node name="Cells" type="Node2D" parent="HexGrid" unique_id=707133138]
 
-[node name="Center" type="Marker2D" parent="."]
+[node name="Center" type="Marker2D" parent="." unique_id=566008743]
 
-[node name="QueenSlot" type="Marker2D" parent="."]
+[node name="QueenSlot" type="Marker2D" parent="." unique_id=495264605]

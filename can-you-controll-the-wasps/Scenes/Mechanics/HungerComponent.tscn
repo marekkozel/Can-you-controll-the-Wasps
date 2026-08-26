@@ -1,9 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dbdevgkd27o2g"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/hunger_component.gd" id="1_hunger"]
+[ext_resource type="Script" uid="uid://iqw8yvsvd4am" path="res://Scripts/Mechanics/hunger_component.gd" id="1_hunger"]
 
-[node name="HungerComponent" type="Node"]
+[node name="HungerComponent" type="Node" unique_id=1010380144]
 script = ExtResource("1_hunger")
 satiated_duration = 15.0
 hunger_window = 15.0
-required_units = 3

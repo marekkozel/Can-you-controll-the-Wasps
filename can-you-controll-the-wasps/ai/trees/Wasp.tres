@@ -1,0 +1,57 @@
+[gd_resource type="BehaviorTree" format=3 uid="uid://duqipvlyjy31h"]
+
+[ext_resource type="Script" uid="uid://dnrhqurjlsmn6" path="res://ai/tasks/Defend.gd" id="1_s1byh"]
+[ext_resource type="Script" uid="uid://b63koju47hxsx" path="res://ai/tasks/Feed.gd" id="2_145ud"]
+[ext_resource type="Script" uid="uid://b4qu65pm66p1l" path="res://ai/tasks/Clean.gd" id="2_hdy6l"]
+[ext_resource type="Script" uid="uid://ddkwnm8cwuqf3" path="res://ai/tasks/Build.gd" id="3_1tk40"]
+[ext_resource type="Script" uid="uid://c0wbylkr7e7ki" path="res://ai/tasks/Betray.gd" id="3_lcywq"]
+[ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="6_1tk40"]
+
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_py0da"]
+
+[sub_resource type="BTAction" id="BTAction_y386t"]
+script = ExtResource("1_s1byh")
+
+[sub_resource type="BTSequence" id="BTSequence_cbln1"]
+custom_name = "Seq - Defend"
+children = [SubResource("BTAction_y386t")]
+
+[sub_resource type="BTAction" id="BTAction_37fxr"]
+script = ExtResource("2_145ud")
+
+[sub_resource type="BTSequence" id="BTSequence_s1byh"]
+custom_name = "Sq - Feed"
+children = [SubResource("BTAction_37fxr")]
+
+[sub_resource type="BTAction" id="BTAction_rj7pp"]
+script = ExtResource("3_1tk40")
+
+[sub_resource type="BTSequence" id="BTSequence_y386t"]
+custom_name = "Sq - Build"
+children = [SubResource("BTAction_rj7pp")]
+
+[sub_resource type="BTAction" id="BTAction_145ud"]
+script = ExtResource("2_hdy6l")
+
+[sub_resource type="BTSequence" id="BTSequence_hdy6l"]
+custom_name = "Seq - Clean"
+children = [SubResource("BTAction_145ud")]
+
+[sub_resource type="BTAction" id="BTAction_1tk40"]
+script = ExtResource("3_lcywq")
+
+[sub_resource type="BTSequence" id="BTSequence_37fxr"]
+children = [SubResource("BTAction_1tk40")]
+
+[sub_resource type="BTAction" id="BTAction_or1g3"]
+script = ExtResource("6_1tk40")
+
+[sub_resource type="BTSequence" id="BTSequence_145ud"]
+children = [SubResource("BTAction_or1g3")]
+
+[sub_resource type="BTSelector" id="BTSelector_mkohs"]
+children = [SubResource("BTSequence_cbln1"), SubResource("BTSequence_s1byh"), SubResource("BTSequence_y386t"), SubResource("BTSequence_hdy6l"), SubResource("BTSequence_37fxr"), SubResource("BTSequence_145ud")]
+
+[resource]
+blackboard_plan = SubResource("BlackboardPlan_py0da")
+root_task = SubResource("BTSelector_mkohs")

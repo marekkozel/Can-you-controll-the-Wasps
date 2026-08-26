@@ -4,11 +4,11 @@
 [ext_resource type="PackedScene" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
+[ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Food.tscn" id="9_food"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
 size = Vector2(1320, 40)
@@ -34,7 +34,7 @@ size = Vector2(1020, 40)
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
-[node name="EnemySpawn" parent="Entities" instance=ExtResource("7_source") groups=["enemy_source"]]
+[node name="EnemySpawn" parent="Entities" unique_id=158334541 groups=["enemy_source"] instance=ExtResource("7_source")]
 position = Vector2(640, 126)
 piece_scene = ExtResource("11_enemy")
 max_pieces = 4
@@ -43,11 +43,11 @@ scatter_size = Vector2(760, 170)
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 
-[node name="CardboardSource" parent="Resource_layer" instance=ExtResource("7_source") groups=["item_source"]]
+[node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(115, 126)
 piece_scene = ExtResource("8_cardboard")
 
-[node name="FoodSource" parent="Resource_layer" instance=ExtResource("7_source") groups=["item_source"]]
+[node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(1165, 126)
 piece_scene = ExtResource("9_food")
 
@@ -55,7 +55,7 @@ piece_scene = ExtResource("9_food")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
-[node name="Hive" parent="Nest_grid" instance=ExtResource("3_hive")]
+[node name="Hive" parent="Nest_grid" unique_id=1929662079 instance=ExtResource("3_hive")]
 position = Vector2(650, 464)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
@@ -76,71 +76,54 @@ shape = SubResource("Shape_wall_upper_side")
 position = Vector2(90, 272)
 shape = SubResource("Shape_divider_left")
 
-[node name="WallDividerRight" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="WallDividerRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=827235797]
 position = Vector2(1200, 272)
 shape = SubResource("Shape_divider_right")
 
-[node name="WallNestLeft" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="WallNestLeft" type="CollisionShape2D" parent="StaticBody2D" unique_id=1209315537]
 position = Vector2(160, 464)
 shape = SubResource("Shape_nest_side")
 
-[node name="WallNestRight" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="WallNestRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=1967595214]
 position = Vector2(1140, 464)
 shape = SubResource("Shape_nest_side")
 
-[node name="WallNestBottom" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="WallNestBottom" type="CollisionShape2D" parent="StaticBody2D" unique_id=751789722]
 position = Vector2(650, 696)
 shape = SubResource("Shape_nest_bottom")
 
-[node name="LayoutGuides" type="CanvasLayer" parent="."]
+[node name="LayoutGuides" type="CanvasLayer" parent="." unique_id=1424308469]
 layer = -1
 
-[node name="BgUpper" type="ColorRect" parent="LayoutGuides"]
+[node name="BgUpper" type="ColorRect" parent="LayoutGuides" unique_id=718947701]
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 0.35
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.141, 0.141, 0.141, 1)
 
-[node name="BgLower" type="ColorRect" parent="LayoutGuides"]
+[node name="BgLower" type="ColorRect" parent="LayoutGuides" unique_id=902542205]
 anchors_preset = -1
-anchor_left = 0.0
 anchor_top = 0.35
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.102, 0.102, 0.102, 1)
 
-[node name="RegionCardboard" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionCardboard" type="ColorRect" parent="LayoutGuides" unique_id=1701210206]
 anchors_preset = -1
-anchor_left = 0.0
-anchor_top = 0.0
 anchor_right = 0.18
 anchor_bottom = 0.35
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.65, 0.45, 0.25, 0.07)
 
-[node name="Label" type="Label" parent="LayoutGuides/RegionCardboard"]
+[node name="Label" type="Label" parent="LayoutGuides/RegionCardboard" unique_id=1845568197]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -148,30 +131,23 @@ anchor_bottom = 1.0
 offset_top = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 16
 text = "CARDBOARD"
 horizontal_alignment = 1
-vertical_alignment = 0
 autowrap_mode = 2
 
-[node name="RegionEnemySpawn" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionEnemySpawn" type="ColorRect" parent="LayoutGuides" unique_id=408282734]
 anchors_preset = -1
 anchor_left = 0.18
-anchor_top = 0.0
 anchor_right = 0.82
 anchor_bottom = 0.35
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.75, 0.2, 0.2, 0.06)
 
-[node name="Label" type="Label" parent="LayoutGuides/RegionEnemySpawn"]
+[node name="Label" type="Label" parent="LayoutGuides/RegionEnemySpawn" unique_id=2085754760]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -179,30 +155,23 @@ anchor_bottom = 1.0
 offset_top = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 20
 text = "ENEMIES SPAWN"
 horizontal_alignment = 1
-vertical_alignment = 0
 autowrap_mode = 2
 
-[node name="RegionFood" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionFood" type="ColorRect" parent="LayoutGuides" unique_id=1122613584]
 anchors_preset = -1
 anchor_left = 0.82
-anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 0.35
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.3, 0.7, 0.35, 0.07)
 
-[node name="Label" type="Label" parent="LayoutGuides/RegionFood"]
+[node name="Label" type="Label" parent="LayoutGuides/RegionFood" unique_id=194786023]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -210,45 +179,34 @@ anchor_bottom = 1.0
 offset_top = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 16
 text = "FOOD"
 horizontal_alignment = 1
-vertical_alignment = 0
 autowrap_mode = 2
 
-[node name="RegionHud" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionHud" type="ColorRect" parent="LayoutGuides" unique_id=255581151]
 anchors_preset = -1
-anchor_left = 0.0
 anchor_top = 0.35
 anchor_right = 0.140625
-anchor_bottom = 0.9388888888888889
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
+anchor_bottom = 0.9388889
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.35, 0.45, 0.6, 0.06)
 
-[node name="RegionNest" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionNest" type="ColorRect" parent="LayoutGuides" unique_id=447284920]
 anchors_preset = -1
 anchor_left = 0.140625
 anchor_top = 0.35
 anchor_right = 0.875
-anchor_bottom = 0.9388888888888889
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
+anchor_bottom = 0.9388889
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.94, 0.74, 0.25, 0.05)
 
-[node name="Label" type="Label" parent="LayoutGuides/RegionNest"]
+[node name="Label" type="Label" parent="LayoutGuides/RegionNest" unique_id=1282068116]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -257,70 +215,40 @@ offset_left = 14.0
 offset_top = 10.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 20
 text = "NEST INTERIOR  /  HEX GRID"
-horizontal_alignment = 0
-vertical_alignment = 0
 autowrap_mode = 2
 
-[node name="RegionUpgrade" type="ColorRect" parent="LayoutGuides"]
+[node name="RegionUpgrade" type="ColorRect" parent="LayoutGuides" unique_id=473247780]
 anchors_preset = -1
 anchor_left = 0.875
 anchor_top = 0.35
 anchor_right = 1.0
-anchor_bottom = 0.9388888888888889
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
+anchor_bottom = 0.9388889
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.5, 0.35, 0.65, 0.06)
 
-[node name="UI" type="CanvasLayer" parent="."]
-layer = 1
+[node name="UI" type="CanvasLayer" parent="." unique_id=945276951]
 
-[node name="InfoPanel" parent="UI" instance=ExtResource("4_info")]
+[node name="InfoPanel" parent="UI" unique_id=1118697189 instance=ExtResource("4_info")]
 layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.35
 anchor_right = 0.140625
-anchor_bottom = 0.9388888888888889
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_bottom = 0.9388889
 
-[node name="UpgradePanel" parent="UI" instance=ExtResource("5_upgrade")]
+[node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
 layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.875
 anchor_top = 0.35
-anchor_right = 1.0
-anchor_bottom = 0.9388888888888889
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_bottom = 0.9388889
 
-[node name="SeasonBar" parent="UI" instance=ExtResource("6_season")]
-layout_mode = 3
+[node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
 anchors_preset = -1
-anchor_top = 0.9388888888888889
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_top = 0.9388889
 
-[node name="DebugPanel" parent="." instance=ExtResource("10_debug")]
+[node name="DebugPanel" parent="." unique_id=1410055688 instance=ExtResource("10_debug")]

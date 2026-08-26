@@ -1,26 +1,25 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b82sbwknh7mqn"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/egg.gd" id="1_egg"]
+[ext_resource type="Script" uid="uid://gew42crgyl41" path="res://Scripts/Entities/egg.gd" id="1_egg"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/MaturationComponent.tscn" id="2_mat"]
 
-[node name="Egg" type="Node2D"]
+[node name="Egg" type="Node2D" unique_id=1497907240]
 script = ExtResource("1_egg")
 
-[node name="Body" type="Polygon2D" parent="."]
-color = Color(0.96078431, 0.94117647, 0.85882353, 1)
+[node name="Body" type="Polygon2D" parent="." unique_id=155339429]
+color = Color(0.9607843, 0.9411765, 0.85882354, 1)
 polygon = PackedVector2Array(10, 0, 9.239, 5.166, 7.071, 9.546, 3.827, 12.47, 6.123e-16, 13.5, -3.827, 12.47, -7.071, 9.546, -9.239, 5.166, -10, 1.653e-15, -9.239, -5.166, -7.071, -9.546, -3.827, -12.47, -1.837e-15, -13.5, 3.827, -12.47, 7.071, -9.546, 9.239, -5.166)
 
-[node name="Outline" type="Line2D" parent="."]
+[node name="Outline" type="Line2D" parent="." unique_id=1455737067]
 points = PackedVector2Array(10, 0, 9.239, 5.166, 7.071, 9.546, 3.827, 12.47, 6.123e-16, 13.5, -3.827, 12.47, -7.071, 9.546, -9.239, 5.166, -10, 1.653e-15, -9.239, -5.166, -7.071, -9.546, -3.827, -12.47, -1.837e-15, -13.5, 3.827, -12.47, 7.071, -9.546, 9.239, -5.166)
 closed = true
 width = 1.5
-default_color = Color(0.65098039, 0.58823529, 0.44705882, 1)
+default_color = Color(0.6509804, 0.5882353, 0.44705883, 1)
 joint_mode = 2
 
-[node name="Highlight" type="Polygon2D" parent="."]
+[node name="Highlight" type="Polygon2D" parent="." unique_id=532124571]
 color = Color(1, 1, 1, 0.55)
 polygon = PackedVector2Array(0.2, -4, -0.2287, -1.8, -1.4, -0.1895, -3, 0.4, -4.6, -0.1895, -5.771, -1.8, -6.2, -4, -5.771, -6.2, -4.6, -7.811, -3, -8.4, -1.4, -7.811, -0.2287, -6.2)
 
-[node name="MaturationComponent" parent="." instance=ExtResource("2_mat")]
-duration = 10.0
+[node name="MaturationComponent" parent="." unique_id=1951054052 instance=ExtResource("2_mat")]
 autostart = true

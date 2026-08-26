@@ -40,8 +40,13 @@ folder_colors={
 "res://Resources/": "purple",
 "res://Scenes/": "blue",
 "res://Scripts/": "green",
-"res://addons/": "pink"
+"res://addons/": "pink",
+"res://ai/": "yellow"
 }
+
+[global_group]
+
+Enemy=""
 
 [physics]
 

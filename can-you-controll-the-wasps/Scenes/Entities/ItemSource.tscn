@@ -1,14 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://c3eitlvpt6vua"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/item_source.gd" id="1_source"]
+[ext_resource type="Script" uid="uid://du51ivy17il51" path="res://Scripts/Entities/item_source.gd" id="1_source"]
 
-[node name="ItemSource" type="Node2D"]
+[node name="ItemSource" type="Node2D" unique_id=910786583]
 script = ExtResource("1_source")
-max_pieces = 3
-respawn_delay = 2.0
-scatter_radius = 48.0
 
-[node name="Ring" type="Line2D" parent="."]
+[node name="Ring" type="Line2D" parent="." unique_id=1226030322]
 points = PackedVector2Array(60, 0, 42, 42, 0, 60, -42, 42, -60, 0, -42, -42, 0, -60, 42, -42)
 closed = true
 width = 1.0

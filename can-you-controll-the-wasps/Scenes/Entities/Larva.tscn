@@ -1,18 +1,19 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://daaiiu5swj2oa"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/larva.gd" id="1_larva"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/HungerComponent.tscn" id="3_hunger"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
+[ext_resource type="Script" uid="uid://unmqvhi82wiy" path="res://Scripts/Entities/larva.gd" id="1_larva"]
+[ext_resource type="Script" uid="uid://b5ubkjrir028k" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
+[ext_resource type="PackedScene" uid="uid://dbdevgkd27o2g" path="res://Scenes/Mechanics/HungerComponent.tscn" id="3_hunger"]
+[ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
 
 [sub_resource type="Curve" id="Curve_larva"]
 _data = [Vector2(0, 0.42), 0.0, 0.0, 0, 0, Vector2(0.55, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.68), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[node name="Larva" type="Node2D"]
+[node name="Larva" type="Node2D" unique_id=861015634]
 script = ExtResource("1_larva")
 
-[node name="Body" type="Line2D" parent="."]
+[node name="Body" type="Line2D" parent="." unique_id=207719835]
+points = PackedVector2Array(0, 0, 0.06109806, -3.25, 0.23520926, -6.5, 0.49581975, -9.75, 0.80208665, -13, 1.1035047, -16.25, 1.3457677, -19.5, 1.4772288, -22.75, 1.4552935, -26)
 width = 9.0
 width_curve = SubResource("Curve_larva")
 default_color = Color(0.93, 0.89, 0.74, 1)
@@ -20,17 +21,19 @@ joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="Eyes" type="Node2D" parent="Body"]
+[node name="Eyes" type="Node2D" parent="Body" unique_id=1925023523]
+position = Vector2(1.4552935, -26)
+rotation = -1.5775455
 
-[node name="L" type="Polygon2D" parent="Body/Eyes"]
+[node name="L" type="Polygon2D" parent="Body/Eyes" unique_id=776902647]
 color = Color(0.19, 0.16, 0.13, 1)
 polygon = PackedVector2Array(2.8, -2.2, 2.419, -1.281, 1.5, -0.9, 0.5808, -1.281, 0.2, -2.2, 0.5808, -3.119, 1.5, -3.5, 2.419, -3.119)
 
-[node name="R" type="Polygon2D" parent="Body/Eyes"]
+[node name="R" type="Polygon2D" parent="Body/Eyes" unique_id=871352497]
 color = Color(0.19, 0.16, 0.13, 1)
 polygon = PackedVector2Array(2.8, 2.2, 2.419, 3.119, 1.5, 3.5, 0.5808, 3.119, 0.2, 2.2, 0.5808, 1.281, 1.5, 0.9, 2.419, 1.281)
 
-[node name="Ring" type="Line2D" parent="."]
+[node name="Ring" type="Line2D" parent="." unique_id=1194524495]
 width = 3.0
 default_color = Color(0.98, 0.55, 0.3, 0.9)
 joint_mode = 2
@@ -38,6 +41,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 script = ExtResource("2_ring")
 
-[node name="HungerComponent" parent="." instance=ExtResource("3_hunger")]
+[node name="HungerComponent" parent="." unique_id=811372680 instance=ExtResource("3_hunger")]
 
-[node name="JuiceComponent" parent="." instance=ExtResource("4_juice")]
+[node name="JuiceComponent" parent="." unique_id=1011094095 node_paths=PackedStringArray("target") instance=ExtResource("4_juice")]
+target = NodePath("../Body")

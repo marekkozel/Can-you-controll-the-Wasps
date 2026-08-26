@@ -1,49 +1,56 @@
 class_name Wasp
 extends RigidBody2D
 
-# 黄蜂 / a wasp. 会随机游荡，也能被抓起来甩出去撞墙 / wanders, can be grabbed and flung.
-# 真正的行为要走 limboai 的行为树，是另一个任务 / real AI is a separate task.
-#
-# 朝向、悬停、扇翅都作用在 Visual 上，根节点留给物理和 AI / animate Visual, not the root,
-# 不然移动逻辑会跟这里的动画抢同一个属性 / else movement fights the animation.
-
-## 撞到东西时发出，参数是撞击瞬间的速度 / emitted on impact, carries the impact speed
 signal slammed(speed: float)
 
 @export_range(0.05, 2.0, 0.05) var emerge_duration: float = 0.45
-## 悬停时上下浮动的幅度 / hover bob amplitude
 @export_range(0.0, 20.0, 0.5) var bob_amount: float = 3.5
 @export_range(0.1, 5.0, 0.1) var bob_period: float = 1.6
-## 翅膀基础扇动频率，飞得越快扇得越急 / wing flap, scales with speed
 @export_range(1.0, 60.0, 1.0) var wing_frequency: float = 18.0
-## 转向跟随的平滑度 / how fast it turns to face travel direction
 @export_range(0.02, 1.0, 0.01) var facing_smoothing: float = 0.15
 
+@export_range(1, 100, 1) var damage: int = 1
+
 @export_group("Fling")
-## 甩出去后速度掉到这个值以下才恢复游荡 / wander resumes once it slows to this
 @export_range(10.0, 600.0, 5.0) var resume_wander_speed: float = 140.0
-## 保险：最多飞这么久就强制恢复，免得卡在墙角一直不落地 / safety timeout
 @export_range(0.5, 20.0, 0.5) var max_fling_time: float = 6.0
-## 落地后就地安家，而不是飞回原来的活动区 / settle where it lands
 @export var rehome_on_landing: bool = true
-## 撞击速度超过这个值才给反馈 / minimum speed to trigger impact feedback
 @export_range(20.0, 2000.0, 10.0) var impact_speed: float = 260.0
+
+@export_group("Wander")
+@export_range(10.0, 800.0, 5.0) var wander_radius: float = 200.0
+@export_range(5.0, 400.0, 5.0) var wander_speed: float = 55.0
+@export_range(0.5, 30.0, 0.1) var retarget_interval: float = 3.0
+
+@export_group("AI Targets")
+var target_enemy: Node2D = null
+var target_larva: Node2D = null
+var target_build_cell: Node2D = null
+
+## Debug
+@export_group("Debug")
+@export var debug_movement_speed: float = 0
 
 @onready var _visual: Node2D = $Visual
 @onready var _wings: Node2D = $Visual/Wings
 @onready var _draggable: Area2D = $DraggableComponent
-@onready var _wander: WanderComponent = $WanderComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
+@onready var _btree: BTPlayer = $BTPlayer
 
 var _t: float = 0.0
 var _is_flung: bool = false
 var _fling_time: float = 0.0
 var _last_speed: float = 0.0
 
+# Wander internal states
+var _wander_home: Vector2 = Vector2.ZERO
+var _wander_target: Vector2 = Vector2.ZERO
+var _wander_timer: float = 0.0
+
 
 func _ready() -> void:
 	_juice.target = _visual
-	_t = randf() * TAU  # 错开相位，多只不会整齐划一 / desync so wasps don't move in lockstep
+	_t = randf() * TAU
 
 	_draggable.grabbed.connect(_on_grabbed)
 	_draggable.released.connect(_on_released)
@@ -54,23 +61,38 @@ func _ready() -> void:
 		.tween_property(_visual, "scale", Vector2.ONE, emerge_duration)
 
 
-# 生成方摆好位置之后调一次 / call once after the spawner has positioned it
-func set_wander_home(position: Vector2) -> void:
-	_wander.set_home(position)
+func set_wander_home(pos: Vector2) -> void:
+	_wander_home = pos
+	_pick_wander_target()
+
+
+func _pick_wander_target() -> void:
+	var angle: float = randf_range(0.0, TAU)
+	var dist: float = sqrt(randf()) * wander_radius
+	_wander_target = _wander_home + Vector2(cos(angle), sin(angle)) * dist
+	_wander_timer = retarget_interval * randf_range(0.7, 1.3)
+
+
+# Called continuously by Idle.gd BTAction
+func wander(delta: float) -> void:
+	_wander_timer -= delta
+	var to_target: Vector2 = _wander_target - global_position
+  
+	if _wander_timer <= 0.0 or to_target.length() < 18.0:
+		_pick_wander_target()
+	
+	steer_towards(_wander_target, delta, wander_speed)
 
 
 func _on_grabbed() -> void:
-	# 拖着的时候别让游荡去抢 linear_velocity / wander must not fight the drag
 	_is_flung = false
-	_wander.enabled = false
+	_btree.active = false
 
 
 func _on_released() -> void:
-	# 关键：甩出去这段时间也别让游荡接管，不然刚甩出去就被 lerp 拽回去
-	# Key bit: keep wander off while it flies, or the throw gets steered away instantly.
 	_is_flung = true
 	_fling_time = 0.0
-	_wander.enabled = false
+	_btree.active = false
 
 
 func _physics_process(delta: float) -> void:
@@ -82,16 +104,15 @@ func _physics_process(delta: float) -> void:
 	if _last_speed > resume_wander_speed and _fling_time < max_fling_time:
 		return
 
+	_btree.active = true
 	_is_flung = false
 	if rehome_on_landing:
-		_wander.set_home(global_position)
-	_wander.enabled = true
+		set_wander_home(global_position)
 
 
 func _on_body_entered(_body: Node) -> void:
 	if _last_speed < impact_speed:
 		return
-	# 撞墙的手感：横向压扁一下再弹回，快的话再爆点粒子
 	_juice.punch(0.78, 0.28)
 	if _last_speed > impact_speed * 2.0:
 		_juice.burst()
@@ -106,6 +127,28 @@ func _process(delta: float) -> void:
 		_visual.rotation = lerp_angle(_visual.rotation, linear_velocity.angle(), facing_smoothing)
 
 	_visual.position.y = sin(_t * TAU / bob_period) * bob_amount
-	# 翅膀只压扁 y，看起来就是在扇 / squashing y alone reads as flapping
 	var flap: float = wing_frequency * (1.0 + speed / 120.0)
 	_wings.scale.y = 0.35 + 0.65 * absf(sin(_t * flap))
+
+
+func attack_enemy() -> void:
+	if target_enemy == null or not is_instance_valid(target_enemy):
+		return
+  
+	if target_enemy.has_method("take_damage"):
+		target_enemy.take_damage(damage, global_position)
+	# TODO: Add a cooldown
+
+
+func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08) -> void:
+	if _is_flung:
+		return
+
+	var to_target: Vector2 = target_pos - global_position
+	var desired: Vector2 = to_target.normalized() * move_speed
+	linear_velocity = linear_velocity.lerp(desired, steering_weight)
+
+
+func drop_carried_resource() -> void:
+  # TODO: Implement logic to drop food/cardboard
+	pass

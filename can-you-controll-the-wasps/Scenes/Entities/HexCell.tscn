@@ -1,32 +1,32 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://cfjn0xgi2fob5"]
 
-[ext_resource type="Script" path="res://Scripts/Entities/hex_cell.gd" id="1_hexcell"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
+[ext_resource type="Script" uid="uid://ce8tg3vv1onsx" path="res://Scripts/Entities/hex_cell.gd" id="1_hexcell"]
+[ext_resource type="Script" uid="uid://b5ubkjrir028k" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HoldComponent.tscn" id="3_hold"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
+[ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/MaturationComponent.tscn" id="5_mat"]
 
-[node name="HexCell" type="Area2D"]
+[node name="HexCell" type="Area2D" unique_id=1145653249]
 script = ExtResource("1_hexcell")
 
-[node name="Visual" type="Node2D" parent="."]
+[node name="Visual" type="Node2D" parent="." unique_id=69004024]
 
-[node name="Fill" type="Polygon2D" parent="Visual"]
+[node name="Fill" type="Polygon2D" parent="Visual" unique_id=468818278]
 color = Color(0.9490196, 0.7490196, 0.24705882, 0.101960786)
 
-[node name="Content" type="Node2D" parent="Visual"]
+[node name="Content" type="Node2D" parent="Visual" unique_id=18961050]
 
-[node name="Cap" type="Polygon2D" parent="Visual"]
+[node name="Cap" type="Polygon2D" parent="Visual" unique_id=13301013]
 visible = false
-color = Color(0.8509804, 0.6627451, 0.32156863, 0.95)
+color = Color(0.8509804, 0.6627451, 0.32156864, 0.95)
 
-[node name="Border" type="Line2D" parent="Visual"]
+[node name="Border" type="Line2D" parent="Visual" unique_id=2000924027]
+closed = true
 width = 2.0
 default_color = Color(0.9411765, 0.78039217, 0.3019608, 0.54901963)
-closed = true
 joint_mode = 2
 
-[node name="HoldRing" type="Line2D" parent="Visual"]
+[node name="HoldRing" type="Line2D" parent="Visual" unique_id=2115629142]
 width = 5.0
 default_color = Color(1, 0.9019608, 0.5019608, 0.95)
 joint_mode = 2
@@ -34,11 +34,12 @@ begin_cap_mode = 2
 end_cap_mode = 2
 script = ExtResource("2_ring")
 
-[node name="Shape" type="CollisionPolygon2D" parent="."]
+[node name="Shape" type="CollisionPolygon2D" parent="." unique_id=239942658]
 
-[node name="HoldComponent" parent="." instance=ExtResource("3_hold")]
+[node name="HoldComponent" parent="." unique_id=551756379 instance=ExtResource("3_hold")]
+enabled = false
 
-[node name="JuiceComponent" parent="." instance=ExtResource("4_juice")]
+[node name="JuiceComponent" parent="." unique_id=2112325776 node_paths=PackedStringArray("target") instance=ExtResource("4_juice")]
+target = NodePath("../Visual")
 
-[node name="SealTimer" parent="." instance=ExtResource("5_mat")]
-duration = 10.0
+[node name="SealTimer" parent="." unique_id=717069416 instance=ExtResource("5_mat")]

@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://bel6labif31jk"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/juice_component.gd" id="1_juice"]
+[ext_resource type="Script" uid="uid://cly1q30oke2ud" path="res://Scripts/Mechanics/juice_component.gd" id="1_juice"]
 
 [sub_resource type="Gradient" id="Gradient_dot"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -14,10 +14,10 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
-[node name="JuiceComponent" type="Node2D"]
+[node name="JuiceComponent" type="Node2D" unique_id=640590846]
 script = ExtResource("1_juice")
 
-[node name="Burst" type="CPUParticles2D" parent="."]
+[node name="Burst" type="CPUParticles2D" parent="." unique_id=395061446]
 emitting = false
 amount = 18
 texture = SubResource("GradientTexture2D_dot")

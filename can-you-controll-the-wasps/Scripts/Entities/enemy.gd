@@ -70,6 +70,11 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	_health.take_damage(click_damage, get_global_mouse_position())
 	get_viewport().set_input_as_handled()  # 别让点击穿到下面的东西 / don't let it fall through
 
+# take_damage function for the wasp to attack the enemy
+func take_damage(amount: int, from: Vector2) -> void:
+	if _is_dead:
+		return
+	_health.take_damage(amount, from)
 
 func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 	_juice.burst()

@@ -11,6 +11,8 @@ signal fed(larva: Larva, current: int, required: int)
 signal satisfied(larva: Larva)
 signal starved(larva: Larva)
 
+
+
 @export_group("Shape")
 ## 体节数，越多越顺滑 / segment count, more is smoother
 @export_range(3, 24, 1) var segment_count: int = 9
@@ -42,6 +44,20 @@ var _t: float = 0.0
 var _amplitude: float = 0.0
 var _frequency: float = 0.0
 var _is_dead: bool = false
+
+# I am adding the concept of rezervation, so only few wasps can feed this larvae and not all of them at once.
+var claimed_by: int = 0
+
+# Called by BTCondition script
+func can_be_claimed() -> bool:
+	return claimed_by < (_hunger.required_units - _hunger.units) and is_hungry()
+
+# Called by BTAction script when starting the feed sequence
+func claim() -> void:
+	claimed_by += 1
+
+func unclaim() -> void:
+	claimed_by -= 1
 
 
 func _ready() -> void:
