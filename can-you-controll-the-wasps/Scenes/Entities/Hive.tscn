@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Entities/hive.gd" id="1_hive"]
+[ext_resource type="Resource" path="res://Resources/HexLayouts/hive_layout.tres" id="2_layout"]
+
+[node name="Hive" type="Node2D" groups=["hive"]]
+script = ExtResource("1_hive")
+layout = ExtResource("2_layout")
+radius = 3
+
+[node name="HexGrid" type="Node2D" parent="."]
+
+[node name="Cells" type="Node2D" parent="HexGrid"]
+
+[node name="Center" type="Marker2D" parent="."]
+
+[node name="QueenSlot" type="Marker2D" parent="."]

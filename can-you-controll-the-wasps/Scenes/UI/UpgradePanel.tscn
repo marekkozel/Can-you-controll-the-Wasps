@@ -1,0 +1,150 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
+[ext_resource type="Script" path="res://Scripts/UI/hex_frame.gd" id="2_hexframe"]
+
+[node name="UpgradePanel" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_collapsible")
+collapse_side = 1
+
+[node name="Body" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "UPGRADES"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+
+[node name="Slots" type="VBoxContainer" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Row1" type="HBoxContainer" parent="Body/Panel/Margin/Content/Slots"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Slot1" type="Button" parent="Body/Panel/Margin/Content/Slots/Row1"]
+custom_minimum_size = Vector2(52, 58)
+layout_mode = 2
+flat = true
+
+[node name="Frame" type="Control" parent="Body/Panel/Margin/Content/Slots/Row1/Slot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_hexframe")
+
+[node name="Caption" type="Label" parent="Body/Panel/Margin/Content/Slots/Row1/Slot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "DEF"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Plus1" type="Label" parent="Body/Panel/Margin/Content/Slots/Row1"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "+"
+vertical_alignment = 1
+
+[node name="Row2" type="HBoxContainer" parent="Body/Panel/Margin/Content/Slots"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Slot2" type="Button" parent="Body/Panel/Margin/Content/Slots/Row2"]
+custom_minimum_size = Vector2(52, 58)
+layout_mode = 2
+flat = true
+
+[node name="Frame" type="Control" parent="Body/Panel/Margin/Content/Slots/Row2/Slot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_hexframe")
+
+[node name="Caption" type="Label" parent="Body/Panel/Margin/Content/Slots/Row2/Slot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "SPD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Plus2" type="Label" parent="Body/Panel/Margin/Content/Slots/Row2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "+"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ToggleButton" type="Button" parent="Body"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 0.0
+offset_top = 12.0
+offset_right = 30.0
+offset_bottom = 60.0
+grow_horizontal = 1
+theme_override_font_sizes/font_size = 18
+text = ">"

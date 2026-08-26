@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="HexLayout" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/hex_layout.gd" id="1_hexlayout"]
+
+[resource]
+script = ExtResource("1_hexlayout")
+orientation = 0
+cell_size = 38.0
+squash = 0.92

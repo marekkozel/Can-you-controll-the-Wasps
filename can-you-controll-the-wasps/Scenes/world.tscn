@@ -1,12 +1,30 @@
 [gd_scene format=3 uid="uid://biaqfgdgx0ki6"]
 
-[ext_resource type="PackedScene" uid="uid://1n6at31r3qsy" path="res://Scenes/Entities/Entity.tscn" id="1_a02cp"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/Hive.tscn" id="3_hive"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/Food.tscn" id="9_food"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1xc2q"]
-size = Vector2(1159.5, 71)
+[sub_resource type="RectangleShape2D" id="Shape_wall_top"]
+size = Vector2(1320, 40)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_u0qcp"]
-size = Vector2(7.200001, 78.899994)
+[sub_resource type="RectangleShape2D" id="Shape_wall_upper_side"]
+size = Vector2(40, 292)
+
+[sub_resource type="RectangleShape2D" id="Shape_divider_left"]
+size = Vector2(180, 40)
+
+[sub_resource type="RectangleShape2D" id="Shape_divider_right"]
+size = Vector2(160, 40)
+
+[sub_resource type="RectangleShape2D" id="Shape_nest_side"]
+size = Vector2(40, 424)
+
+[sub_resource type="RectangleShape2D" id="Shape_nest_bottom"]
+size = Vector2(1020, 40)
 
 [node name="World" type="Node2D" unique_id=78065329]
 
@@ -14,31 +32,293 @@ size = Vector2(7.200001, 78.899994)
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641]
 
+[node name="EnemySpawn" type="Marker2D" parent="Entities"]
+position = Vector2(640, 126)
+
+[node name="SpawnLeft" type="Marker2D" parent="Entities/EnemySpawn"]
+position = Vector2(-390, 0)
+
+[node name="SpawnRight" type="Marker2D" parent="Entities/EnemySpawn"]
+position = Vector2(390, 0)
+
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
+
+[node name="CardboardSource" parent="Resource_layer" instance=ExtResource("7_source")]
+position = Vector2(115, 126)
+piece_scene = ExtResource("8_cardboard")
+
+[node name="FoodSource" parent="Resource_layer" instance=ExtResource("7_source")]
+position = Vector2(1165, 126)
+piece_scene = ExtResource("9_food")
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
-[node name="Entity" parent="." unique_id=334756669 instance=ExtResource("1_a02cp")]
-position = Vector2(194, 174)
+[node name="Hive" parent="Nest_grid" instance=ExtResource("3_hive")]
+position = Vector2(650, 464)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=1743521047]
-position = Vector2(583.75, -37.00002)
-shape = SubResource("RectangleShape2D_1xc2q")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=521589661]
-position = Vector2(584, 683)
-shape = SubResource("RectangleShape2D_1xc2q")
+position = Vector2(640, -20)
+shape = SubResource("Shape_wall_top")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=1807340457]
-position = Vector2(-33, 320.00003)
-scale = Vector2(10, 10)
-shape = SubResource("RectangleShape2D_u0qcp")
+position = Vector2(-20, 106)
+shape = SubResource("Shape_wall_upper_side")
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D" unique_id=584240312]
-position = Vector2(1197.0001, 320)
-scale = Vector2(10, 10)
-shape = SubResource("RectangleShape2D_u0qcp")
+position = Vector2(1300, 106)
+shape = SubResource("Shape_wall_upper_side")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=521589661]
+position = Vector2(90, 272)
+shape = SubResource("Shape_divider_left")
+
+[node name="WallDividerRight" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(1200, 272)
+shape = SubResource("Shape_divider_right")
+
+[node name="WallNestLeft" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(160, 464)
+shape = SubResource("Shape_nest_side")
+
+[node name="WallNestRight" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(1140, 464)
+shape = SubResource("Shape_nest_side")
+
+[node name="WallNestBottom" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(650, 696)
+shape = SubResource("Shape_nest_bottom")
+
+[node name="LayoutGuides" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BgUpper" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.35
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.141, 0.141, 0.141, 1)
+
+[node name="BgLower" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.35
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.102, 0.102, 0.102, 1)
+
+[node name="RegionCardboard" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.18
+anchor_bottom = 0.35
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.65, 0.45, 0.25, 0.07)
+
+[node name="Label" type="Label" parent="LayoutGuides/RegionCardboard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+text = "CARDBOARD"
+horizontal_alignment = 1
+vertical_alignment = 0
+autowrap_mode = 2
+
+[node name="RegionEnemySpawn" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.18
+anchor_top = 0.0
+anchor_right = 0.82
+anchor_bottom = 0.35
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.75, 0.2, 0.2, 0.06)
+
+[node name="Label" type="Label" parent="LayoutGuides/RegionEnemySpawn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+text = "ENEMIES SPAWN"
+horizontal_alignment = 1
+vertical_alignment = 0
+autowrap_mode = 2
+
+[node name="RegionFood" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.82
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.35
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.3, 0.7, 0.35, 0.07)
+
+[node name="Label" type="Label" parent="LayoutGuides/RegionFood"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+text = "FOOD"
+horizontal_alignment = 1
+vertical_alignment = 0
+autowrap_mode = 2
+
+[node name="RegionHud" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.35
+anchor_right = 0.140625
+anchor_bottom = 0.9388888888888889
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.35, 0.45, 0.6, 0.06)
+
+[node name="RegionNest" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.140625
+anchor_top = 0.35
+anchor_right = 0.875
+anchor_bottom = 0.9388888888888889
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.94, 0.74, 0.25, 0.05)
+
+[node name="Label" type="Label" parent="LayoutGuides/RegionNest"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+text = "NEST INTERIOR  /  HEX GRID"
+horizontal_alignment = 0
+vertical_alignment = 0
+autowrap_mode = 2
+
+[node name="RegionUpgrade" type="ColorRect" parent="LayoutGuides"]
+anchors_preset = -1
+anchor_left = 0.875
+anchor_top = 0.35
+anchor_right = 1.0
+anchor_bottom = 0.9388888888888889
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.5, 0.35, 0.65, 0.06)
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="InfoPanel" parent="UI" instance=ExtResource("4_info")]
+layout_mode = 3
+anchors_preset = -1
+anchor_top = 0.35
+anchor_right = 0.140625
+anchor_bottom = 0.9388888888888889
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UpgradePanel" parent="UI" instance=ExtResource("5_upgrade")]
+layout_mode = 3
+anchors_preset = -1
+anchor_left = 0.875
+anchor_top = 0.35
+anchor_right = 1.0
+anchor_bottom = 0.9388888888888889
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SeasonBar" parent="UI" instance=ExtResource("6_season")]
+layout_mode = 3
+anchors_preset = -1
+anchor_top = 0.9388888888888889
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2

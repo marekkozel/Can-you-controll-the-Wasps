@@ -30,6 +30,4 @@ scale = Vector2(6.210967, 5.9729342)
 [node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
 shape = SubResource("RectangleShape2D_oe8vs")
 
-[connection signal="input_event" from="DraggableComponent" to="DraggableComponent" method="_on_input_event"]
-
 [editable path="DraggableComponent"]

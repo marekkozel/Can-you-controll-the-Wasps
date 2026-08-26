@@ -1,0 +1,75 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
+
+[node name="SeasonBar" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_seasonbar")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Seasons" type="HBoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Summer" type="Label" parent="Row/Seasons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Summer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Autumn" type="Label" parent="Row/Seasons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Autumn"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Winter" type="Label" parent="Row/Seasons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Winter"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spring" type="Label" parent="Row/Seasons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Spring"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Duration" type="HBoxContainer" parent="Row"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Caption" type="Label" parent="Row/Duration"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Season Duration"
+vertical_alignment = 1
+
+[node name="Dial" type="PanelContainer" parent="Row/Duration"]
+custom_minimum_size = Vector2(56, 28)
+layout_mode = 2
+
+[node name="Time" type="Label" parent="Row/Duration/Dial"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "00:00"
+horizontal_alignment = 1
+vertical_alignment = 1

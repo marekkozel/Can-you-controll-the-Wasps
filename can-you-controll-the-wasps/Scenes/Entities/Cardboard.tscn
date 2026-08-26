@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
+[ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="3_profile"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="4_deliver"]
+
+[sub_resource type="RectangleShape2D" id="Shape_cardboard"]
+size = Vector2(44, 32)
+
+[node name="Cardboard" type="RigidBody2D"]
+mass = 0.6
+linear_damp = 2.0
+angular_damp = 3.0
+
+[node name="Fill" type="Polygon2D" parent="."]
+color = Color(0.61960787, 0.4509804, 0.27058825, 1)
+polygon = PackedVector2Array(-22, -16, 22, -16, 22, 16, -22, 16)
+
+[node name="Border" type="Line2D" parent="."]
+points = PackedVector2Array(-22, -16, 22, -16, 22, 16, -22, 16)
+closed = true
+width = 2.0
+default_color = Color(0.4117647, 0.28627452, 0.15686275, 1)
+
+[node name="Crease" type="Line2D" parent="."]
+points = PackedVector2Array(-22, 0, 22, 0)
+width = 1.0
+default_color = Color(0.4117647, 0.28627452, 0.15686275, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_cardboard")
+
+[node name="DraggableComponent" parent="." instance=ExtResource("2_draggable")]
+profile = ExtResource("3_profile")
+
+[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+shape = SubResource("Shape_cardboard")
+
+[node name="DeliverableComponent" parent="." instance=ExtResource("4_deliver")]
+payload = &"cardboard"
+
+[editable path="DraggableComponent"]

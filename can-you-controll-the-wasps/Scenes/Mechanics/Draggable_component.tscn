@@ -1,10 +1,12 @@
 [gd_scene format=3 uid="uid://bbfb4amhb0udc"]
 
 [ext_resource type="Script" uid="uid://dowaoheyawwob" path="res://Scripts/Mechanics/draggable_component.gd" id="1_jh6ac"]
+[ext_resource type="Resource" path="res://Resources/DragProfiles/default.tres" id="2_profile"]
 
 [node name="DraggableComponent" type="Area2D" unique_id=1427568941]
 script = ExtResource("1_jh6ac")
+profile = ExtResource("2_profile")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1834313657]
 
-[connection signal="input_event" from="." to="." method="_grabbed"]
+[connection signal="input_event" from="." to="." method="_on_input_event"]

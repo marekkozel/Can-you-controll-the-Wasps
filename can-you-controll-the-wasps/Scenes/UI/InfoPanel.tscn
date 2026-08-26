@@ -1,0 +1,132 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
+
+[node name="InfoPanel" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_collapsible")
+collapse_side = 0
+
+[node name="Body" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Body"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Body/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "HUD  /  INFO"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+
+[node name="Stats" type="GridContainer" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="CardboardKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Cardboard"
+
+[node name="CardboardValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "0"
+horizontal_alignment = 2
+
+[node name="FoodKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Food"
+
+[node name="FoodValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "0"
+horizontal_alignment = 2
+
+[node name="WaspsKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Wasps"
+
+[node name="WaspsValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "0"
+horizontal_alignment = 2
+
+[node name="WorkersKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Workers"
+
+[node name="WorkersValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "0"
+horizontal_alignment = 2
+
+[node name="NoteDivider" type="HSeparator" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+
+[node name="Note" type="Label" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Switches with info.
+
+When you press, HUD / info is displayed here in this box."
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ToggleButton" type="Button" parent="Body"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -30.0
+offset_top = 12.0
+offset_right = 0.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+text = "<"

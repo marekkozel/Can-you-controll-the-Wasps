@@ -1,0 +1,153 @@
+@tool
+class_name Hive
+extends Node2D
+
+# 中央蜂巢 / the hive. 按 layout + radius 生成一片六边形格子。
+# 生成出来的格子不设 owner，所以不会被存进 Hive.tscn，场景文件保持干净。
+
+signal cell_clicked(cell: HexCell)
+signal cell_hover_changed(cell: HexCell, is_hovered: bool)
+signal cell_progress_changed(cell: HexCell, progress: int, required: int)
+signal cell_built(cell: HexCell)
+signal cell_egg_laid(cell: HexCell)
+signal cell_larva_hatched(cell: HexCell)
+signal cell_larva_hungry(cell: HexCell)
+signal cell_larva_starved(cell: HexCell)
+signal cell_cleaned(cell: HexCell)
+
+const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
+
+## 改这个资源，整片网格实时重建
+@export var layout: HexLayout = null:
+	set(value):
+		_disconnect_layout()
+		layout = value
+		_connect_layout()
+		_request_rebuild()
+
+## 半径。格子数 = 3N(N+1)+1
+@export_range(0, 8, 1) var radius: int = 3:
+	set(value):
+		radius = value
+		_request_rebuild()
+
+var _cells: Dictionary[Vector2i, HexCell] = {}
+
+@onready var _container: Node2D = $HexGrid/Cells
+
+
+func _ready() -> void:
+	_connect_layout()
+	rebuild()
+
+
+func rebuild() -> void:
+	if _container == null:
+		return
+
+	_clear()
+	if layout == null:
+		layout = HexLayout.new()
+
+	for coord in HexLayout.hex_area(radius):
+		var cell: HexCell = HEX_CELL_SCENE.instantiate()
+		_container.add_child(cell)  # 先入树，setup() 要用 @onready 拿到的子节点
+		cell.setup(layout, coord)
+		cell.clicked.connect(_on_cell_clicked)
+		cell.hover_changed.connect(_on_cell_hover_changed)
+		cell.progress_changed.connect(_on_cell_progress_changed)
+		cell.built.connect(_on_cell_built)
+		cell.egg_laid.connect(_on_cell_egg_laid)
+		cell.larva_hatched.connect(func(c): cell_larva_hatched.emit(c))
+		cell.larva_hungry.connect(func(c): cell_larva_hungry.emit(c))
+		cell.larva_starved.connect(func(c): cell_larva_starved.emit(c))
+		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
+		_cells[coord] = cell
+
+
+func get_cell(coord: Vector2i) -> HexCell:
+	return _cells.get(coord)
+
+
+# 全局坐标 -> 格子，纸板落点判定用
+func cell_at_global(global_point: Vector2) -> HexCell:
+	if layout == null:
+		return null
+	var local_point: Vector2 = _container.to_local(global_point)
+	return get_cell(layout.local_to_axial(local_point))
+
+
+func all_coords() -> Array:
+	return _cells.keys()
+
+
+func count_content(kind: HexCell.Content) -> int:
+	var total: int = 0
+	for cell in _cells.values():
+		if cell.content == kind:
+			total += 1
+	return total
+
+
+# 有幼虫正饿着的格子，喂食提示用
+func hungry_cells() -> Array:
+	return _cells.values().filter(func(c): return c.content == HexCell.Content.LARVA and c.is_hungry_larva())
+
+
+func egg_count() -> int:
+	var total: int = 0
+	for cell in _cells.values():
+		if cell.content == HexCell.Content.EGG:
+			total += 1
+	return total
+
+
+func built_count() -> int:
+	var total: int = 0
+	for cell in _cells.values():
+		if cell.is_built:
+			total += 1
+	return total
+
+
+func _clear() -> void:
+	_cells.clear()
+	for child in _container.get_children():
+		_container.remove_child(child)
+		child.queue_free()
+
+
+func _request_rebuild() -> void:
+	if not is_node_ready():  # setter 可能在 _ready 之前就跑了
+		return
+	rebuild()
+
+
+func _connect_layout() -> void:
+	if layout != null and not layout.changed.is_connected(_request_rebuild):
+		layout.changed.connect(_request_rebuild)
+
+
+func _disconnect_layout() -> void:
+	if layout != null and layout.changed.is_connected(_request_rebuild):
+		layout.changed.disconnect(_request_rebuild)
+
+
+func _on_cell_clicked(cell: HexCell) -> void:
+	cell_clicked.emit(cell)
+
+
+func _on_cell_hover_changed(cell: HexCell, is_hovered: bool) -> void:
+	cell_hover_changed.emit(cell, is_hovered)
+
+
+func _on_cell_progress_changed(cell: HexCell, progress: int, required: int) -> void:
+	cell_progress_changed.emit(cell, progress, required)
+
+
+func _on_cell_built(cell: HexCell) -> void:
+	cell_built.emit(cell)
+
+
+func _on_cell_egg_laid(cell: HexCell) -> void:
+	cell_egg_laid.emit(cell)

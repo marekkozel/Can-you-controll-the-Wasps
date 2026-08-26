@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="DragProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/drag_profile.gd" id="1_dragprofile"]
+
+[resource]
+script = ExtResource("1_dragprofile")
+stiffness = 10.0
+damping = 0.18
+max_speed = 1400.0
+mass_scaling = true
+throw_multiplier = 0.6
+max_throw_speed = 1200.0
+wobble_multiplier = 0.0005
+max_wobble_angle = 0.25
+rotation_stiffness = 12.0
+spin_retention = 0.2
+drag_linear_damp = -1.0
+grab_z_offset = 10

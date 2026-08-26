@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/juice_component.gd" id="1_juice"]
+
+[sub_resource type="Gradient" id="Gradient_dot"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.55, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_dot"]
+gradient = SubResource("Gradient_dot")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="JuiceComponent" type="Node2D"]
+script = ExtResource("1_juice")
+
+[node name="Burst" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 18
+texture = SubResource("GradientTexture2D_dot")
+lifetime = 0.55
+one_shot = true
+explosiveness = 1.0
+emission_shape = 1
+emission_sphere_radius = 10.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 70.0
+initial_velocity_max = 170.0
+damping_min = 90.0
+damping_max = 140.0
+scale_amount_min = 0.15
+scale_amount_max = 0.4
+color = Color(1, 0.92156863, 0.6156863, 1)

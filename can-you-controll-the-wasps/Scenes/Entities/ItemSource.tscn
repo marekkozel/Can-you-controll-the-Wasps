@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Entities/item_source.gd" id="1_source"]
+
+[node name="ItemSource" type="Node2D"]
+script = ExtResource("1_source")
+max_pieces = 3
+respawn_delay = 2.0
+scatter_radius = 48.0
+
+[node name="Ring" type="Line2D" parent="."]
+points = PackedVector2Array(60, 0, 42, 42, 0, 60, -42, 42, -60, 0, -42, -42, 0, -60, 42, -42)
+closed = true
+width = 1.0
+default_color = Color(0.65, 0.5, 0.35, 0.25)

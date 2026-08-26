@@ -1,0 +1,87 @@
+@tool
+class_name HungerComponent
+extends Node
+
+# 饥饿循环 / hunger cycle：饱腹 → 饥饿窗口 → 窗口内没喂满就饿死。
+# 只管状态和计时，长什么样交给持有方。
+
+signal became_hungry
+signal fed(current: int, required: int)
+signal satisfied
+signal starved
+
+enum State { SATIATED, HUNGRY, DEAD }
+
+## 吃饱之后多久再饿
+@export_range(1.0, 600.0, 1.0) var satiated_duration: float = 60.0
+## 饿了之后有多久可以补救
+@export_range(1.0, 120.0, 1.0) var hunger_window: float = 20.0
+## 喂饱要几单位
+@export_range(1, 10, 1) var required_units: int = 3
+
+@export var active: bool = true:
+	set(value):
+		active = value
+		set_process(active and state != State.DEAD and not Engine.is_editor_hint())
+
+var state: State = State.SATIATED
+var units: int = 0
+var time_left: float = 0.0
+
+
+func _ready() -> void:
+	time_left = satiated_duration
+	set_process(active and not Engine.is_editor_hint())
+
+
+func is_hungry() -> bool:
+	return state == State.HUNGRY
+
+
+# 饥饿窗口剩余比例 0~1，不在饥饿状态返回 0
+func hunger_ratio() -> float:
+	if state != State.HUNGRY:
+		return 0.0
+	return clampf(time_left / maxf(hunger_window, 0.01), 0.0, 1.0)
+
+
+# 喂一口。只有饿着的时候才吃，返回是否接受
+func feed(amount: int = 1) -> bool:
+	if state != State.HUNGRY or amount <= 0:
+		return false
+
+	units = mini(units + amount, required_units)
+	fed.emit(units, required_units)
+	if units >= required_units:
+		_become_satiated()
+	return true
+
+
+func _process(delta: float) -> void:
+	if state == State.DEAD:
+		return
+
+	time_left -= delta
+	if time_left > 0.0:
+		return
+
+	if state == State.SATIATED:
+		state = State.HUNGRY
+		units = 0
+		time_left = hunger_window
+		became_hungry.emit()
+		return
+
+	# 窗口走完还没喂满，攒的份数不保留
+	state = State.DEAD
+	units = 0
+	time_left = 0.0
+	set_process(false)
+	starved.emit()
+
+
+func _become_satiated() -> void:
+	state = State.SATIATED
+	units = 0
+	time_left = satiated_duration
+	satisfied.emit()
