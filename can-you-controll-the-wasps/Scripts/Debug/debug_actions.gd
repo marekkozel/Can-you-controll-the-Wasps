@@ -9,6 +9,8 @@ signal action_done(message: String)
 const HIVE_GROUP: StringName = &"hive"
 const ENTITIES_GROUP: StringName = &"entities"
 const SOURCE_GROUP: StringName = &"item_source"
+const WASP_GROUP: StringName = &"wasps"
+const DIRECTOR_GROUP: StringName = &"betrayal_director"
 
 const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
@@ -120,6 +122,38 @@ func spawn_enemy(count: int = 1) -> void:
 		enemy.global_position = spot
 		enemy.set_wander_home(spot)
 	_report("spawned %d enemies" % count)
+
+
+# ---------------- 叛乱 / betrayal ----------------
+
+func director() -> BetrayalDirector:
+	return get_tree().get_first_node_in_group(DIRECTOR_GROUP) as BetrayalDirector
+
+
+func awaken_false_queen() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		_report("no BetrayalDirector in the scene")
+		return
+	var queen: Wasp = d.awaken_now()
+	_report("no candidate to turn" if queen == null else "a false queen is among them")
+
+
+# 只给调试用。正式玩法里玩家只能靠行为差异判断
+# Debug only - in play you are meant to work it out from behaviour alone.
+func reveal_allegiances() -> void:
+	var lines: PackedStringArray = PackedStringArray()
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp == null:
+			continue
+		lines.append("%s %s @%s" % [
+			wasp.variant().variant.display_name if wasp.variant().variant != null else "?",
+			AllegianceComponent.State.keys()[wasp.allegiance().state],
+			wasp.global_position.round()])
+	for line in lines:
+		print("[debug] ", line)
+	_report("dumped %d wasps to the console" % lines.size())
 
 
 func kill_all_enemies() -> void:

@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Debug/debug_panel.gd" id="1_panel"]
 [ext_resource type="Script" path="res://Scripts/Debug/debug_actions.gd" id="2_actions"]
 [ext_resource type="Script" path="res://Scripts/Debug/perf_readout.gd" id="3_perf"]
+[ext_resource type="Script" path="res://Scripts/Debug/allegiance_markers.gd" id="4_markers"]
 
 [node name="DebugPanel" type="CanvasLayer"]
 layer = 10
@@ -10,6 +11,9 @@ script = ExtResource("1_panel")
 
 [node name="DebugActions" type="Node" parent="."]
 script = ExtResource("2_actions")
+
+[node name="Markers" type="Node2D" parent="."]
+script = ExtResource("4_markers")
 
 [node name="Root" type="Control" parent="."]
 anchors_preset = 15
@@ -63,7 +67,7 @@ theme_override_constants/separation = 6
 [node name="Title" type="Label" parent="Root/Panel/Margin/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "DEBUG  (F1 panel / F11 perf)"
+text = "DEBUG  (F1 panel / F11 perf / M markers)"
 
 [node name="Divider" type="HSeparator" parent="Root/Panel/Margin/Content"]
 layout_mode = 2

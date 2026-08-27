@@ -10,6 +10,7 @@ extends Label
 @export_range(0.05, 2.0, 0.05) var refresh_interval: float = 0.25
 
 const ENTITIES_GROUP: StringName = &"entities"
+const WASP_GROUP: StringName = &"wasps"
 const CARRIABLE_GROUP: StringName = &"carriable"
 const ENEMY_GROUP: StringName = &"Enemy"
 
@@ -47,22 +48,23 @@ func _refresh() -> void:
 		int(Performance.get_monitor(Performance.PHYSICS_2D_ACTIVE_OBJECTS)),
 		int(Performance.get_monitor(Performance.PHYSICS_2D_COLLISION_PAIRS)),
 		int(Performance.get_monitor(Performance.PHYSICS_2D_ISLAND_COUNT))])
-	lines.append("wasps %d   items %d   enemies %d" % [_wasp_count(), _group_count(CARRIABLE_GROUP), _group_count(ENEMY_GROUP)])
+	lines.append("wasps %d   items %d   enemies %d" % [_group_count(WASP_GROUP), _group_count(CARRIABLE_GROUP), _group_count(ENEMY_GROUP)])
+	lines.append(_allegiance_line())
 	lines.append("static mem %.1f MB" % (Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0))
 
 	text = "
 ".join(lines)
 
 
-func _wasp_count() -> int:
-	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
-	if host == null:
-		return 0
-	var total: int = 0
-	for child in host.get_children():
-		if child is Wasp:
-			total += 1
-	return total
+# 调试用。正式玩法里这一行就是答案，别留给玩家看
+# Debug only: this line is the answer sheet.
+func _allegiance_line() -> String:
+	var tally: Array[int] = [0, 0, 0, 0]
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null:
+			tally[wasp.allegiance().state] += 1
+	return "loyal %d  queen %d  rebel %d  subdued %d" % [tally[0], tally[1], tally[2], tally[3]]
 
 
 func _group_count(group: StringName) -> int:

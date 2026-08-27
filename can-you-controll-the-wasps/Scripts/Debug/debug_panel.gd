@@ -15,6 +15,9 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F8  Reset hive", "method": "reset_hive", "key": KEY_F8},
 	{"label": "F9  Spawn enemy", "method": "spawn_enemy", "key": KEY_F9},
 	{"label": "F10 Kill all enemies", "method": "kill_all_enemies", "key": KEY_F10},
+	{"label": "F12 Awaken a false queen", "method": "awaken_false_queen", "key": KEY_F12},
+	{"label": "M   Toggle allegiance markers", "method": "toggle_markers", "key": KEY_M},
+	{"label": "     Reveal allegiances", "method": "reveal_allegiances", "key": KEY_NONE},
 	{"label": "     Spawn cardboard", "method": "spawn_cardboard", "key": KEY_NONE},
 	{"label": "     Spawn food", "method": "spawn_food", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
@@ -27,6 +30,7 @@ const ACTIONS: Array[Dictionary] = [
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = $Root/Panel
 @onready var _perf: PanelContainer = $Root/Perf
+@onready var _markers: Node2D = $Markers
 
 
 func _ready() -> void:
@@ -75,6 +79,9 @@ func _build_buttons() -> void:
 # 少数要带参数的在这里转一下 / the few that need arguments are routed here
 func _run(method: String) -> void:
 	match method:
+		"toggle_markers":
+			_markers.visible = not _markers.visible
+			_on_action_done("allegiance markers %s" % ("on" if _markers.visible else "off"))
 		"spawn_cardboard":
 			_actions.spawn_items(&"cardboard", 3)
 		"spawn_food":
