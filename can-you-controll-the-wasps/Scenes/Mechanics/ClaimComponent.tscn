@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://d0p4alpsne4iq" path="res://Scripts/Mechanics/claim_component.gd" id="1_claim"]
+
+[node name="ClaimComponent" type="Node"]
+script = ExtResource("1_claim")

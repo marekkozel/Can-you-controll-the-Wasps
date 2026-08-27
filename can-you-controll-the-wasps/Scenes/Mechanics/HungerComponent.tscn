@@ -4,5 +4,5 @@
 
 [node name="HungerComponent" type="Node" unique_id=1010380144]
 script = ExtResource("1_hunger")
-satiated_duration = 15.0
-hunger_window = 15.0
+satiated_duration = 25.0
+hunger_window = 60.0

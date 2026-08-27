@@ -26,19 +26,28 @@ func _ready() -> void:
 
 
 func _on_released() -> void:
+	try_deliver()
+
+
+# 黄蜂放货也走这里，和玩家松手是同一条路径 / wasps drop through this too
+# amount_override 让搬运方把自己的载重算进去；玩家松手走默认值
+# The carrier passes its own capacity; a player release keeps the item's own amount.
+func try_deliver(amount_override: int = -1) -> bool:
 	var body: Node2D = get_parent() as Node2D
 	if body == null:
-		return
+		return false
 
 	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
 	if hive == null:
-		return
+		return false
 
 	# 没落在格子上或格子不收，东西留原地还能再拖 / not accepted, leave it where it is
 	var cell: HexCell = hive.cell_at_global(body.global_position)
-	if cell == null or not cell.deliver(payload, amount):
-		return
+	var units: int = amount if amount_override < 1 else amount_override
+	if cell == null or not cell.deliver(payload, units):
+		return false
 
 	delivered.emit(cell)
 	if consume_on_deliver:
 		body.queue_free()
+	return true

@@ -1,8 +1,10 @@
 class_name Enemy
 extends RigidBody2D
 
-# 敌人 / an enemy. 在刷新带里游荡，鼠标点一下就打死 / wanders the spawn band, one click kills it.
+# 敌人 / an enemy. 平时不存在，由 RaidDirector 成批放进来直扑巢室 / raiders, not scenery.
+# 鼠标点一下能打，工蜂也能叮（take_damage）/ clickable by the player, stingable by wasps.
 # 用刚体本身的 input_event 收点击，不额外挂 Area2D / the body is pickable, no extra Area2D.
+# 游荡和入侵是互斥的：两边都写 linear_velocity / wander and raid both write linear_velocity.
 
 signal killed(enemy: Enemy)
 
@@ -26,21 +28,19 @@ signal killed(enemy: Enemy)
 @export var hover_tint: Color = Color(1.35, 1.1, 1.1)
 
 @onready var _visual: Node2D = $Visual
-@onready var _wings: Node2D = $Visual/Wings
 @onready var _health: HealthComponent = $HealthComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _wander: WanderComponent = $WanderComponent
+@onready var _raid: RaidComponent = $RaidComponent
 
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
 
-var _t: float = 0.0
 var _is_dead: bool = false
 
 
 func _ready() -> void:
 	_juice.target = _visual
-	_t = randf() * TAU
 
 	input_pickable = true
 	input_event.connect(_on_input_event)
@@ -57,6 +57,21 @@ func _ready() -> void:
 
 func set_wander_home(position: Vector2) -> void:
 	_wander.set_home(position)
+
+
+# 入场即开打。exit_point 是收兵时往哪撤 / enters raiding; exit_point is where it leaves from
+func begin_raid(exit_point: Vector2 = Vector2.INF) -> void:
+	_wander.enabled = false
+	_raid.begin(exit_point)
+
+
+# 时间到了收兵，路上照样能被打死 / called off; still killable on the way out
+func retreat() -> void:
+	_raid.retreat()
+
+
+func is_raiding() -> bool:
+	return not _is_dead and _raid.is_raiding()
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -99,6 +114,7 @@ func _on_died(_from: Vector2) -> void:
 	_is_dead = true
 	input_pickable = false
 	_wander.enabled = false
+	_raid.stop()  # 不停的话组件会继续给冻住的尸体写速度 / else it steers a frozen corpse
 	_visual.modulate = Color.WHITE
 	set_process(false)
 	killed.emit(self)
@@ -127,9 +143,3 @@ func _hit_stop() -> void:
 	await get_tree().create_timer(hit_stop_duration, true, false, true).timeout
 	Engine.time_scale = previous
 	_hit_stop_busy = false
-
-
-func _process(delta: float) -> void:
-	_t += delta
-	var speed: float = linear_velocity.length()
-	_wings.scale.y = 0.3 + 0.7 * absf(sin(_t * 26.0 * (1.0 + speed / 150.0)))

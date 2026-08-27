@@ -1,3 +1,4 @@
+class_name DraggableComponent
 extends Area2D
 
 # 物理拖拽 / physics drag. 挂到任意 RigidBody2D 下就能拖。
@@ -24,6 +25,28 @@ var _saved_gravity_scale: float = 1.0
 var _saved_linear_damp: float = 0.0
 var _saved_z_index: int = 0
 var _saved_ccd: int = RigidBody2D.CCD_MODE_DISABLED
+
+
+# 黄蜂要知道一件东西是不是玩家正拿着 / wasps must not yank cargo out of the player's hand
+func is_grabbed() -> bool:
+	return _is_grabbed
+
+
+# 场上有没有东西正被拖着 / is anything under the cursor right now
+static func is_dragging() -> bool:
+	return _active_component != null
+
+
+# 给生成方用：刚造出来的物件直接落到光标上，跳过"先点中它"这一步
+# For spawners: a freshly minted piece goes straight onto the cursor, no click needed.
+# 抓在正中心，不留 _grab_offset / dead-centre grab, no offset to preserve
+func grab_at_cursor() -> bool:
+	if _body == null or _is_grabbed or _active_component != null:
+		return false
+	_body.global_position = get_global_mouse_position()
+	_grab()
+	_grab_offset = Vector2.ZERO
+	return true
 
 
 func _ready() -> void:
