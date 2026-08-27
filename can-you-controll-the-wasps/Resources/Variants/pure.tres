@@ -1,14 +1,6 @@
-[gd_resource type="Resource" script_class="WaspVariant" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WaspVariant" format=3 uid="uid://vo7vuwqoub5"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/wasp_variant.gd" id="1_variant"]
+[ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="1_variant"]
 
 [resource]
 script = ExtResource("1_variant")
-display_name = "Amber"
-body_color = Color(0.95, 0.76, 0.18, 1)
-stripe_color = Color(0.16, 0.13, 0.1, 1)
-head_color = Color(0.24, 0.2, 0.15, 1)
-outline_color = Color(0.36, 0.28, 0.12, 1)
-speed_multiplier = 1.0
-carry_units = 1
-build_units = 1

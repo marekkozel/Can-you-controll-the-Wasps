@@ -114,6 +114,31 @@ func spawn_wasp(count: int = 1) -> void:
 	_report("spawned %d wasps" % count)
 
 
+# 立刻叫一波入侵 / call a raid in right now
+func start_raid() -> void:
+	var d: RaidDirector = RaidDirector.find(get_tree())
+	if d == null:
+		_report("no RaidDirector in the scene")
+		return
+	if not d.start_now():
+		_report("raid already running, %d raiders left" % d.raiders_left())
+		return
+	_report("raid %d incoming: %d raiders" % [d.wave, d.raiders_left()])
+
+
+# 收兵。测试警报解除之后蜂群会不会回去干活 / call it off, to test that the swarm goes back to work
+func end_raid() -> void:
+	var d: RaidDirector = RaidDirector.find(get_tree())
+	if d == null or not d.is_raiding():
+		_report("no raid running")
+		return
+	for node in get_tree().get_nodes_in_group("Enemy"):
+		if node.has_method("retreat"):
+			node.retreat()
+	_report("raid called off")
+
+
+# 不参与入侵的散兵，用来单测点击击杀 / a loose wanderer, for testing the click kill
 func spawn_enemy(count: int = 1) -> void:
 	for i in count:
 		var enemy: Enemy = ENEMY_SCENE.instantiate()

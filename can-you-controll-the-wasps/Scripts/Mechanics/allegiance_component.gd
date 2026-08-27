@@ -28,6 +28,18 @@ var brood_variant: WaspVariant = null
 ## Ramps with each generation: the better you are, the harder you make it.
 var cunning: float = 0.0
 
+## 入侵警报响起时肯跑多远来支援，作为 Defend 集结半径的倍率。
+## 这是又一条线索，所以又一次必须是**重叠的区间**：普通工蜂 LOYAL_RALLY，
+## 伪王后 QUEEN_RALLY，两段有交叠，而且 cunning 越高她越往正常那头靠。
+## 不重叠的话玩家只要制造一次入侵，不动的那只就是她——那不是推理，是探测器。
+## Rally eagerness, used as a multiplier on Defend's alert radius. Another tell, so
+## another pair of OVERLAPPING bands - a clean split would turn one raid into a detector.
+var rally_bias: float = 1.0
+
+## 集结意愿的两条区间，必须交叠 / the two bands, and they must overlap
+const LOYAL_RALLY: Vector2 = Vector2(0.75, 1.0)
+const QUEEN_RALLY: Vector2 = Vector2(0.60, 0.90)
+
 # 冷却放在组件上而不是行为树任务里：任务只有被 tick 到才跑，
 # 而伪王后可能正卡在一段长达几秒的 Gather 里，冷却会跑得比真实时间慢
 # Cooldowns live here, not in the BT tasks: a task only ticks while reached, and the
@@ -37,6 +49,10 @@ var sabotage_cooldown: float = 0.0
 ## 伪王后下的"去那边闹一下"指令，调虎离山用 / a decoy order from the queen
 var decoy_cell: Node = null
 var decoy_until: float = 0.0
+
+
+func _ready() -> void:
+	rally_bias = randf_range(LOYAL_RALLY.x, LOYAL_RALLY.y)
 
 
 func _process(delta: float) -> void:
@@ -76,7 +92,13 @@ func works() -> bool:
 
 
 func make_false_queen() -> void:
+	rally_bias = randf_range(QUEEN_RALLY.x, QUEEN_RALLY.y)
 	_change(State.FALSE_QUEEN)
+
+
+# 老练的她集结得跟普通工蜂一样积极 / cunning pulls her back into the normal band
+func rally_reach() -> float:
+	return lerpf(rally_bias, 1.0, clampf(cunning, 0.0, 1.0))
 
 
 func make_rebel(from_mother) -> void:

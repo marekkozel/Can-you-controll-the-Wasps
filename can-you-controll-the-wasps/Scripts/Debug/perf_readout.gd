@@ -49,12 +49,22 @@ func _refresh() -> void:
 		int(Performance.get_monitor(Performance.PHYSICS_2D_COLLISION_PAIRS)),
 		int(Performance.get_monitor(Performance.PHYSICS_2D_ISLAND_COUNT))])
 	lines.append("wasps %d   items %d   enemies %d" % [_group_count(WASP_GROUP), _group_count(CARRIABLE_GROUP), _group_count(ENEMY_GROUP)])
+	lines.append(_raid_line())
 	lines.append(_allegiance_line())
 	lines.append(_unrest_line())
 	lines.append("static mem %.1f MB" % (Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0))
 
 	text = "
 ".join(lines)
+
+
+func _raid_line() -> String:
+	var director: RaidDirector = RaidDirector.find(get_tree())
+	if director == null:
+		return "raid --"
+	if director.is_raiding():
+		return "RAID w%d  %d raiders  %.0fs left" % [director.wave, director.raiders_left(), director.time_left()]
+	return "raid w%d clear  next in %.0fs" % [director.wave, director.time_to_next()]
 
 
 # 调试用。正式玩法里这一行就是答案，别留给玩家看
