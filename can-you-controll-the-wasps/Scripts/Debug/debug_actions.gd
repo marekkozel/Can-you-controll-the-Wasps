@@ -9,6 +9,8 @@ signal action_done(message: String)
 const HIVE_GROUP: StringName = &"hive"
 const ENTITIES_GROUP: StringName = &"entities"
 const SOURCE_GROUP: StringName = &"item_source"
+const WASP_GROUP: StringName = &"wasps"
+const DIRECTOR_GROUP: StringName = &"betrayal_director"
 
 const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
@@ -112,6 +114,31 @@ func spawn_wasp(count: int = 1) -> void:
 	_report("spawned %d wasps" % count)
 
 
+# 立刻叫一波入侵 / call a raid in right now
+func start_raid() -> void:
+	var d: RaidDirector = RaidDirector.find(get_tree())
+	if d == null:
+		_report("no RaidDirector in the scene")
+		return
+	if not d.start_now():
+		_report("raid already running, %d raiders left" % d.raiders_left())
+		return
+	_report("raid %d incoming: %d raiders" % [d.wave, d.raiders_left()])
+
+
+# 收兵。测试警报解除之后蜂群会不会回去干活 / call it off, to test that the swarm goes back to work
+func end_raid() -> void:
+	var d: RaidDirector = RaidDirector.find(get_tree())
+	if d == null or not d.is_raiding():
+		_report("no raid running")
+		return
+	for node in get_tree().get_nodes_in_group("Enemy"):
+		if node.has_method("retreat"):
+			node.retreat()
+	_report("raid called off")
+
+
+# 不参与入侵的散兵，用来单测点击击杀 / a loose wanderer, for testing the click kill
 func spawn_enemy(count: int = 1) -> void:
 	for i in count:
 		var enemy: Enemy = ENEMY_SCENE.instantiate()
@@ -120,6 +147,63 @@ func spawn_enemy(count: int = 1) -> void:
 		enemy.global_position = spot
 		enemy.set_wander_home(spot)
 	_report("spawned %d enemies" % count)
+
+
+# ---------------- 叛乱 / betrayal ----------------
+
+func director() -> BetrayalDirector:
+	return get_tree().get_first_node_in_group(DIRECTOR_GROUP) as BetrayalDirector
+
+
+func awaken_false_queen() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		_report("no BetrayalDirector in the scene")
+		return
+	var queen: Wasp = d.awaken_now()
+	_report("no candidate to turn" if queen == null else "a false queen is among them")
+
+
+# 只给调试用。正式玩法里玩家只能靠行为差异判断
+# Debug only - in play you are meant to work it out from behaviour alone.
+func reveal_allegiances() -> void:
+	var lines: PackedStringArray = PackedStringArray()
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp == null:
+			continue
+		var a: AllegianceComponent = wasp.allegiance()
+		lines.append("%-8s %-12s betrayal %.2f%s @%s" % [
+			wasp.variant().variant.display_name if wasp.variant().variant != null else "?",
+			AllegianceComponent.State.keys()[a.state],
+			a.betrayal,
+			"  ON STRIKE" if a.is_on_strike() else "",
+			wasp.global_position.round()])
+	for line in lines:
+		print("[debug] ", line)
+	_report("dumped %d wasps to the console" % lines.size())
+
+
+# 不安值得靠处决才能推上去，调参数时太慢了 / nudging it directly beats staging executions
+func bump_unrest() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		_report("no BetrayalDirector in the scene")
+		return
+	d.add_unrest(0.2)
+	_report("unrest %.2f" % d.unrest)
+
+
+func clear_unrest() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		return
+	d.add_unrest(-1.0)
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null:
+			wasp.allegiance().betrayal = 0.0
+	_report("unrest and every grudge cleared")
 
 
 func kill_all_enemies() -> void:

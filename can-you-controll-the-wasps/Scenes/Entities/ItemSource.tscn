@@ -1,12 +1,11 @@
-[gd_scene format=3 uid="uid://c3eitlvpt6vua"]
+[gd_scene load_steps=3 format=3 uid="uid://c3eitlvpt6vua"]
 
 [ext_resource type="Script" uid="uid://du51ivy17il51" path="res://Scripts/Entities/item_source.gd" id="1_source"]
+[ext_resource type="Texture2D" uid="uid://c5oun1w4h2bca" path="res://Assets/Entities/item_source.png" id="ph_item_source"]
 
 [node name="ItemSource" type="Node2D" unique_id=910786583]
 script = ExtResource("1_source")
 
-[node name="Ring" type="Line2D" parent="." unique_id=1226030322]
-points = PackedVector2Array(60, 0, 42, 42, 0, 60, -42, 42, -60, 0, -42, -42, 0, -60, 42, -42)
-closed = true
-width = 1.0
-default_color = Color(0.65, 0.5, 0.35, 0.25)
+[node name="Ring" type="Sprite2D" parent="." unique_id=1226030322]
+self_modulate = Color(0.65, 0.5, 0.35, 0.25)
+texture = ExtResource("ph_item_source")

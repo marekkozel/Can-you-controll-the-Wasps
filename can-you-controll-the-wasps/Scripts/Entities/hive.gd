@@ -16,6 +16,7 @@ signal cell_larva_starved(cell: HexCell)
 signal cell_sealed(cell: HexCell)
 signal cell_wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cell_cleaned(cell: HexCell)
+signal cell_occupant_destroyed(cell: HexCell)
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
@@ -66,6 +67,7 @@ func rebuild() -> void:
 		cell.sealed.connect(func(c): cell_sealed.emit(c))
 		cell.wasp_emerged.connect(func(c, w): cell_wasp_emerged.emit(c, w))
 		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
+		cell.occupant_destroyed.connect(func(c): cell_occupant_destroyed.emit(c))
 		_cells[coord] = cell
 
 
@@ -95,6 +97,17 @@ func count_content(kind: HexCell.Content) -> int:
 		if cell.content == kind:
 			total += 1
 	return total
+
+
+# 还收不收这种货。黄蜂拿之前先问一声，否则巢满了还会不停搬
+# Wasps ask before hauling - otherwise a full hive still gets a permanent supply run.
+func accepts(payload: StringName) -> bool:
+	match payload:
+		&"cardboard":
+			return built_count() < _cells.size()
+		&"food":
+			return not hungry_cells().is_empty()
+	return false
 
 
 # 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now

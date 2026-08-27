@@ -13,8 +13,15 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F6  Feed all larvae", "method": "feed_all_larvae", "key": KEY_F6},
 	{"label": "F7  Time scale x2", "method": "cycle_time_scale", "key": KEY_F7},
 	{"label": "F8  Reset hive", "method": "reset_hive", "key": KEY_F8},
-	{"label": "F9  Spawn enemy", "method": "spawn_enemy", "key": KEY_F9},
+	{"label": "F9  Start a raid", "method": "start_raid", "key": KEY_F9},
 	{"label": "F10 Kill all enemies", "method": "kill_all_enemies", "key": KEY_F10},
+	{"label": "F12 Awaken a false queen", "method": "awaken_false_queen", "key": KEY_F12},
+	{"label": "M   Toggle allegiance markers", "method": "toggle_markers", "key": KEY_M},
+	{"label": "     Call off the raid", "method": "end_raid", "key": KEY_NONE},
+	{"label": "     Spawn loose enemy", "method": "spawn_enemy", "key": KEY_NONE},
+	{"label": "     Reveal allegiances", "method": "reveal_allegiances", "key": KEY_NONE},
+	{"label": "     Unrest +0.2", "method": "bump_unrest", "key": KEY_NONE},
+	{"label": "     Clear unrest + grudges", "method": "clear_unrest", "key": KEY_NONE},
 	{"label": "     Spawn cardboard", "method": "spawn_cardboard", "key": KEY_NONE},
 	{"label": "     Spawn food", "method": "spawn_food", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
@@ -25,6 +32,9 @@ const ACTIONS: Array[Dictionary] = [
 @onready var _buttons: VBoxContainer = $Root/Panel/Margin/Content/Buttons
 @onready var _status: Label = $Root/Panel/Margin/Content/Status
 @onready var _root: Control = $Root
+@onready var _panel: PanelContainer = $Root/Panel
+@onready var _perf: PanelContainer = $Root/Perf
+@onready var _markers: Node2D = $Markers
 
 
 func _ready() -> void:
@@ -35,7 +45,8 @@ func _ready() -> void:
 
 	_actions.action_done.connect(_on_action_done)
 	_build_buttons()
-	_root.visible = false
+	# 性能读数常驻，按钮那一坨太占地方所以默认收起 / perf stays up, the button stack does not
+	_panel.visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -43,7 +54,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event.keycode == KEY_F1:
-		_root.visible = not _root.visible
+		_panel.visible = not _panel.visible
+		get_viewport().set_input_as_handled()
+		return
+
+	if event.keycode == KEY_F11:
+		_perf.visible = not _perf.visible
 		get_viewport().set_input_as_handled()
 		return
 
@@ -67,6 +83,9 @@ func _build_buttons() -> void:
 # 少数要带参数的在这里转一下 / the few that need arguments are routed here
 func _run(method: String) -> void:
 	match method:
+		"toggle_markers":
+			_markers.visible = not _markers.visible
+			_on_action_done("allegiance markers %s" % ("on" if _markers.visible else "off"))
 		"spawn_cardboard":
 			_actions.spawn_items(&"cardboard", 3)
 		"spawn_food":

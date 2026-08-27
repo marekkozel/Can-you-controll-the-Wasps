@@ -1,57 +1,83 @@
 [gd_resource type="BehaviorTree" format=3 uid="uid://duqipvlyjy31h"]
 
-[ext_resource type="Script" uid="uid://dnrhqurjlsmn6" path="res://ai/tasks/Defend.gd" id="1_s1byh"]
-[ext_resource type="Script" uid="uid://b63koju47hxsx" path="res://ai/tasks/Feed.gd" id="2_145ud"]
-[ext_resource type="Script" uid="uid://b4qu65pm66p1l" path="res://ai/tasks/Clean.gd" id="2_hdy6l"]
-[ext_resource type="Script" uid="uid://ddkwnm8cwuqf3" path="res://ai/tasks/Build.gd" id="3_1tk40"]
-[ext_resource type="Script" uid="uid://c0wbylkr7e7ki" path="res://ai/tasks/Betray.gd" id="3_lcywq"]
-[ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="6_1tk40"]
+[ext_resource type="Script" uid="uid://dnrhqurjlsmn6" path="res://ai/tasks/Defend.gd" id="1_defend"]
+[ext_resource type="Script" uid="uid://jumrv5jg8n1e" path="res://ai/tasks/HasCargo.gd" id="2_hascargo"]
+[ext_resource type="Script" uid="uid://0na0nqh4h573" path="res://ai/tasks/Deliver.gd" id="3_deliver"]
+[ext_resource type="Script" uid="uid://dhy87djgrcoym" path="res://ai/tasks/IsFalseQueen.gd" id="4_isfalsequeen"]
+[ext_resource type="Script" uid="uid://dnp0reamca8k4" path="res://ai/tasks/SecretLay.gd" id="5_secretlay"]
+[ext_resource type="Script" uid="uid://bo6t3wcag64oa" path="res://ai/tasks/IsRebel.gd" id="6_isrebel"]
+[ext_resource type="Script" uid="uid://b2y63ptqgun2" path="res://ai/tasks/Sabotage.gd" id="7_sabotage"]
+[ext_resource type="Script" uid="uid://sxqadvapt0mh" path="res://ai/tasks/IsGathering.gd" id="8_isgathering"]
+[ext_resource type="Script" uid="uid://bvh1l4dvi0yhc" path="res://ai/tasks/Gather.gd" id="9_gather"]
+[ext_resource type="Script" uid="uid://dfybr028ucijl" path="res://ai/tasks/Fidget.gd" id="10_fidget"]
+[ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="11_idle"]
 
-[sub_resource type="BlackboardPlan" id="BlackboardPlan_py0da"]
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_wasp"]
 
-[sub_resource type="BTAction" id="BTAction_y386t"]
-script = ExtResource("1_s1byh")
+[sub_resource type="BTAction" id="BTAction_defend"]
+script = ExtResource("1_defend")
 
-[sub_resource type="BTSequence" id="BTSequence_cbln1"]
+[sub_resource type="BTSequence" id="BTSequence_defend"]
 custom_name = "Seq - Defend"
-children = [SubResource("BTAction_y386t")]
+children = [SubResource("BTAction_defend")]
 
-[sub_resource type="BTAction" id="BTAction_37fxr"]
-script = ExtResource("2_145ud")
+[sub_resource type="BTCondition" id="BTCondition_hascargo"]
+script = ExtResource("2_hascargo")
 
-[sub_resource type="BTSequence" id="BTSequence_s1byh"]
-custom_name = "Sq - Feed"
-children = [SubResource("BTAction_37fxr")]
+[sub_resource type="BTAction" id="BTAction_deliver"]
+script = ExtResource("3_deliver")
 
-[sub_resource type="BTAction" id="BTAction_rj7pp"]
-script = ExtResource("3_1tk40")
+[sub_resource type="BTSequence" id="BTSequence_deliver"]
+custom_name = "Seq - Deliver"
+children = [SubResource("BTCondition_hascargo"), SubResource("BTAction_deliver")]
 
-[sub_resource type="BTSequence" id="BTSequence_y386t"]
-custom_name = "Sq - Build"
-children = [SubResource("BTAction_rj7pp")]
+[sub_resource type="BTCondition" id="BTCondition_isfalsequeen"]
+script = ExtResource("4_isfalsequeen")
 
-[sub_resource type="BTAction" id="BTAction_145ud"]
-script = ExtResource("2_hdy6l")
+[sub_resource type="BTAction" id="BTAction_secretlay"]
+script = ExtResource("5_secretlay")
 
-[sub_resource type="BTSequence" id="BTSequence_hdy6l"]
-custom_name = "Seq - Clean"
-children = [SubResource("BTAction_145ud")]
+[sub_resource type="BTSequence" id="BTSequence_secretlay"]
+custom_name = "Seq - Secret lay"
+children = [SubResource("BTCondition_isfalsequeen"), SubResource("BTAction_secretlay")]
 
-[sub_resource type="BTAction" id="BTAction_1tk40"]
-script = ExtResource("3_lcywq")
+[sub_resource type="BTCondition" id="BTCondition_isrebel"]
+script = ExtResource("6_isrebel")
 
-[sub_resource type="BTSequence" id="BTSequence_37fxr"]
-children = [SubResource("BTAction_1tk40")]
+[sub_resource type="BTAction" id="BTAction_sabotage"]
+script = ExtResource("7_sabotage")
 
-[sub_resource type="BTAction" id="BTAction_or1g3"]
-script = ExtResource("6_1tk40")
+[sub_resource type="BTSequence" id="BTSequence_sabotage"]
+custom_name = "Seq - Sabotage"
+children = [SubResource("BTCondition_isrebel"), SubResource("BTAction_sabotage")]
 
-[sub_resource type="BTSequence" id="BTSequence_145ud"]
-children = [SubResource("BTAction_or1g3")]
+[sub_resource type="BTCondition" id="BTCondition_isgathering"]
+script = ExtResource("8_isgathering")
 
-[sub_resource type="BTSelector" id="BTSelector_mkohs"]
-children = [SubResource("BTSequence_cbln1"), SubResource("BTSequence_s1byh"), SubResource("BTSequence_y386t"), SubResource("BTSequence_hdy6l"), SubResource("BTSequence_37fxr"), SubResource("BTSequence_145ud")]
+[sub_resource type="BTAction" id="BTAction_gather"]
+script = ExtResource("9_gather")
+
+[sub_resource type="BTSequence" id="BTSequence_gather"]
+custom_name = "Seq - Gather"
+children = [SubResource("BTCondition_isgathering"), SubResource("BTAction_gather")]
+
+[sub_resource type="BTAction" id="BTAction_fidget"]
+script = ExtResource("10_fidget")
+
+[sub_resource type="BTSequence" id="BTSequence_fidget"]
+custom_name = "Seq - Fidget"
+children = [SubResource("BTAction_fidget")]
+
+[sub_resource type="BTAction" id="BTAction_idle"]
+script = ExtResource("11_idle")
+
+[sub_resource type="BTSequence" id="BTSequence_idle"]
+custom_name = "Seq - Idle"
+children = [SubResource("BTAction_idle")]
+
+[sub_resource type="BTSelector" id="BTSelector_root"]
+children = [SubResource("BTSequence_defend"), SubResource("BTSequence_deliver"), SubResource("BTSequence_secretlay"), SubResource("BTSequence_sabotage"), SubResource("BTSequence_gather"), SubResource("BTSequence_fidget"), SubResource("BTSequence_idle")]
 
 [resource]
-blackboard_plan = SubResource("BlackboardPlan_py0da")
-root_task = SubResource("BTSelector_mkohs")
+blackboard_plan = SubResource("BlackboardPlan_wasp")
+root_task = SubResource("BTSelector_root")

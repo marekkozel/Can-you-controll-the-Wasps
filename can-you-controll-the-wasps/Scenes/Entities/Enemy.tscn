@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" uid="uid://do0u1ftnd2qa2" path="res://Scripts/Entities/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthComponent.tscn" id="2_health"]
+[ext_resource type="Texture2D" uid="uid://d0ed0nf7da18o" path="res://Assets/Entities/enemy_medium.png" id="2_l5jbr"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="3_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
+[ext_resource type="PackedScene" uid="uid://cr4idcmp0nnt1" path="res://Scenes/Mechanics/RaidComponent.tscn" id="5_raid"]
 
 [sub_resource type="PhysicsMaterial" id="Material_enemy"]
 friction = 0.2
@@ -22,42 +24,8 @@ script = ExtResource("1_enemy")
 
 [node name="Visual" type="Node2D" parent="." unique_id=1758569666]
 
-[node name="Wings" type="Node2D" parent="Visual" unique_id=1381512456]
-
-[node name="WingL" type="Polygon2D" parent="Visual/Wings" unique_id=1639519798]
-color = Color(0.78, 0.85, 0.88, 0.35)
-polygon = PackedVector2Array(13.24, -6.976, 10.1, -4.544, 3.457, -4.11, -4.921, -5.79, -12.78, -9.134, -18.03, -13.25, -19.24, -17.02, -16.1, -19.46, -9.457, -19.89, -1.079, -18.21, 6.784, -14.87, 12.03, -10.75)
-
-[node name="WingR" type="Polygon2D" parent="Visual/Wings" unique_id=1101172711]
-color = Color(0.78, 0.85, 0.88, 0.35)
-polygon = PackedVector2Array(13.24, 6.976, 12.03, 10.75, 6.784, 14.87, -1.079, 18.21, -9.457, 19.89, -16.1, 19.46, -19.24, 17.02, -18.03, 13.25, -12.78, 9.134, -4.921, 5.79, 3.457, 4.11, 10.1, 4.544)
-
-[node name="Body" type="Polygon2D" parent="Visual" unique_id=429806218]
-color = Color(0.28, 0.32, 0.27, 1)
-polygon = PackedVector2Array(21, 0, 19.4, 5.358, 14.85, 9.899, 8.036, 12.93, 1.286e-15, 14, -8.036, 12.93, -14.85, 9.899, -19.4, 5.358, -21, 1.715e-15, -19.4, -5.358, -14.85, -9.899, -8.036, -12.93, -3.858e-15, -14, 8.036, -12.93, 14.85, -9.899, 19.4, -5.358)
-
-[node name="Sheen" type="Polygon2D" parent="Visual" unique_id=444925904]
-color = Color(0.45, 0.52, 0.44, 1)
-polygon = PackedVector2Array(5, -4, 3.794, -1.5, 0.5, 0.3301, -4, 1, -8.5, 0.3301, -11.79, -1.5, -13, -4, -11.79, -6.5, -8.5, -8.33, -4, -9, 0.5, -8.33, 3.794, -6.5)
-
-[node name="Head" type="Polygon2D" parent="Visual" unique_id=2021457458]
-color = Color(0.18, 0.2, 0.17, 1)
-polygon = PackedVector2Array(27, 0, 25.93, 4, 23, 6.928, 19, 8, 15, 6.928, 12.07, 4, 11, 9.797e-16, 12.07, -4, 15, -6.928, 19, -8, 23, -6.928, 25.93, -4)
-
-[node name="EyeL" type="Polygon2D" parent="Visual" unique_id=43067459]
-color = Color(0.85, 0.18, 0.16, 1)
-polygon = PackedVector2Array(25.4, -4.6, 24.75, -2.602, 23.05, -1.366, 20.95, -1.366, 19.25, -2.602, 18.6, -4.6, 19.25, -6.598, 20.95, -7.834, 23.05, -7.834, 24.75, -6.598)
-
-[node name="EyeR" type="Polygon2D" parent="Visual" unique_id=180777081]
-color = Color(0.85, 0.18, 0.16, 1)
-polygon = PackedVector2Array(25.4, 4.6, 24.75, 6.598, 23.05, 7.834, 20.95, 7.834, 19.25, 6.598, 18.6, 4.6, 19.25, 2.602, 20.95, 1.366, 23.05, 1.366, 24.75, 2.602)
-
-[node name="Outline" type="Line2D" parent="Visual" unique_id=497108719]
-points = PackedVector2Array(21, 0, 19.4, 5.358, 14.85, 9.899, 8.036, 12.93, 1.286e-15, 14, -8.036, 12.93, -14.85, 9.899, -19.4, 5.358, -21, 1.715e-15, -19.4, -5.358, -14.85, -9.899, -8.036, -12.93, -3.858e-15, -14, 8.036, -12.93, 14.85, -9.899, 19.4, -5.358)
-closed = true
-width = 2.0
-default_color = Color(0.12, 0.14, 0.11, 1)
-joint_mode = 2
+[node name="Body" type="Sprite2D" parent="Visual" unique_id=429806218]
+texture = ExtResource("2_l5jbr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=714742251]
 shape = SubResource("Shape_enemy")
@@ -69,3 +37,5 @@ shape = SubResource("Shape_enemy")
 [node name="WanderComponent" parent="." unique_id=1297622782 instance=ExtResource("4_wander")]
 wander_radius = 140.0
 speed = 40.0
+
+[node name="RaidComponent" parent="." unique_id=1834795983 instance=ExtResource("5_raid")]

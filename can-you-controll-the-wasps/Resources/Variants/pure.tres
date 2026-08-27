@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="WaspVariant" format=3 uid="uid://vo7vuwqoub5"]
+
+[ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")

@@ -19,6 +19,14 @@ signal larva_starved(cell: HexCell)
 signal sealed(cell: HexCell)
 signal wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cleaned(cell: HexCell)
+## 伪王后偷偷下了一颗 / a false queen slipped an egg in here
+signal rebel_egg_laid(cell: HexCell, variant: WaspVariant)
+signal rebel_hatched(cell: HexCell, wasp: Wasp)
+## 叛军听掉了建造进度 / a rebel chewed this cell back down
+signal build_damaged(cell: HexCell, progress: int, required: int)
+## 里面的卵或幼虫被弄死了。不复用 larva_starved——"饿死"和"被杀"在背叛数值里权重不一样
+## Not larva_starved: starving and being murdered must stay distinguishable.
+signal occupant_destroyed(cell: HexCell)
 
 enum Content { NONE, EGG, LARVA, SEALED, ROTTEN }
 
@@ -54,16 +62,19 @@ const ENTITIES_GROUP: StringName = &"entities"
 @export var rotten_fill_color: Color = Color(0.36, 0.31, 0.24, 0.55)
 @export var sealed_border_color: Color = Color(0.85, 0.66, 0.32, 1.0)
 
+# 里面这颗是不是异色卵。叛军靠它认自己人，不然会把自己姐妹吃了
+# Rebels check this to spare their own brood - without it they eat their siblings.
+var rebel_brood: bool = false
 var coord: Vector2i = Vector2i.ZERO
 var progress: int = 0
 var is_built: bool = false
 var content: Content = Content.NONE
 
-@onready var _fill: Polygon2D = $Visual/Fill
-@onready var _border: Line2D = $Visual/Border
+@onready var _fill: Sprite2D = $Visual/Fill
+@onready var _border: Sprite2D = $Visual/Border
 @onready var _ring: ProgressRing = $Visual/HoldRing
 @onready var _content_root: Node2D = $Visual/Content
-@onready var _cap: Polygon2D = $Visual/Cap
+@onready var _cap: Sprite2D = $Visual/Cap
 @onready var _shape: CollisionPolygon2D = $Shape
 @onready var _hold: HoldComponent = $HoldComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
@@ -94,12 +105,11 @@ func setup(layout: HexLayout, hex_coord: Vector2i) -> void:
 	coord = hex_coord
 	position = layout.axial_to_local(hex_coord)
 
+	# 三层可视件已经是贴图了，只剩碰撞和进度环还要顶点
+	# The three visual layers are sprites now; only collision and the ring still need corners.
 	var corners: PackedVector2Array = layout.corner_points()
-	_fill.polygon = corners
-	_border.points = corners
 	_shape.polygon = corners
 	_ring.set_ring_path(corners)
-	_cap.polygon = _inset(corners, 0.88)  # 盖子比巢室内缩一圈 / cap sits inside the cell outline
 	_refresh_visual()
 
 
@@ -130,13 +140,93 @@ func add_build_progress(amount: int = 1) -> bool:
 	return true
 
 
+# ---------------- 叛乱 / betrayal ----------------
+
+# 异色卵。故意不走 卵→幼虫→封盖 那条链，自己计时直接孵出一只叛军。
+# A rebel egg skips the normal growth chain and hatches a wasp on its own timer.
+func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
+	if not can_lay_egg() or variant == null:
+		return false
+
+	var egg: Egg = EGG_SCENE.instantiate()
+	_set_occupant(egg, Content.EGG)
+	rebel_brood = true
+	egg.modulate = variant.body_color  # 异色，看到了就知道巢里进了东西 / visibly not one of ours
+	egg.hatched.connect(_on_rebel_hatched.bind(variant, mother))
+	# 线索全模糊化之后，这一下闪光是唯一不伪装的硬信息：
+	# 它告诉你"一秒前有蜂来过这儿"，搜索范围从全场缩到附近那几只。
+	# The one tell that is never disguised - it narrows the search from the whole hive
+	# to whoever was standing nearby a second ago.
+	_juice.flash(_fill, variant.body_color, _target_fill())
+	_juice.punch(1.18, 0.32)
+	rebel_egg_laid.emit(self, variant)
+	return true
+
+
+# mother 不加类型：孵化前她可能已经被处决了 / untyped: she may already be dead by now
+func _on_rebel_hatched(_egg: Egg, variant: WaspVariant, mother) -> void:
+	_set_occupant(null, Content.NONE)
+	_refresh_visual()
+	_juice.punch(1.25, 0.45)
+	_juice.burst()
+
+	var wasp: Wasp = _spawn_wasp()
+	wasp.become_rebel(variant, mother)
+	rebel_hatched.emit(self, wasp)
+
+
+# 把巢室里的卵/幼虫弄死，格子变腐烂。完全走现成的腐烂链：
+# 玩家得按住清理，清完之前这格不能产卵。一行新逻辑都不用写。
+# Reuses the existing rot path wholesale - the player has to hold to clean it out.
+func destroy_occupant() -> bool:
+	if content != Content.EGG and content != Content.LARVA:
+		return false
+
+	_set_occupant(null, Content.ROTTEN)
+	_refresh_visual()
+	_juice.punch(0.82, 0.35)
+	_juice.burst()
+	occupant_destroyed.emit(self)
+	return true
+
+
+# 听掉建造进度。里面有卵/幼虫的格不能拆，否则内容槽会悬空
+# Chews build progress back down. Occupied cells are off limits or the content slot dangles.
+func damage_build(amount: int = 1) -> bool:
+	if amount <= 0 or progress <= 0 or content != Content.NONE:
+		return false
+
+	progress = maxi(progress - amount, 0)
+	if is_built and progress < build_cost:
+		is_built = false
+		_update_hold()
+
+	_refresh_visual()
+	_juice.punch(0.88, 0.22)
+	progress_changed.emit(self, progress, build_cost)
+	build_damaged.emit(self, progress, build_cost)
+	return true
+
+
+# 羽化和异色卵孵化共用 / shared by emergence and rebel hatching
+func _spawn_wasp() -> Wasp:
+	var wasp: Wasp = WASP_SCENE.instantiate()
+	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
+	if host == null:
+		host = get_tree().current_scene
+	host.add_child(wasp)
+	wasp.global_position = global_position
+	wasp.set_wander_home(global_position)
+	return wasp
+
+
+# ---------------- 内容槽 / content slot ----------------
+
 func _feed_occupant(amount: int) -> bool:
 	if content != Content.LARVA or _occupant == null:
 		return false
 	return (_occupant as Larva).feed(amount)
 
-
-# ---------------- 内容槽 / content slot ----------------
 
 func can_lay_egg() -> bool:
 	return is_built and content == Content.NONE
@@ -148,6 +238,13 @@ func is_rotten() -> bool:
 
 func is_hungry_larva() -> bool:
 	return content == Content.LARVA and _occupant != null and (_occupant as Larva).is_hungry()
+
+
+# 喂食排序用，越小越快饿死 / feeding priority, smaller is more urgent
+func larva_hunger_ratio() -> float:
+	if not is_hungry_larva():
+		return 1.0
+	return (_occupant as Larva).hunger_ratio()
 
 
 # 直接推进到下一个阶段，跳过所有计时和拖拽 / force the next stage, skips timers
@@ -217,13 +314,7 @@ func _on_seal_matured() -> void:
 	_juice.punch(1.25, 0.45)
 	_juice.burst()
 
-	var wasp: Wasp = WASP_SCENE.instantiate()
-	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
-	if host == null:
-		host = get_tree().current_scene
-	host.add_child(wasp)
-	wasp.global_position = global_position
-	wasp.set_wander_home(global_position)
+	var wasp: Wasp = _spawn_wasp()
 
 	content = Content.NONE  # 巢室空出来，可以重新产卵 / cell is free again
 	_update_hold()
@@ -264,14 +355,9 @@ func _hide_cap() -> void:
 	tween.chain().tween_callback(func(): _cap.visible = false)
 
 
-func _inset(corners: PackedVector2Array, factor: float) -> PackedVector2Array:
-	var out: PackedVector2Array = PackedVector2Array()
-	for p in corners:
-		out.append(p * factor)
-	return out
-
 
 func _set_occupant(node: Node2D, new_content: Content) -> void:
+	rebel_brood = false  # 换内容就不再是叛乱之卵了 / any content change clears it
 	if _occupant != null:
 		_occupant.queue_free()
 	_occupant = node
@@ -382,8 +468,7 @@ func _refresh_visual() -> void:
 		return
 
 	var t: float = _progress_ratio()
-	_border.width = lerpf(border_width, built_border_width, t)
-	_border.default_color = sealed_border_color if content == Content.SEALED else border_color.lerp(built_border_color, t)
+	_border.self_modulate = sealed_border_color if content == Content.SEALED else border_color.lerp(built_border_color, t)
 
 	if not _juice.is_flashing():  # 闪白期间别抢颜色 / don't fight the flash tween
-		_fill.color = _target_fill()
+		_fill.self_modulate = _target_fill()

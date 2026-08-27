@@ -1,31 +1,21 @@
-[gd_scene format=3 uid="uid://ckd6qc65b04mi"]
+[gd_scene load_steps=7 format=3 uid="uid://ckd6qc65b04mi"]
 
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="1_draggable"]
 [ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
+[ext_resource type="Texture2D" uid="uid://c0c87g5ocgw8g" path="res://Assets/Entities/food.png" id="ph_food"]
 
 [sub_resource type="CircleShape2D" id="Shape_food"]
 radius = 15.0
 
-[node name="Food" type="RigidBody2D" unique_id=858387073]
+[node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
 mass = 0.5
 linear_damp = 2.0
 angular_damp = 3.0
 
-[node name="Fill" type="Polygon2D" parent="." unique_id=212954041]
-color = Color(0.78039217, 0.32156864, 0.29803923, 1)
-polygon = PackedVector2Array(16, 0, 14.78, 4.784, 11.31, 8.839, 6.123, 11.55, 9.797e-16, 12.5, -6.123, 11.55, -11.31, 8.839, -14.78, 4.784, -16, 1.531e-15, -14.78, -4.784, -11.31, -8.839, -6.123, -11.55, -2.939e-15, -12.5, 6.123, -11.55, 11.31, -8.839, 14.78, -4.784)
-
-[node name="Outline" type="Line2D" parent="." unique_id=1506925005]
-points = PackedVector2Array(16, 0, 14.78, 4.784, 11.31, 8.839, 6.123, 11.55, 9.797e-16, 12.5, -6.123, 11.55, -11.31, 8.839, -14.78, 4.784, -16, 1.531e-15, -14.78, -4.784, -11.31, -8.839, -6.123, -11.55, -2.939e-15, -12.5, 6.123, -11.55, 11.31, -8.839, 14.78, -4.784)
-closed = true
-width = 2.0
-default_color = Color(0.47058824, 0.17254902, 0.1607843, 1)
-joint_mode = 2
-
-[node name="Shine" type="Polygon2D" parent="." unique_id=1305105259]
-color = Color(1, 1, 1, 0.28)
-polygon = PackedVector2Array(-0.5, -4.5, -1.359, -2.737, -3.609, -1.647, -6.391, -1.647, -8.641, -2.737, -9.5, -4.5, -8.641, -6.263, -6.391, -7.353, -3.609, -7.353, -1.359, -6.263)
+[node name="Fill" type="Sprite2D" parent="." unique_id=212954041]
+texture = ExtResource("ph_food")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=724941469]
 shape = SubResource("Shape_food")
@@ -38,5 +28,7 @@ shape = SubResource("Shape_food")
 
 [node name="DeliverableComponent" parent="." unique_id=951857089 instance=ExtResource("3_deliver")]
 payload = &"food"
+
+[node name="ClaimComponent" parent="." instance=ExtResource("4_claim")]
 
 [editable path="DraggableComponent"]
