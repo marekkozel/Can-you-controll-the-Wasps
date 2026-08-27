@@ -54,8 +54,9 @@ func rebuild() -> void:
 
 	for coord in HexLayout.hex_area(radius):
 		var cell: HexCell = HEX_CELL_SCENE.instantiate()
-		_container.add_child(cell)  # 先入树，setup() 要用 @onready 拿到的子节点 / must be in tree before setup()
+		_container.add_child(cell)  # 先入树
 		cell.setup(layout, coord)
+		
 		cell.clicked.connect(_on_cell_clicked)
 		cell.hover_changed.connect(_on_cell_hover_changed)
 		cell.progress_changed.connect(_on_cell_progress_changed)
@@ -70,6 +71,20 @@ func rebuild() -> void:
 		cell.occupant_destroyed.connect(func(c): cell_occupant_destroyed.emit(c))
 		_cells[coord] = cell
 
+	
+	var sorted_cells: Array = _cells.values()
+	
+	
+	sorted_cells.sort_custom(func(a: HexCell, b: HexCell) -> bool:
+		
+		if abs(a.position.y - b.position.y) < 1.0:
+			return a.position.x < b.position.x 
+		return a.position.y < b.position.y
+	)
+	
+	# Apply a safe, ordered Z-index from 0 to N
+	for i in range(sorted_cells.size()):
+		sorted_cells[i].z_index = i
 
 func get_cell(coord: Vector2i) -> HexCell:
 	return _cells.get(coord)

@@ -1,34 +1,33 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://d0smkcjdfwhqt"]
 
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
+[ext_resource type="Texture2D" uid="uid://b5k84tum1idq1" path="res://Assets/Entities/Cardboard_unit.png" id="1_r52kr"]
+[ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
 [ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="3_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="4_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="5_claim"]
-[ext_resource type="Texture2D" uid="uid://otm6tg1xhd1x" path="res://Assets/Entities/cardboard.png" id="ph_cardboard"]
 
 [sub_resource type="RectangleShape2D" id="Shape_cardboard"]
 size = Vector2(44, 32)
 
-[node name="Cardboard" type="RigidBody2D" groups=["carriable"]]
+[node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
 mass = 0.6
 linear_damp = 2.0
 angular_damp = 3.0
 
-[node name="Fill" type="Sprite2D" parent="."]
-texture = ExtResource("ph_cardboard")
+[node name="Fill" type="Sprite2D" parent="." unique_id=1735200713]
+texture = ExtResource("1_r52kr")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=590298235]
 shape = SubResource("Shape_cardboard")
 
-[node name="DraggableComponent" parent="." instance=ExtResource("2_draggable")]
+[node name="DraggableComponent" parent="." unique_id=436565058 instance=ExtResource("2_draggable")]
 profile = ExtResource("3_profile")
 
-[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+[node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
 shape = SubResource("Shape_cardboard")
 
-[node name="DeliverableComponent" parent="." instance=ExtResource("4_deliver")]
-payload = &"cardboard"
+[node name="DeliverableComponent" parent="." unique_id=312556972 instance=ExtResource("4_deliver")]
 
-[node name="ClaimComponent" parent="." instance=ExtResource("5_claim")]
+[node name="ClaimComponent" parent="." unique_id=1543301049 instance=ExtResource("5_claim")]
 
 [editable path="DraggableComponent"]

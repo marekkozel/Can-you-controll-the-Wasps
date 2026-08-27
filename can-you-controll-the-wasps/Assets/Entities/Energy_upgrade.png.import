@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovsqjnk4e726"
-path="res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"
+uid="uid://cwsaukl1n1mi1"
+path="res://.godot/imported/Energy_upgrade.png-c18a1ef674a8aca9c4c9f242568dd81b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Wasp.png"
-dest_files=["res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"]
+source_file="res://Assets/Entities/Energy_upgrade.png"
+dest_files=["res://.godot/imported/Energy_upgrade.png-c18a1ef674a8aca9c4c9f242568dd81b.ctex"]
 
 [params]
 

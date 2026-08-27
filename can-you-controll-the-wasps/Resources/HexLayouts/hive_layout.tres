@@ -5,5 +5,5 @@
 [resource]
 script = ExtResource("1_hexlayout")
 orientation = 1
-cell_size = 32.0
+cell_size = 22.0
 squash = 0.9299999999999999

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovsqjnk4e726"
-path="res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"
+uid="uid://c6itad5ae3l64"
+path="res://.godot/imported/Cells.png-27d79e63a33c2def58c30095580cefcf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Wasp.png"
-dest_files=["res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"]
+source_file="res://Assets/Entities/Cells.png"
+dest_files=["res://.godot/imported/Cells.png-27d79e63a33c2def58c30095580cefcf.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://otm6tg1xhd1x"
-path="res://.godot/imported/cardboard.png-32c098dae17a6aae00e9e5614446c47b.ctex"
+uid="uid://2yrsjg8oa56s"
+path="res://.godot/imported/Potato_food_unit.png-4e50e11d9871aa38f529b7fd7679a390.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/cardboard.png"
-dest_files=["res://.godot/imported/cardboard.png-32c098dae17a6aae00e9e5614446c47b.ctex"]
+source_file="res://Assets/Entities/Potato_food_unit.png"
+dest_files=["res://.godot/imported/Potato_food_unit.png-4e50e11d9871aa38f529b7fd7679a390.ctex"]
 
 [params]
 
