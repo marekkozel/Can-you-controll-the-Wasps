@@ -79,8 +79,13 @@ func _unrest_line() -> String:
 		var wasp: Wasp = node as Wasp
 		if wasp != null and wasp.allegiance().is_on_strike():
 			strikers += 1
-	return "unrest %.2f   morale x%.2f   striking %d" % [
-		director.unrest, lerpf(1.0, director.morale_floor, director.unrest), strikers]
+	var cunning: float = 0.0
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var w: Wasp = node as Wasp
+		if w != null and w.allegiance().is_false_queen():
+			cunning = w.allegiance().cunning
+	return "unrest %.2f  morale x%.2f  striking %d  cunning %.2f" % [
+		director.unrest, lerpf(1.0, director.morale_floor, director.unrest), strikers, cunning]
 
 
 func _group_count(group: StringName) -> int:

@@ -154,7 +154,12 @@ func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
 	rebel_brood = true
 	egg.modulate = variant.body_color  # 异色，看到了就知道巢里进了东西 / visibly not one of ours
 	egg.hatched.connect(_on_rebel_hatched.bind(variant, mother))
-	_juice.punch(1.1, 0.25)
+	# 线索全模糊化之后，这一下闪光是唯一不伪装的硬信息：
+	# 它告诉你"一秒前有蜂来过这儿"，搜索范围从全场缩到附近那几只。
+	# The one tell that is never disguised - it narrows the search from the whole hive
+	# to whoever was standing nearby a second ago.
+	_juice.flash(_fill, variant.body_color, _target_fill())
+	_juice.punch(1.18, 0.32)
 	rebel_egg_laid.emit(self, variant)
 	return true
 

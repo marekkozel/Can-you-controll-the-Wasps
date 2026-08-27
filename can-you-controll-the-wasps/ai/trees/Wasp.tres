@@ -9,7 +9,8 @@
 [ext_resource type="Script" uid="uid://b2y63ptqgun2" path="res://ai/tasks/Sabotage.gd" id="7_sabotage"]
 [ext_resource type="Script" uid="uid://sxqadvapt0mh" path="res://ai/tasks/IsGathering.gd" id="8_isgathering"]
 [ext_resource type="Script" uid="uid://bvh1l4dvi0yhc" path="res://ai/tasks/Gather.gd" id="9_gather"]
-[ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="10_idle"]
+[ext_resource type="Script" uid="uid://dfybr028ucijl" path="res://ai/tasks/Fidget.gd" id="10_fidget"]
+[ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="11_idle"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_wasp"]
 
@@ -60,15 +61,22 @@ script = ExtResource("9_gather")
 custom_name = "Seq - Gather"
 children = [SubResource("BTCondition_isgathering"), SubResource("BTAction_gather")]
 
+[sub_resource type="BTAction" id="BTAction_fidget"]
+script = ExtResource("10_fidget")
+
+[sub_resource type="BTSequence" id="BTSequence_fidget"]
+custom_name = "Seq - Fidget"
+children = [SubResource("BTAction_fidget")]
+
 [sub_resource type="BTAction" id="BTAction_idle"]
-script = ExtResource("10_idle")
+script = ExtResource("11_idle")
 
 [sub_resource type="BTSequence" id="BTSequence_idle"]
 custom_name = "Seq - Idle"
 children = [SubResource("BTAction_idle")]
 
 [sub_resource type="BTSelector" id="BTSelector_root"]
-children = [SubResource("BTSequence_defend"), SubResource("BTSequence_deliver"), SubResource("BTSequence_secretlay"), SubResource("BTSequence_sabotage"), SubResource("BTSequence_gather"), SubResource("BTSequence_idle")]
+children = [SubResource("BTSequence_defend"), SubResource("BTSequence_deliver"), SubResource("BTSequence_secretlay"), SubResource("BTSequence_sabotage"), SubResource("BTSequence_gather"), SubResource("BTSequence_fidget"), SubResource("BTSequence_idle")]
 
 [resource]
 blackboard_plan = SubResource("BlackboardPlan_wasp")

@@ -11,9 +11,6 @@ enum Job { HIVE, GATHER }
 
 const ITEM_SOURCE_GROUP: StringName = &"item_source"
 const HIVE_GROUP: StringName = &"hive"
-## 伪王后拖起来手感不一样，这是玩家手上那条确定性的线索
-## The one certain tell: a false queen fights the cursor.
-const FALSE_QUEEN_PROFILE: DragProfile = preload("res://Resources/DragProfiles/false_queen.tres")
 
 @export_range(0.05, 2.0, 0.05) var emerge_duration: float = 0.45
 @export_range(0.0, 20.0, 0.5) var bob_amount: float = 3.5
@@ -26,7 +23,7 @@ const FALSE_QUEEN_PROFILE: DragProfile = preload("res://Resources/DragProfiles/f
 @export_range(1, 100, 1) var damage: int = 1
 ## 两次叮咬的间隔 / seconds between stings
 @export_range(0.0, 5.0, 0.05) var attack_cooldown: float = 0.6
-## 鼠标悬上去时伪王后缩一下的力道 / how hard a false queen flinches away from the cursor
+## 缩一下的力道 / how hard a flinch pushes
 @export_range(0.0, 400.0, 5.0) var dodge_impulse: float = 130.0
 
 @export_group("Fling")
@@ -34,6 +31,21 @@ const FALSE_QUEEN_PROFILE: DragProfile = preload("res://Resources/DragProfiles/f
 @export_range(0.5, 20.0, 0.5) var max_fling_time: float = 6.0
 @export var rehome_on_landing: bool = true
 @export_range(20.0, 2000.0, 10.0) var impact_speed: float = 260.0
+
+# 线索全是区间，而且区间必须重叠。不重叠就不是推理了，是探测器：
+# 玩家挖到一只就知道答案，唯一的策略变成挨个抓一遍。
+# Every tell is a range, and the ranges must overlap - separate ranges make a detector,
+# not a deduction, and the only strategy left is to grab every wasp in turn.
+@export_group("Tells")
+## 普通工蜂的拖拽手感区间 / an ordinary worker's drag feel
+@export var loyal_stiffness: Vector2 = Vector2(12.0, 22.0)
+## 第一代伪王后的区间，会随 cunning 向上面那个靠 / hers, drifting toward theirs
+@export var queen_stiffness: Vector2 = Vector2(6.0, 9.0)
+@export_range(0.0, 0.02, 0.0001) var loyal_wobble: float = 0.0012
+@export_range(0.0, 0.02, 0.0001) var queen_wobble: float = 0.006
+## 鼠标悬停时缩一下的概率。忠诚蜂也会缩，只是少 / loyal wasps flinch too, just rarely
+@export_range(0.0, 1.0, 0.01) var loyal_dodge_chance: float = 0.15
+@export_range(0.0, 1.0, 0.01) var queen_dodge_chance: float = 0.9
 
 @export_group("Wander")
 @export_range(10.0, 800.0, 5.0) var wander_radius: float = 200.0
@@ -87,6 +99,11 @@ var _wander_timer: float = 0.0
 func _ready() -> void:
 	_juice.target = _visual
 	_t = randf() * TAU
+
+	# 每只蜂一份自己的 profile。不 duplicate 的话改一只等于改全场
+	# Never share the resource: one wasp's feel would become every wasp's feel.
+	_draggable.profile = _draggable.profile.duplicate()
+	_apply_drag_feel()
 
 	_nav.velocity_computed.connect(_on_avoidance_velocity)
 	_allegiance.changed.connect(_on_allegiance_changed)
@@ -161,21 +178,45 @@ func become_rebel(from_variant: WaspVariant, mother) -> void:
 	_allegiance.make_rebel(mother)
 
 
-func _on_allegiance_changed(state: AllegianceComponent.State) -> void:
-	# 伪王后外表不变，只有拿在手上才漏馈 / looks identical, only the grab gives her away
-	if state == AllegianceComponent.State.FALSE_QUEEN:
-		_draggable.profile = FALSE_QUEEN_PROFILE
+func _on_allegiance_changed(_state: AllegianceComponent.State) -> void:
+	_apply_drag_feel()
 
 
-# 悬停时的轻微躲避。只有伪王后会缩，而且弱到很容易看漏
-# A flinch on hover - only the false queen does it, and faintly enough to miss.
-func _on_hovered() -> void:
-	if not _allegiance.is_false_queen() or _draggable.is_grabbed():
+# 她越老练，手感越往普通工蜂的区间里靠 / the more practised she is, the more she feels normal
+func _apply_drag_feel() -> void:
+	var profile: DragProfile = _draggable.profile
+	if profile == null:
 		return
+
+	if not _allegiance.is_false_queen():
+		profile.stiffness = randf_range(loyal_stiffness.x, loyal_stiffness.y)
+		profile.wobble_multiplier = loyal_wobble
+		return
+
+	var c: float = _allegiance.cunning
+	profile.stiffness = randf_range(
+		lerpf(queen_stiffness.x, loyal_stiffness.x, c),
+		lerpf(queen_stiffness.y, loyal_stiffness.y, c))
+	profile.wobble_multiplier = lerpf(queen_wobble, loyal_wobble, c)
+
+
+# 悬停时缩一下。忠诚蜂也会，只是少很多——所以"它刚刚躲了"是弱证据，
+# 不是铁证。她越老练，这个概率越往忠诚蜂那边靠。
+# Loyal wasps flinch too, just far less often, so a flinch is weak evidence and never proof.
+func _on_hovered() -> void:
+	if _draggable.is_grabbed():
+		return
+
+	var chance: float = loyal_dodge_chance
+	if _allegiance.is_false_queen():
+		chance = lerpf(queen_dodge_chance, loyal_dodge_chance, _allegiance.cunning)
+	if randf() > chance:
+		return
+
 	var away: Vector2 = (global_position - get_global_mouse_position()).normalized()
 	if away == Vector2.ZERO:
 		away = Vector2.UP
-	linear_velocity += away * dodge_impulse
+	linear_velocity += away * dodge_impulse * randf_range(0.7, 1.3)
 
 
 func _on_died(_from: Vector2) -> void:

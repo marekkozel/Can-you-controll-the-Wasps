@@ -7,6 +7,10 @@ extends BTAction
 
 ## 多近算到位 / how close before she can lay
 @export var lay_distance: float = 18.0
+## 产卵前要悬停多久。第一代停得久得离谱，老练之后刚好落在 Fidget 的区间里
+## Lingers conspicuously at first, then just long enough to pass for a Fidget inspection.
+@export var hover_obvious: float = 5.0
+@export var hover_blended: float = 2.5
 @export var fly_speed: float = 85.0
 ## 基础冷却 / base seconds between eggs
 @export var base_cooldown: float = 15.0
@@ -18,6 +22,7 @@ const HIVE_GROUP: StringName = &"hive"
 const WASP_GROUP: StringName = &"wasps"
 
 var _cell: HexCell = null
+var _hover_left: float = -1.0
 
 
 func _tick(delta: float) -> Status:
@@ -30,15 +35,25 @@ func _tick(delta: float) -> Status:
 
 	if not _is_usable(_cell):
 		_cell = _find_empty_cell()
+		_hover_left = -1.0
 		if _cell == null:
 			return FAILURE
 
-	agent.steer_towards(_cell.global_position, delta, fly_speed)
 	if agent.global_position.distance_to(_cell.global_position) > lay_distance:
+		agent.steer_towards(_cell.global_position, delta, fly_speed)
+		return RUNNING
+
+	# 到位了不马上产。这段悬停就是伪装本身，看起来和普通工蜂查巢室一样
+	# The linger is the disguise - it reads exactly like a worker checking a cell.
+	if _hover_left < 0.0:
+		_hover_left = lerpf(hover_obvious, hover_blended, allegiance.cunning)
+	_hover_left -= delta
+	if _hover_left > 0.0:
 		return RUNNING
 
 	var laid: bool = _cell.lay_rebel_egg(allegiance.brood_variant, agent)
 	_cell = null
+	_hover_left = -1.0
 	if not laid:
 		return FAILURE
 
@@ -48,6 +63,7 @@ func _tick(delta: float) -> Status:
 
 func _exit() -> void:
 	_cell = null
+	_hover_left = -1.0
 
 
 func _is_usable(cell: HexCell) -> bool:

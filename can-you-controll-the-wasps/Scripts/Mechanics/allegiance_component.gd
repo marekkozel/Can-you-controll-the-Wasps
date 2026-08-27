@@ -23,6 +23,10 @@ var strike_threshold: float = 0.5
 @export_range(0.0, 0.1, 0.001) var betrayal_decay: float = 0.008
 ## 伪王后产什么颜色的卵。她自己不变色——这就是伪装 / she stays the dominant colour
 var brood_variant: WaspVariant = null
+## 0 = 第一代，笨拙好认；1 = 老练，每条线索都跌进普通工蜂的区间里。
+## 玩家每处决掉一只，下一只就难一档——手好的人自己把游戏变难
+## Ramps with each generation: the better you are, the harder you make it.
+var cunning: float = 0.0
 
 # 冷却放在组件上而不是行为树任务里：任务只有被 tick 到才跑，
 # 而伪王后可能正卡在一段长达几秒的 Gather 里，冷却会跑得比真实时间慢

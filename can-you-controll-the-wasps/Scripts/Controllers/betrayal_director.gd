@@ -28,6 +28,9 @@ const WASP_GROUP: StringName = &"wasps"
 ## 不给缓冲的话她一觉醒就产，玩家还没意识到蜂群里混进了东西。
 ## Without it she lays the moment she wakes, before the player can notice anything is off.
 @export_range(0.0, 300.0, 5.0) var dormant_duration: float = 30.0
+## 几代之后伪王后练到满级。第一代 cunning=0（好找），之后一路退化到难以分辨
+## Generations to full cunning: the first is meant to be findable, later ones are not.
+@export_range(1, 10, 1) var cunning_ramp: int = 3
 
 @export_group("Unrest")
 ## 处决一只忠诚工蜂 / executing a loyal worker
@@ -138,6 +141,9 @@ func awaken_now() -> Wasp:
 	_queen = _weighted_pick(candidates)
 	_queen.allegiance().brood_variant = _next_variant()
 	_queen.allegiance().lay_cooldown = dormant_duration
+	# cunning 必须在 make_false_queen 之前写好，否则拖拽手感会用旧值算
+	# Must be set before the state change - the drag feel is derived from it on the signal.
+	_queen.allegiance().cunning = clampf(float(_generation) / float(cunning_ramp), 0.0, 1.0)
 	_queen.allegiance().make_false_queen()
 	# 她不改颜色。改了就不叫伪装了 / no recolour: that is the whole point
 	_queen.tree_exited.connect(_on_queen_gone.bind(_queen), CONNECT_ONE_SHOT)
