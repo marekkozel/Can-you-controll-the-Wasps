@@ -42,9 +42,20 @@ func _tick(delta: float) -> Status:
 	if agent.global_position.distance_to(aim) > drop_distance:
 		return RUNNING
 
-	carry.drop()
+	carry.drop(_units_for(carry.payload()))
 	_cell = null
 	return SUCCESS
+
+
+# 载重对两种货都生效，筑巢只加纸板 / carrying counts for both, building only for cardboard
+func _units_for(payload: StringName) -> int:
+	var variant: WaspVariant = agent.variant().variant
+	if variant == null:
+		return 1
+	var units: int = variant.carry_units
+	if payload == &"cardboard":
+		units *= variant.build_units
+	return maxi(units, 1)
 
 
 func _exit() -> void:

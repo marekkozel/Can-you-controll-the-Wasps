@@ -15,6 +15,14 @@ extends Resource
 @export var head_color: Color = Color(0.24, 0.2, 0.15)
 @export var outline_color: Color = Color(0.36, 0.28, 0.12)
 
+# 专长是变种的诱惑。每个血统只点亮一个，于是：
+# 颜色告诉你这个血统能干什么，但完全不告诉你它站哪边。
+# One perk per lineage: colour tells you what it is good at, never whose side it is on.
 @export_group("Perks")
-## 变种的诱惑：跡得快。玩家会为了这个容忍叛乱 / the temptation to tolerate rebels
+## 飞得快 / cruise speed
 @export_range(0.5, 4.0, 0.1) var speed_multiplier: float = 1.0
+## 一趟顶几份（纸板和食物都算）。视觉上还是叼一个，但交付量翻倍
+## Still carries one piece, just delivers as more - far cheaper than a real second slot.
+@export_range(1, 4, 1) var carry_units: int = 1
+## 额外倍率，只对纸板生效 / extra multiplier, cardboard only
+@export_range(1, 4, 1) var build_units: int = 1

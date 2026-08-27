@@ -82,7 +82,8 @@ func pick_up(item: Node) -> bool:
 
 # 放下并尝试交付。返回的是"交出去了没有"，不是"放下了没有"
 # Returns whether the drop landed a delivery, not merely whether something was released.
-func drop() -> bool:
+# units 是交付时算几份，载重变种一趟顶多份 / how much the drop counts for
+func drop(units: int = 1) -> bool:
 	if not is_carrying():
 		return false
 
@@ -103,7 +104,7 @@ func drop() -> bool:
 	dropped.emit(item)
 
 	var deliverable: DeliverableComponent = _deliverable_of(item)
-	return deliverable != null and deliverable.try_deliver()
+	return deliverable != null and deliverable.try_deliver(units)
 
 
 func _physics_process(_delta: float) -> void:
