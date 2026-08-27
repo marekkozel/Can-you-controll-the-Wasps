@@ -11,7 +11,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
 [ext_resource type="PackedScene" uid="uid://df47gquo37qaf" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="Script" uid="uid://pu48dbwo85pg" path="res://Scripts/Controllers/betrayal_director.gd" id="12_betrayal"]
-[ext_resource type="Script" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
 [ext_resource type="Resource" path="res://Resources/Variants/crimson.tres" id="13_crimson"]
 [ext_resource type="Resource" path="res://Resources/Variants/violet.tres" id="14_violet"]
 [ext_resource type="Resource" path="res://Resources/Variants/teal.tres" id="15_teal"]
@@ -22,6 +21,7 @@
 [ext_resource type="Texture2D" uid="uid://c8w6w205ql85p" path="res://Assets/UI/region_info.png" id="20_ph_info"]
 [ext_resource type="Texture2D" uid="uid://dc5b6tp668gkf" path="res://Assets/UI/region_nest.png" id="21_ph_nest"]
 [ext_resource type="Texture2D" uid="uid://daaaman4bfiu1" path="res://Assets/UI/region_upgrades.png" id="22_ph_upgrade"]
+[ext_resource type="Script" uid="uid://bhfyfc82xueyc" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
@@ -73,17 +73,17 @@ payload = &"food"
 script = ExtResource("12_betrayal")
 brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtResource("14_violet"), ExtResource("15_teal")])
 
-[node name="RaidDirector" type="Node2D" parent="Queen_controller" groups=["raid_director"]]
+[node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=646413253 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
 
-[node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=797048252]
 position = Vector2(340, 72)
 
-[node name="EntryTop" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryTop" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=2061886397]
 position = Vector2(640, 72)
 
-[node name="EntryRight" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryRight" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=1310591694]
 position = Vector2(940, 72)
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
@@ -202,14 +202,12 @@ layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.4
 anchor_right = 0.2
-anchor_bottom = 1.0
 
 [node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
 layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
-anchor_bottom = 1.0
 
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
 anchors_preset = -1

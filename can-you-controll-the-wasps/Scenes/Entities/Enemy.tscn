@@ -1,11 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://df47gquo37qaf"]
+[gd_scene format=3 uid="uid://df47gquo37qaf"]
 
 [ext_resource type="Script" uid="uid://do0u1ftnd2qa2" path="res://Scripts/Entities/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthComponent.tscn" id="2_health"]
+[ext_resource type="Texture2D" uid="uid://d0ed0nf7da18o" path="res://Assets/Entities/enemy_medium.png" id="2_l5jbr"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="3_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
 [ext_resource type="PackedScene" uid="uid://cr4idcmp0nnt1" path="res://Scenes/Mechanics/RaidComponent.tscn" id="5_raid"]
-[ext_resource type="Texture2D" uid="uid://8b356513tl2" path="res://Assets/Entities/enemy.png" id="ph_enemy"]
 
 [sub_resource type="PhysicsMaterial" id="Material_enemy"]
 friction = 0.2
@@ -25,7 +25,7 @@ script = ExtResource("1_enemy")
 [node name="Visual" type="Node2D" parent="." unique_id=1758569666]
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=429806218]
-texture = ExtResource("ph_enemy")
+texture = ExtResource("2_l5jbr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=714742251]
 shape = SubResource("Shape_enemy")
@@ -38,4 +38,4 @@ shape = SubResource("Shape_enemy")
 wander_radius = 140.0
 speed = 40.0
 
-[node name="RaidComponent" parent="." instance=ExtResource("5_raid")]
+[node name="RaidComponent" parent="." unique_id=1834795983 instance=ExtResource("5_raid")]
