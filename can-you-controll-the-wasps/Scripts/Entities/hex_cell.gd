@@ -150,6 +150,13 @@ func is_hungry_larva() -> bool:
 	return content == Content.LARVA and _occupant != null and (_occupant as Larva).is_hungry()
 
 
+# 喂食排序用，越小越快饿死 / feeding priority, smaller is more urgent
+func larva_hunger_ratio() -> float:
+	if not is_hungry_larva():
+		return 1.0
+	return (_occupant as Larva).hunger_ratio()
+
+
 # 直接推进到下一个阶段，跳过所有计时和拖拽 / force the next stage, skips timers
 # 给调试工具和脚本化流程用 / for the debug tools and scripted flows
 func advance_stage() -> bool:

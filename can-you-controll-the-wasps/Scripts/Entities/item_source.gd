@@ -7,6 +7,8 @@ extends Node2D
 signal piece_spawned(piece: Node2D)
 
 @export var piece_scene: PackedScene
+## 这个点产出什么，黄蜂靠它定岗位 / what this post yields, wasps pick their job from it
+@export var payload: StringName = &"cardboard"
 @export_range(1, 12, 1) var max_pieces: int = 3
 ## 秒。0 = 立刻补 / seconds, 0 = refill immediately
 @export_range(0.0, 20.0, 0.1) var respawn_delay: float = 2.0

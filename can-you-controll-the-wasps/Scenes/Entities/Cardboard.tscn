@@ -1,13 +1,14 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
 [ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="3_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="4_deliver"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="5_claim"]
 
 [sub_resource type="RectangleShape2D" id="Shape_cardboard"]
 size = Vector2(44, 32)
 
-[node name="Cardboard" type="RigidBody2D"]
+[node name="Cardboard" type="RigidBody2D" groups=["carriable"]]
 mass = 0.6
 linear_damp = 2.0
 angular_damp = 3.0
@@ -38,5 +39,7 @@ shape = SubResource("Shape_cardboard")
 
 [node name="DeliverableComponent" parent="." instance=ExtResource("4_deliver")]
 payload = &"cardboard"
+
+[node name="ClaimComponent" parent="." instance=ExtResource("5_claim")]
 
 [editable path="DraggableComponent"]

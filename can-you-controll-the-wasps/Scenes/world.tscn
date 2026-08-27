@@ -28,9 +28,16 @@ size = Vector2(40, 424)
 [sub_resource type="RectangleShape2D" id="Shape_nest_bottom"]
 size = Vector2(1020, 40)
 
+[sub_resource type="NavigationPolygon" id="NavPoly_world"]
+vertices = PackedVector2Array(40, 40, 220, 40, 1080, 40, 1240, 40, 40, 212, 220, 212, 1080, 212, 1240, 212, 220, 636, 1080, 636)
+polygons = [PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 9, 8)]
+
 [node name="World" type="Node2D" unique_id=78065329]
 
 [node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment"]
+navigation_polygon = SubResource("NavPoly_world")
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
@@ -46,10 +53,12 @@ scatter_size = Vector2(760, 170)
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(115, 126)
 piece_scene = ExtResource("8_cardboard")
+payload = &"cardboard"
 
 [node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(1165, 126)
 piece_scene = ExtResource("9_food")
+payload = &"food"
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 

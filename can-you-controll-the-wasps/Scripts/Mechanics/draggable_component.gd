@@ -1,3 +1,4 @@
+class_name DraggableComponent
 extends Area2D
 
 # 物理拖拽 / physics drag. 挂到任意 RigidBody2D 下就能拖。
@@ -24,6 +25,11 @@ var _saved_gravity_scale: float = 1.0
 var _saved_linear_damp: float = 0.0
 var _saved_z_index: int = 0
 var _saved_ccd: int = RigidBody2D.CCD_MODE_DISABLED
+
+
+# 黄蜂要知道一件东西是不是玩家正拿着 / wasps must not yank cargo out of the player's hand
+func is_grabbed() -> bool:
+	return _is_grabbed
 
 
 func _ready() -> void:

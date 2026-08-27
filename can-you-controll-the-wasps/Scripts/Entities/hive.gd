@@ -97,6 +97,17 @@ func count_content(kind: HexCell.Content) -> int:
 	return total
 
 
+# 还收不收这种货。黄蜂拿之前先问一声，否则巢满了还会不停搬
+# Wasps ask before hauling - otherwise a full hive still gets a permanent supply run.
+func accepts(payload: StringName) -> bool:
+	match payload:
+		&"cardboard":
+			return built_count() < _cells.size()
+		&"food":
+			return not hungry_cells().is_empty()
+	return false
+
+
 # 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now
 func hungry_cells() -> Array:
 	return _cells.values().filter(func(c): return c.content == HexCell.Content.LARVA and c.is_hungry_larva())

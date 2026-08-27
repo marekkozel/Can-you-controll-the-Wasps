@@ -3,11 +3,12 @@
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="1_draggable"]
 [ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
 
 [sub_resource type="CircleShape2D" id="Shape_food"]
 radius = 15.0
 
-[node name="Food" type="RigidBody2D" unique_id=858387073]
+[node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
 mass = 0.5
 linear_damp = 2.0
 angular_damp = 3.0
@@ -38,5 +39,7 @@ shape = SubResource("Shape_food")
 
 [node name="DeliverableComponent" parent="." unique_id=951857089 instance=ExtResource("3_deliver")]
 payload = &"food"
+
+[node name="ClaimComponent" parent="." instance=ExtResource("4_claim")]
 
 [editable path="DraggableComponent"]

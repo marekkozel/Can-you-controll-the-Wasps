@@ -93,6 +93,11 @@ func is_hungry() -> bool:
 	return _hunger.is_hungry()
 
 
+# 饱饵时返回 0，饿着时 1→ 0 倒数，越小越急 / 0 when fed, counts 1 -> 0 while starving
+func hunger_ratio() -> float:
+	return _hunger.hunger_ratio()
+
+
 # ---------------- 身体 / body ----------------
 
 func _rebuild_body() -> void:
