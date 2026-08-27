@@ -17,6 +17,9 @@ const WASP_GROUP: StringName = &"wasps"
 ## 罢工的蜂光看着和"没活干"一模一样，不标出来根本分不出
 ## A striking wasp looks exactly like an idle one, so it needs its own mark.
 @export var strike_color: Color = Color(1.0, 0.95, 0.3, 0.95)
+## 叛军→她被命令去拆的格子。调虎离山很难从画面上看出来到底发生没
+## Decoy orders are near-impossible to confirm by eye without drawing the link.
+@export var decoy_color: Color = Color(0.4, 0.85, 1.0, 0.8)
 @export_range(10.0, 60.0, 1.0) var radius: float = 26.0
 
 
@@ -43,6 +46,10 @@ func _draw() -> void:
 			continue
 
 		var at: Vector2 = xform * wasp.global_position
+
+		var order: Node = wasp.allegiance().decoy_cell
+		if wasp.allegiance().decoy_until > 0.0 and is_instance_valid(order):
+			draw_line(at, xform * (order as Node2D).global_position, decoy_color, 1.5, true)
 
 		if wasp.allegiance().is_on_strike():
 			# 一根斜杠，跟圈叠在一起不会认错 / a slash, unmistakable next to a ring

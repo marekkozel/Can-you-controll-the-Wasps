@@ -63,6 +63,9 @@ const WASP_GROUP: StringName = &"wasps"
 @export var brood_variants: Array[WaspVariant] = []
 
 var unrest: float = 0.0
+## 调试用的注意力覆盖。headless 没鼠标，不留这个口子调虎离山根本没法测
+## Debug override - there is no cursor headless, and the decoy logic is unreachable without it.
+var debug_attention: Vector2 = Vector2.INF
 
 var _queen: Wasp = null
 var _emerged_since: int = 0
@@ -86,6 +89,15 @@ func _ready() -> void:
 	_hive.cell_occupant_destroyed.connect(func(_c): add_unrest(larva_murdered))
 	_hive.cell_sealed.connect(func(_c): add_unrest(cell_fed))
 	_hive.cell_built.connect(func(_c): add_unrest(cell_finished))
+
+
+# 玩家的注意力在哪。光标就是答案——这游戏所有交互都走鼠标，
+# 光标在哪，玩家就在看哪。以后想做得细致（最近几秒的加权停留中心）只改这里。
+# The cursor is the only attention signal we have, and it is a good one.
+func attention_point() -> Vector2:
+	if debug_attention != Vector2.INF:
+		return debug_attention
+	return get_global_mouse_position()
 
 
 func has_false_queen() -> bool:

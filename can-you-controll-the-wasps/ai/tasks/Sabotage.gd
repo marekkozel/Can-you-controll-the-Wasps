@@ -29,7 +29,15 @@ func _tick(delta: float) -> Status:
 	if allegiance.sabotage_cooldown > 0.0:
 		return FAILURE
 
-	if not _is_usable(_cell, _killing):
+	# 妈叫去哪就去哪，哪怕那儿更远 / an order from the queen overrides the nearest target
+	var ordered: HexCell = allegiance.decoy_cell as HexCell
+	if allegiance.decoy_until > 0.0 and _is_usable(ordered, true):
+		_cell = ordered
+		_killing = true
+	elif allegiance.decoy_until > 0.0 and _is_usable(ordered, false):
+		_cell = ordered
+		_killing = false
+	elif not _is_usable(_cell, _killing):
 		if not _acquire():
 			return FAILURE
 

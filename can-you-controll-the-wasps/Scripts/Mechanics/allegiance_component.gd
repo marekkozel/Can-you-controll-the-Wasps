@@ -34,11 +34,17 @@ var cunning: float = 0.0
 # queen can sit inside a multi-second Gather where its cooldown would stall.
 var lay_cooldown: float = 0.0
 var sabotage_cooldown: float = 0.0
+## 伪王后下的"去那边闹一下"指令，调虎离山用 / a decoy order from the queen
+var decoy_cell: Node = null
+var decoy_until: float = 0.0
 
 
 func _process(delta: float) -> void:
 	lay_cooldown = maxf(lay_cooldown - delta, 0.0)
 	sabotage_cooldown = maxf(sabotage_cooldown - delta, 0.0)
+	decoy_until = maxf(decoy_until - delta, 0.0)
+	if decoy_until <= 0.0:
+		decoy_cell = null
 	betrayal = maxf(betrayal - betrayal_decay * delta, 0.0)
 
 	# 母亲没了就自己屈服，不用谁来通知 / self-subdue, no director needed
