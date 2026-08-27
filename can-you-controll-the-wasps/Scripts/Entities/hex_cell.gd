@@ -19,6 +19,11 @@ signal larva_starved(cell: HexCell)
 signal sealed(cell: HexCell)
 signal wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cleaned(cell: HexCell)
+## 伪王后偷偷下了一颗 / a false queen slipped an egg in here
+signal rebel_egg_laid(cell: HexCell, variant: WaspVariant)
+signal rebel_hatched(cell: HexCell, wasp: Wasp)
+## 叛军听掉了建造进度 / a rebel chewed this cell back down
+signal build_damaged(cell: HexCell, progress: int, required: int)
 
 enum Content { NONE, EGG, LARVA, SEALED, ROTTEN }
 
@@ -130,13 +135,72 @@ func add_build_progress(amount: int = 1) -> bool:
 	return true
 
 
+# ---------------- 叛乱 / betrayal ----------------
+
+# 异色卵。故意不走 卵→幼虫→封盖 那条链，自己计时直接孵出一只叛军。
+# A rebel egg skips the normal growth chain and hatches a wasp on its own timer.
+func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
+	if not can_lay_egg() or variant == null:
+		return false
+
+	var egg: Egg = EGG_SCENE.instantiate()
+	_set_occupant(egg, Content.EGG)
+	egg.modulate = variant.body_color  # 异色，看到了就知道巢里进了东西 / visibly not one of ours
+	egg.hatched.connect(_on_rebel_hatched.bind(variant, mother))
+	_juice.punch(1.1, 0.25)
+	rebel_egg_laid.emit(self, variant)
+	return true
+
+
+# mother 不加类型：孵化前她可能已经被处决了 / untyped: she may already be dead by now
+func _on_rebel_hatched(_egg: Egg, variant: WaspVariant, mother) -> void:
+	_set_occupant(null, Content.NONE)
+	_refresh_visual()
+	_juice.punch(1.25, 0.45)
+	_juice.burst()
+
+	var wasp: Wasp = _spawn_wasp()
+	wasp.become_rebel(variant, mother)
+	rebel_hatched.emit(self, wasp)
+
+
+# 听掉建造进度。里面有卵/幼虫的格不能拆，否则内容槽会悬空
+# Chews build progress back down. Occupied cells are off limits or the content slot dangles.
+func damage_build(amount: int = 1) -> bool:
+	if amount <= 0 or progress <= 0 or content != Content.NONE:
+		return false
+
+	progress = maxi(progress - amount, 0)
+	if is_built and progress < build_cost:
+		is_built = false
+		_update_hold()
+
+	_refresh_visual()
+	_juice.punch(0.88, 0.22)
+	progress_changed.emit(self, progress, build_cost)
+	build_damaged.emit(self, progress, build_cost)
+	return true
+
+
+# 羽化和异色卵孵化共用 / shared by emergence and rebel hatching
+func _spawn_wasp() -> Wasp:
+	var wasp: Wasp = WASP_SCENE.instantiate()
+	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
+	if host == null:
+		host = get_tree().current_scene
+	host.add_child(wasp)
+	wasp.global_position = global_position
+	wasp.set_wander_home(global_position)
+	return wasp
+
+
+# ---------------- 内容槽 / content slot ----------------
+
 func _feed_occupant(amount: int) -> bool:
 	if content != Content.LARVA or _occupant == null:
 		return false
 	return (_occupant as Larva).feed(amount)
 
-
-# ---------------- 内容槽 / content slot ----------------
 
 func can_lay_egg() -> bool:
 	return is_built and content == Content.NONE
@@ -224,13 +288,7 @@ func _on_seal_matured() -> void:
 	_juice.punch(1.25, 0.45)
 	_juice.burst()
 
-	var wasp: Wasp = WASP_SCENE.instantiate()
-	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
-	if host == null:
-		host = get_tree().current_scene
-	host.add_child(wasp)
-	wasp.global_position = global_position
-	wasp.set_wander_home(global_position)
+	var wasp: Wasp = _spawn_wasp()
 
 	content = Content.NONE  # 巢室空出来，可以重新产卵 / cell is free again
 	_update_hold()

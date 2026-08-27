@@ -11,6 +11,9 @@ enum Job { HIVE, GATHER }
 
 const ITEM_SOURCE_GROUP: StringName = &"item_source"
 const HIVE_GROUP: StringName = &"hive"
+## 伪王后拖起来手感不一样，这是玩家手上那条确定性的线索
+## The one certain tell: a false queen fights the cursor.
+const FALSE_QUEEN_PROFILE: DragProfile = preload("res://Resources/DragProfiles/false_queen.tres")
 
 @export_range(0.05, 2.0, 0.05) var emerge_duration: float = 0.45
 @export_range(0.0, 20.0, 0.5) var bob_amount: float = 3.5
@@ -23,6 +26,8 @@ const HIVE_GROUP: StringName = &"hive"
 @export_range(1, 100, 1) var damage: int = 1
 ## 两次叮咬的间隔 / seconds between stings
 @export_range(0.0, 5.0, 0.05) var attack_cooldown: float = 0.6
+## 鼠标悬上去时伪王后缩一下的力道 / how hard a false queen flinches away from the cursor
+@export_range(0.0, 400.0, 5.0) var dodge_impulse: float = 130.0
 
 @export_group("Fling")
 @export_range(10.0, 600.0, 5.0) var resume_wander_speed: float = 140.0
@@ -56,6 +61,9 @@ var target_build_cell: Node2D = null
 @onready var _btree: BTPlayer = $BTPlayer
 @onready var _carry: CarryComponent = $CarryComponent
 @onready var _nav: NavigationAgent2D = $NavigationAgent2D
+@onready var _variant: VariantComponent = $VariantComponent
+@onready var _allegiance: AllegianceComponent = $AllegianceComponent
+@onready var _health: HealthComponent = $HealthComponent
 
 var _t: float = 0.0
 var _is_flung: bool = false
@@ -64,6 +72,9 @@ var _last_speed: float = 0.0
 var _attack_timer: float = 0.0
 var _nav_goal: Vector2 = Vector2.INF
 var _steer_weight: float = 0.08
+
+## 变种专长写进来的速度倍率 / written by VariantComponent
+var speed_scale: float = 1.0
 
 # Wander internal states
 var _wander_home: Vector2 = Vector2.ZERO
@@ -76,6 +87,9 @@ func _ready() -> void:
 	_t = randf() * TAU
 
 	_nav.velocity_computed.connect(_on_avoidance_velocity)
+	_allegiance.changed.connect(_on_allegiance_changed)
+	_health.died.connect(_on_died)
+	_draggable.mouse_entered.connect(_on_hovered)
 
 	_draggable.grabbed.connect(_on_grabbed)
 	_draggable.released.connect(_on_released)
@@ -129,6 +143,43 @@ func _update_job() -> void:
 
 func carry() -> CarryComponent:
 	return _carry
+
+
+func allegiance() -> AllegianceComponent:
+	return _allegiance
+
+
+func variant() -> VariantComponent:
+	return _variant
+
+
+# 异色卵孵出来的那一只 / hatched straight out of a rebel egg
+func become_rebel(from_variant: WaspVariant, mother) -> void:
+	_variant.apply(from_variant)
+	_allegiance.make_rebel(mother)
+
+
+func _on_allegiance_changed(state: AllegianceComponent.State) -> void:
+	# 伪王后外表不变，只有拿在手上才漏馈 / looks identical, only the grab gives her away
+	if state == AllegianceComponent.State.FALSE_QUEEN:
+		_draggable.profile = FALSE_QUEEN_PROFILE
+
+
+# 悬停时的轻微躲避。只有伪王后会缩，而且弱到很容易看漏
+# A flinch on hover - only the false queen does it, and faintly enough to miss.
+func _on_hovered() -> void:
+	if not _allegiance.is_false_queen() or _draggable.is_grabbed():
+		return
+	var away: Vector2 = (global_position - get_global_mouse_position()).normalized()
+	if away == Vector2.ZERO:
+		away = Vector2.UP
+	linear_velocity += away * dodge_impulse
+
+
+func _on_died(_from: Vector2) -> void:
+	_carry.drop()
+	_juice.burst()
+	queue_free()
 
 
 func _pick_wander_target() -> void:
@@ -252,7 +303,7 @@ func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0,
 		return
 
 	var radius: float = arrive_radius if brake_radius < 0.0 else brake_radius
-	var speed: float = move_speed
+	var speed: float = move_speed * speed_scale
 	if radius > 0.0 and goal_distance < radius:
 		speed = move_speed * (goal_distance / radius)
 

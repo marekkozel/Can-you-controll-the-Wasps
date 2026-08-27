@@ -17,6 +17,10 @@ var _target: Node2D = null
 
 
 func _tick(delta: float) -> Status:
+	# 叛军不帮工。已屈服的照干 / rebels do not work, subdued ones do
+	if not agent.allegiance().works():
+		return FAILURE
+
 	var carry: CarryComponent = agent.carry()
 	if carry == null or carry.is_carrying():
 		return FAILURE

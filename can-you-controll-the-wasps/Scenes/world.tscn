@@ -1,14 +1,21 @@
 [gd_scene format=3 uid="uid://biaqfgdgx0ki6"]
 
-[ext_resource type="PackedScene" path="res://Scenes/Entities/Hive.tscn" id="3_hive"]
+[ext_resource type="PackedScene" uid="uid://s3x16rpani8" path="res://Scenes/Entities/Hive.tscn" id="3_hive"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
+[ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="6_7yui6"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/Food.tscn" id="9_food"]
+[ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
+[ext_resource type="PackedScene" uid="uid://df47gquo37qaf" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
+[ext_resource type="Script" uid="uid://pu48dbwo85pg" path="res://Scripts/Controllers/betrayal_director.gd" id="12_betrayal"]
+[ext_resource type="Resource" path="res://Resources/Variants/crimson.tres" id="13_crimson"]
+
+[sub_resource type="NavigationPolygon" id="NavPoly_world"]
+vertices = PackedVector2Array(40, 40, 220, 40, 1080, 40, 1240, 40, 40, 212, 220, 212, 1080, 212, 1240, 212, 220, 636, 1080, 636)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 9, 8)])
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
 size = Vector2(1320, 40)
@@ -28,15 +35,11 @@ size = Vector2(40, 424)
 [sub_resource type="RectangleShape2D" id="Shape_nest_bottom"]
 size = Vector2(1020, 40)
 
-[sub_resource type="NavigationPolygon" id="NavPoly_world"]
-vertices = PackedVector2Array(40, 40, 220, 40, 1080, 40, 1240, 40, 40, 212, 220, 212, 1080, 212, 1240, 212, 220, 636, 1080, 636)
-polygons = [PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 9, 8)]
-
 [node name="World" type="Node2D" unique_id=78065329]
 
 [node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
 
-[node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment"]
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment" unique_id=1075432323]
 navigation_polygon = SubResource("NavPoly_world")
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
@@ -53,7 +56,6 @@ scatter_size = Vector2(760, 170)
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(115, 126)
 piece_scene = ExtResource("8_cardboard")
-payload = &"cardboard"
 
 [node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(1165, 126)
@@ -61,6 +63,10 @@ piece_scene = ExtResource("9_food")
 payload = &"food"
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
+
+[node name="BetrayalDirector" type="Node2D" parent="Queen_controller" unique_id=1241915486 groups=["betrayal_director"]]
+script = ExtResource("12_betrayal")
+brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson")])
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 

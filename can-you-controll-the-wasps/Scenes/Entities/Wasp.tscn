@@ -4,6 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthComponent.tscn" id="3_0um87"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/CarryComponent.tscn" id="4_carry"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/VariantComponent.tscn" id="6_variant"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/AllegianceComponent.tscn" id="7_allegiance"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/StingComponent.tscn" id="8_sting"]
+[ext_resource type="Resource" path="res://Resources/Variants/pure.tres" id="9_pure"]
 [ext_resource type="BehaviorTree" uid="uid://duqipvlyjy31h" path="res://ai/trees/Wasp.tres" id="5_7c3bo"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
 
@@ -16,7 +20,7 @@ radius = 19.5
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_jh0a1"]
 
-[node name="Wasp" type="RigidBody2D" unique_id=322438317]
+[node name="Wasp" type="RigidBody2D" unique_id=322438317 groups=["wasps"]]
 mass = 1.2
 physics_material_override = SubResource("Material_wasp")
 lock_rotation = true
@@ -73,6 +77,13 @@ shape = SubResource("Shape_wasp")
 [node name="HealthComponent" parent="." unique_id=1964549127 instance=ExtResource("3_0um87")]
 
 [node name="CarryComponent" parent="." instance=ExtResource("4_carry")]
+
+[node name="VariantComponent" parent="." instance=ExtResource("6_variant")]
+variant = ExtResource("9_pure")
+
+[node name="AllegianceComponent" parent="." instance=ExtResource("7_allegiance")]
+
+[node name="StingComponent" parent="." instance=ExtResource("8_sting")]
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
 radius = 20.0
