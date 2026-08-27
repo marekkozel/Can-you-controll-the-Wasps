@@ -50,6 +50,7 @@ func _refresh() -> void:
 		int(Performance.get_monitor(Performance.PHYSICS_2D_ISLAND_COUNT))])
 	lines.append("wasps %d   items %d   enemies %d" % [_group_count(WASP_GROUP), _group_count(CARRIABLE_GROUP), _group_count(ENEMY_GROUP)])
 	lines.append(_allegiance_line())
+	lines.append(_unrest_line())
 	lines.append("static mem %.1f MB" % (Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0))
 
 	text = "
@@ -65,6 +66,21 @@ func _allegiance_line() -> String:
 		if wasp != null:
 			tally[wasp.allegiance().state] += 1
 	return "loyal %d  queen %d  rebel %d  subdued %d" % [tally[0], tally[1], tally[2], tally[3]]
+
+
+# 同样是答案纸：正式玩法里不安值只通过画面色调漏出去
+# Answer sheet again - in play, unrest only leaks through the colour wash.
+func _unrest_line() -> String:
+	var director: BetrayalDirector = BetrayalDirector.find(get_tree())
+	if director == null:
+		return "unrest --"
+	var strikers: int = 0
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null and wasp.allegiance().is_on_strike():
+			strikers += 1
+	return "unrest %.2f   morale x%.2f   striking %d" % [
+		director.unrest, lerpf(1.0, director.morale_floor, director.unrest), strikers]
 
 
 func _group_count(group: StringName) -> int:

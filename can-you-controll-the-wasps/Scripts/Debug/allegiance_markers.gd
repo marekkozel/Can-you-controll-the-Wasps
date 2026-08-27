@@ -14,6 +14,9 @@ const WASP_GROUP: StringName = &"wasps"
 @export var queen_color: Color = Color(1.0, 0.25, 0.25, 0.95)
 @export var rebel_color: Color = Color(1.0, 0.62, 0.15, 0.9)
 @export var subdued_color: Color = Color(0.6, 0.65, 0.7, 0.7)
+## 罢工的蜂光看着和"没活干"一模一样，不标出来根本分不出
+## A striking wasp looks exactly like an idle one, so it needs its own mark.
+@export var strike_color: Color = Color(1.0, 0.95, 0.3, 0.95)
 @export_range(10.0, 60.0, 1.0) var radius: float = 26.0
 
 
@@ -40,6 +43,12 @@ func _draw() -> void:
 			continue
 
 		var at: Vector2 = xform * wasp.global_position
+
+		if wasp.allegiance().is_on_strike():
+			# 一根斜杠，跟圈叠在一起不会认错 / a slash, unmistakable next to a ring
+			var d: Vector2 = Vector2(radius, radius) * 0.75
+			draw_line(at - d, at + d, strike_color, 2.5, true)
+
 		match wasp.allegiance().state:
 			AllegianceComponent.State.FALSE_QUEEN:
 				# 双圈，一眼就能从一群里挑出来 / double ring, findable at a glance

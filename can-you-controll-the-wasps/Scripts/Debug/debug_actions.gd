@@ -147,13 +147,38 @@ func reveal_allegiances() -> void:
 		var wasp: Wasp = node as Wasp
 		if wasp == null:
 			continue
-		lines.append("%s %s @%s" % [
+		var a: AllegianceComponent = wasp.allegiance()
+		lines.append("%-8s %-12s betrayal %.2f%s @%s" % [
 			wasp.variant().variant.display_name if wasp.variant().variant != null else "?",
-			AllegianceComponent.State.keys()[wasp.allegiance().state],
+			AllegianceComponent.State.keys()[a.state],
+			a.betrayal,
+			"  ON STRIKE" if a.is_on_strike() else "",
 			wasp.global_position.round()])
 	for line in lines:
 		print("[debug] ", line)
 	_report("dumped %d wasps to the console" % lines.size())
+
+
+# 不安值得靠处决才能推上去，调参数时太慢了 / nudging it directly beats staging executions
+func bump_unrest() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		_report("no BetrayalDirector in the scene")
+		return
+	d.add_unrest(0.2)
+	_report("unrest %.2f" % d.unrest)
+
+
+func clear_unrest() -> void:
+	var d: BetrayalDirector = director()
+	if d == null:
+		return
+	d.add_unrest(-1.0)
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null:
+			wasp.allegiance().betrayal = 0.0
+	_report("unrest and every grudge cleared")
 
 
 func kill_all_enemies() -> void:

@@ -18,6 +18,8 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F12 Awaken a false queen", "method": "awaken_false_queen", "key": KEY_F12},
 	{"label": "M   Toggle allegiance markers", "method": "toggle_markers", "key": KEY_M},
 	{"label": "     Reveal allegiances", "method": "reveal_allegiances", "key": KEY_NONE},
+	{"label": "     Unrest +0.2", "method": "bump_unrest", "key": KEY_NONE},
+	{"label": "     Clear unrest + grudges", "method": "clear_unrest", "key": KEY_NONE},
 	{"label": "     Spawn cardboard", "method": "spawn_cardboard", "key": KEY_NONE},
 	{"label": "     Spawn food", "method": "spawn_food", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
