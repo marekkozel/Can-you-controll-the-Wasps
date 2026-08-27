@@ -16,6 +16,7 @@ signal cell_larva_starved(cell: HexCell)
 signal cell_sealed(cell: HexCell)
 signal cell_wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cell_cleaned(cell: HexCell)
+signal cell_occupant_destroyed(cell: HexCell)
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
@@ -66,6 +67,7 @@ func rebuild() -> void:
 		cell.sealed.connect(func(c): cell_sealed.emit(c))
 		cell.wasp_emerged.connect(func(c, w): cell_wasp_emerged.emit(c, w))
 		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
+		cell.occupant_destroyed.connect(func(c): cell_occupant_destroyed.emit(c))
 		_cells[coord] = cell
 
 

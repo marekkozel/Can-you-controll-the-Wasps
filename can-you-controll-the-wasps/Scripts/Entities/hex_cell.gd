@@ -24,6 +24,9 @@ signal rebel_egg_laid(cell: HexCell, variant: WaspVariant)
 signal rebel_hatched(cell: HexCell, wasp: Wasp)
 ## 叛军听掉了建造进度 / a rebel chewed this cell back down
 signal build_damaged(cell: HexCell, progress: int, required: int)
+## 里面的卵或幼虫被弄死了。不复用 larva_starved——"饿死"和"被杀"在背叛数值里权重不一样
+## Not larva_starved: starving and being murdered must stay distinguishable.
+signal occupant_destroyed(cell: HexCell)
 
 enum Content { NONE, EGG, LARVA, SEALED, ROTTEN }
 
@@ -59,6 +62,9 @@ const ENTITIES_GROUP: StringName = &"entities"
 @export var rotten_fill_color: Color = Color(0.36, 0.31, 0.24, 0.55)
 @export var sealed_border_color: Color = Color(0.85, 0.66, 0.32, 1.0)
 
+# 里面这颗是不是异色卵。叛军靠它认自己人，不然会把自己姐妹吃了
+# Rebels check this to spare their own brood - without it they eat their siblings.
+var rebel_brood: bool = false
 var coord: Vector2i = Vector2i.ZERO
 var progress: int = 0
 var is_built: bool = false
@@ -145,6 +151,7 @@ func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
 
 	var egg: Egg = EGG_SCENE.instantiate()
 	_set_occupant(egg, Content.EGG)
+	rebel_brood = true
 	egg.modulate = variant.body_color  # 异色，看到了就知道巢里进了东西 / visibly not one of ours
 	egg.hatched.connect(_on_rebel_hatched.bind(variant, mother))
 	_juice.punch(1.1, 0.25)
@@ -162,6 +169,21 @@ func _on_rebel_hatched(_egg: Egg, variant: WaspVariant, mother) -> void:
 	var wasp: Wasp = _spawn_wasp()
 	wasp.become_rebel(variant, mother)
 	rebel_hatched.emit(self, wasp)
+
+
+# 把巢室里的卵/幼虫弄死，格子变腐烂。完全走现成的腐烂链：
+# 玩家得按住清理，清完之前这格不能产卵。一行新逻辑都不用写。
+# Reuses the existing rot path wholesale - the player has to hold to clean it out.
+func destroy_occupant() -> bool:
+	if content != Content.EGG and content != Content.LARVA:
+		return false
+
+	_set_occupant(null, Content.ROTTEN)
+	_refresh_visual()
+	_juice.punch(0.82, 0.35)
+	_juice.burst()
+	occupant_destroyed.emit(self)
+	return true
 
 
 # 听掉建造进度。里面有卵/幼虫的格不能拆，否则内容槽会悬空
@@ -337,6 +359,7 @@ func _inset(corners: PackedVector2Array, factor: float) -> PackedVector2Array:
 
 
 func _set_occupant(node: Node2D, new_content: Content) -> void:
+	rebel_brood = false  # 换内容就不再是叛乱之卵了 / any content change clears it
 	if _occupant != null:
 		_occupant.queue_free()
 	_occupant = node
