@@ -14,35 +14,21 @@ signal starved(larva: Larva)
 
 
 @export_group("Shape")
-## 体节数，越多越顺滑 / segment count, more is smoother
-@export_range(3, 24, 1) var segment_count: int = 9
 ## 从根部钻出来的长度 / how far it pokes out
 @export_range(6.0, 80.0, 1.0) var length: float = 26.0
 ## 往哪边钻出来 / direction it emerges towards
 @export var emerge_direction: Vector2 = Vector2.UP
-## 整条身体上的相位差，越大扭得越"波浪" / phase offset along the body
-@export_range(0.5, 8.0, 0.1) var wave_length: float = 2.2
-
-@export_group("Wiggle")
-@export_range(0.0, 12.0, 0.1) var calm_amplitude: float = 1.8
-@export_range(0.1, 6.0, 0.1) var calm_frequency: float = 0.8
-@export_range(0.0, 12.0, 0.1) var hungry_amplitude: float = 4.2
-@export_range(0.1, 6.0, 0.1) var hungry_frequency: float = 2.4
 
 @export_group("Colors")
 @export var calm_color: Color = Color(0.93, 0.89, 0.74)
 @export var hungry_color: Color = Color(0.95, 0.62, 0.25)
 @export var dead_color: Color = Color(0.34, 0.29, 0.22)
 
-@onready var _body: Line2D = $Body
-@onready var _eyes: Node2D = $Body/Eyes
+@onready var _body: Sprite2D = $Body
 @onready var _ring: ProgressRing = $Ring
 @onready var _hunger: HungerComponent = $HungerComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 
-var _t: float = 0.0
-var _amplitude: float = 0.0
-var _frequency: float = 0.0
 var _is_dead: bool = false
 
 # I am adding the concept of rezervation, so only few wasps can feed this larvae and not all of them at once.
@@ -62,11 +48,9 @@ func unclaim() -> void:
 
 func _ready() -> void:
 	_juice.target = $Body
-	_amplitude = calm_amplitude
-	_frequency = calm_frequency
-	_body.default_color = calm_color
+	_body.self_modulate = calm_color
+	_body.rotation = emerge_direction.angle() + PI * 0.5  # 贴图朝上画的 / the sprite is drawn pointing up
 	_build_ring()
-	_rebuild_body()
 
 	if Engine.is_editor_hint():
 		set_process(false)
@@ -78,9 +62,7 @@ func _ready() -> void:
 	_hunger.starved.connect(_on_starved)
 
 
-func _process(delta: float) -> void:
-	_t += delta * _frequency * TAU
-	_rebuild_body()
+func _process(_delta: float) -> void:
 	if _hunger.is_hungry():
 		_ring.set_progress(_hunger.hunger_ratio())
 
@@ -100,23 +82,6 @@ func hunger_ratio() -> float:
 
 # ---------------- 身体 / body ----------------
 
-func _rebuild_body() -> void:
-	var side: Vector2 = emerge_direction.orthogonal().normalized()
-	var forward: Vector2 = emerge_direction.normalized()
-
-	var pts: PackedVector2Array = PackedVector2Array()
-	for i in segment_count:
-		var f: float = float(i) / float(maxi(segment_count - 1, 1))
-		# 乘 f 让根部钉在巢室里，只有伸出去的部分在扭 / f keeps the root still
-		var sway: float = sin(_t - f * wave_length) * _amplitude * f
-		pts.append(forward * (length * f) + side * sway)
-	_body.points = pts
-
-	if pts.size() >= 2:
-		_eyes.position = pts[pts.size() - 1]
-		_eyes.rotation = (pts[pts.size() - 1] - pts[pts.size() - 2]).angle()
-
-
 func _build_ring() -> void:
 	var radius: float = length * 0.62
 	var circle: PackedVector2Array = PackedVector2Array()
@@ -130,8 +95,6 @@ func _build_ring() -> void:
 # ---------------- 状态反馈 / state feedback ----------------
 
 func _on_became_hungry() -> void:
-	_amplitude = hungry_amplitude
-	_frequency = hungry_frequency
 	_tint(hungry_color, 0.4)
 	_ring.set_progress(1.0)
 	became_hungry.emit(self)
@@ -144,8 +107,6 @@ func _on_fed(current: int, required: int) -> void:
 
 
 func _on_satisfied() -> void:
-	_amplitude = calm_amplitude
-	_frequency = calm_frequency
 	_tint(calm_color, 0.5)
 	_ring.set_progress(0.0)
 	_juice.punch(1.18, 0.4)
@@ -154,7 +115,6 @@ func _on_satisfied() -> void:
 
 func _on_starved() -> void:
 	_is_dead = true
-	_amplitude = 0.0
 	_ring.set_progress(0.0)
 	_tint(dead_color, 0.8)
 	set_process(false)
@@ -162,20 +122,13 @@ func _on_starved() -> void:
 	starved.emit(self)
 
 
-# 死了就塌下去，长度缩一半 / on death it slumps to half length
+# 死了就塌下去，缩到一半高 / on death it slumps to half height
 func _slump() -> void:
-	var tween: Tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_method(_set_length, length, length * 0.45, 0.7)
-	_eyes.visible = false
-
-
-func _set_length(value: float) -> void:
-	length = value
-	_rebuild_body()
+	create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN) 		.tween_property(_body, "scale:y", 0.45, 0.7)
 
 
 func _tint(color: Color, duration: float) -> void:
 	if Engine.is_editor_hint():
-		_body.default_color = color
+		_body.self_modulate = color
 		return
-	create_tween().tween_property(_body, "default_color", color, duration)
+	create_tween().tween_property(_body, "self_modulate", color, duration)

@@ -15,7 +15,6 @@ const HIVE_GROUP: StringName = &"hive"
 @export_range(0.05, 2.0, 0.05) var emerge_duration: float = 0.45
 @export_range(0.0, 20.0, 0.5) var bob_amount: float = 3.5
 @export_range(0.1, 5.0, 0.1) var bob_period: float = 1.6
-@export_range(1.0, 60.0, 1.0) var wing_frequency: float = 18.0
 @export_range(0.02, 1.0, 0.01) var facing_smoothing: float = 0.15
 ## 进到这个半径开始减速 / start braking within this radius of the target
 @export_range(0.0, 400.0, 5.0) var arrive_radius: float = 45.0
@@ -67,7 +66,6 @@ var target_build_cell: Node2D = null
 @export var debug_movement_speed: float = 0
 
 @onready var _visual: Node2D = $Visual
-@onready var _wings: Node2D = $Visual/Wings
 @onready var _draggable: Area2D = $DraggableComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _btree: BTPlayer = $BTPlayer
@@ -316,8 +314,6 @@ func _process(delta: float) -> void:
 		_visual.rotation = lerp_angle(_visual.rotation, linear_velocity.angle(), facing_smoothing)
 
 	_visual.position.y = sin(_t * TAU / bob_period) * bob_amount
-	var flap: float = wing_frequency * (1.0 + speed / 120.0)
-	_wings.scale.y = 0.35 + 0.65 * absf(sin(_t * flap))
 
 
 # 真的打出去了才返回 true，冷却中返回 false

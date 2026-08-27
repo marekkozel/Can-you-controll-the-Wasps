@@ -37,6 +37,7 @@ func _paint() -> void:
 	if _visual == null:
 		return
 
+	# 目前 Body 是唯一一层，其余三个留着给将来拆分层的贴图 / one layer for now, the rest are for later
 	_tint(_visual.get_node_or_null(^"Body"), variant.body_color)
 	_tint(_visual.get_node_or_null(^"Stripe1"), variant.stripe_color)
 	_tint(_visual.get_node_or_null(^"Stripe2"), variant.stripe_color)
@@ -47,7 +48,14 @@ func _paint() -> void:
 		outline.default_color = variant.outline_color
 
 
+# 贴图画成灰度，白 x 颜色 = 颜色，所以矢量和贴图两种画法都能上色
+# Sprites are greyscale, so white x colour == colour and both drawing styles tint the same way.
 func _tint(node: Node, color: Color) -> void:
 	var poly: Polygon2D = node as Polygon2D
 	if poly != null:
 		poly.color = color
+		return
+
+	var sprite: Sprite2D = node as Sprite2D
+	if sprite != null:
+		sprite.self_modulate = color

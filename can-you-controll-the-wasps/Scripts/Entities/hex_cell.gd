@@ -70,11 +70,11 @@ var progress: int = 0
 var is_built: bool = false
 var content: Content = Content.NONE
 
-@onready var _fill: Polygon2D = $Visual/Fill
-@onready var _border: Line2D = $Visual/Border
+@onready var _fill: Sprite2D = $Visual/Fill
+@onready var _border: Sprite2D = $Visual/Border
 @onready var _ring: ProgressRing = $Visual/HoldRing
 @onready var _content_root: Node2D = $Visual/Content
-@onready var _cap: Polygon2D = $Visual/Cap
+@onready var _cap: Sprite2D = $Visual/Cap
 @onready var _shape: CollisionPolygon2D = $Shape
 @onready var _hold: HoldComponent = $HoldComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
@@ -105,12 +105,11 @@ func setup(layout: HexLayout, hex_coord: Vector2i) -> void:
 	coord = hex_coord
 	position = layout.axial_to_local(hex_coord)
 
+	# 三层可视件已经是贴图了，只剩碰撞和进度环还要顶点
+	# The three visual layers are sprites now; only collision and the ring still need corners.
 	var corners: PackedVector2Array = layout.corner_points()
-	_fill.polygon = corners
-	_border.points = corners
 	_shape.polygon = corners
 	_ring.set_ring_path(corners)
-	_cap.polygon = _inset(corners, 0.88)  # 盖子比巢室内缩一圈 / cap sits inside the cell outline
 	_refresh_visual()
 
 
@@ -356,12 +355,6 @@ func _hide_cap() -> void:
 	tween.chain().tween_callback(func(): _cap.visible = false)
 
 
-func _inset(corners: PackedVector2Array, factor: float) -> PackedVector2Array:
-	var out: PackedVector2Array = PackedVector2Array()
-	for p in corners:
-		out.append(p * factor)
-	return out
-
 
 func _set_occupant(node: Node2D, new_content: Content) -> void:
 	rebel_brood = false  # 换内容就不再是叛乱之卵了 / any content change clears it
@@ -475,8 +468,7 @@ func _refresh_visual() -> void:
 		return
 
 	var t: float = _progress_ratio()
-	_border.width = lerpf(border_width, built_border_width, t)
-	_border.default_color = sealed_border_color if content == Content.SEALED else border_color.lerp(built_border_color, t)
+	_border.self_modulate = sealed_border_color if content == Content.SEALED else border_color.lerp(built_border_color, t)
 
 	if not _juice.is_flashing():  # 闪白期间别抢颜色 / don't fight the flash tween
-		_fill.color = _target_fill()
+		_fill.self_modulate = _target_fill()
