@@ -25,6 +25,8 @@ const ACTIONS: Array[Dictionary] = [
 @onready var _buttons: VBoxContainer = $Root/Panel/Margin/Content/Buttons
 @onready var _status: Label = $Root/Panel/Margin/Content/Status
 @onready var _root: Control = $Root
+@onready var _panel: PanelContainer = $Root/Panel
+@onready var _perf: PanelContainer = $Root/Perf
 
 
 func _ready() -> void:
@@ -35,7 +37,8 @@ func _ready() -> void:
 
 	_actions.action_done.connect(_on_action_done)
 	_build_buttons()
-	_root.visible = false
+	# 性能读数常驻，按钮那一坨太占地方所以默认收起 / perf stays up, the button stack does not
+	_panel.visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -43,7 +46,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event.keycode == KEY_F1:
-		_root.visible = not _root.visible
+		_panel.visible = not _panel.visible
+		get_viewport().set_input_as_handled()
+		return
+
+	if event.keycode == KEY_F11:
+		_perf.visible = not _perf.visible
 		get_viewport().set_input_as_handled()
 		return
 
