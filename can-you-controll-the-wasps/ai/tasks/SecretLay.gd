@@ -9,7 +9,7 @@ extends BTAction
 @export var lay_distance: float = 18.0
 @export var fly_speed: float = 85.0
 ## 基础冷却 / base seconds between eggs
-@export var base_cooldown: float = 25.0
+@export var base_cooldown: float = 15.0
 ## 每多一只存活叛军就多等这么久——叛乱越大扩张越慢，自带刹车
 ## Each living rebel slows the next egg down, so the uprising throttles itself.
 @export var cooldown_per_rebel: float = 12.0

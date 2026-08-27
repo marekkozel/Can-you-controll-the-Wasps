@@ -14,8 +14,13 @@ var state: State = State.LOYAL
 ## 叛军指向生它的伪王后。不加类型：她随时可能被处决，类型化变量拒绝存已释放的实例
 ## Rebels point at the queen that laid them - untyped, she can be executed at any moment.
 var mother = null
-## 预留给背叛数值系统，现在恒为 0 / reserved for the betrayal system
+## 个人背叛值。被摔、目击同伴被处决都会涨 / grows from being slammed and from witnessing executions
 var betrayal: float = 0.0
+## 由 BetrayalDirector 写入 / written by the director
+var strike_threshold: float = 0.5
+## 每秒消气多少。不衰减的话杀错一次就有几只蜂永久罢工，惩罚太硬
+## Without decay one wrong call strikes a few wasps for the rest of the run.
+@export_range(0.0, 0.1, 0.001) var betrayal_decay: float = 0.008
 ## 伪王后产什么颜色的卵。她自己不变色——这就是伪装 / she stays the dominant colour
 var brood_variant: WaspVariant = null
 
@@ -30,6 +35,7 @@ var sabotage_cooldown: float = 0.0
 func _process(delta: float) -> void:
 	lay_cooldown = maxf(lay_cooldown - delta, 0.0)
 	sabotage_cooldown = maxf(sabotage_cooldown - delta, 0.0)
+	betrayal = maxf(betrayal - betrayal_decay * delta, 0.0)
 
 	# 母亲没了就自己屈服，不用谁来通知 / self-subdue, no director needed
 	if state == State.REBEL and not is_instance_valid(mother):
@@ -48,9 +54,15 @@ func is_rebel() -> bool:
 	return state == State.REBEL
 
 
-# 已屈服的也算干活的 / subdued ones work like anyone else
+func is_on_strike() -> bool:
+	return betrayal >= strike_threshold
+
+
+# 已屈服的照干；恨上你的那几只不干
+# Subdued ones work; the aggrieved refuse. The player only sees wasps idling and has to
+# work out why - 看到几只蜂突然不干活了，本身就是一条氛围信号。
 func works() -> bool:
-	return state != State.REBEL
+	return state != State.REBEL and not is_on_strike()
 
 
 func make_false_queen() -> void:

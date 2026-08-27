@@ -75,6 +75,8 @@ var _steer_weight: float = 0.08
 
 ## 变种专长写进来的速度倍率 / written by VariantComponent
 var speed_scale: float = 1.0
+## 蜂群不安时的减速，由 BetrayalDirector 写入 / written by the director
+var morale_scale: float = 1.0
 
 # Wander internal states
 var _wander_home: Vector2 = Vector2.ZERO
@@ -253,6 +255,12 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(_body: Node) -> void:
 	if _last_speed < impact_speed:
 		return
+
+	# 被摔的黄蜂会记住。玩家拿它们当保龄球是有代价的
+	# A slammed wasp remembers it - using them as bowling balls is not free.
+	var director: BetrayalDirector = BetrayalDirector.find(get_tree())
+	if director != null:
+		director.report_slam(self)
 	_juice.punch(0.78, 0.28)
 	if _last_speed > impact_speed * 2.0:
 		_juice.burst()
@@ -303,7 +311,7 @@ func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0,
 		return
 
 	var radius: float = arrive_radius if brake_radius < 0.0 else brake_radius
-	var speed: float = move_speed * speed_scale
+	var speed: float = move_speed * speed_scale * morale_scale
 	if radius > 0.0 and goal_distance < radius:
 		speed = move_speed * (goal_distance / radius)
 

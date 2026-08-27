@@ -12,6 +12,9 @@
 [ext_resource type="PackedScene" uid="uid://df47gquo37qaf" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="Script" uid="uid://pu48dbwo85pg" path="res://Scripts/Controllers/betrayal_director.gd" id="12_betrayal"]
 [ext_resource type="Resource" path="res://Resources/Variants/crimson.tres" id="13_crimson"]
+[ext_resource type="Resource" path="res://Resources/Variants/violet.tres" id="14_violet"]
+[ext_resource type="Resource" path="res://Resources/Variants/teal.tres" id="15_teal"]
+[ext_resource type="Script" path="res://Scripts/UI/unrest_tint.gd" id="16_unrest"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 220, 40, 1080, 40, 1240, 40, 40, 212, 220, 212, 1080, 212, 1240, 212, 220, 636, 1080, 636)
@@ -66,7 +69,7 @@ payload = &"food"
 
 [node name="BetrayalDirector" type="Node2D" parent="Queen_controller" unique_id=1241915486 groups=["betrayal_director"]]
 script = ExtResource("12_betrayal")
-brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson")])
+brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtResource("14_violet"), ExtResource("15_teal")])
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
@@ -265,5 +268,18 @@ anchor_bottom = 0.9388889
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
 anchors_preset = -1
 anchor_top = 0.9388889
+
+[node name="Atmosphere" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="UnrestTint" type="ColorRect" parent="Atmosphere"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.72, 0.09, 0.12, 0)
+script = ExtResource("16_unrest")
 
 [node name="DebugPanel" parent="." unique_id=1410055688 instance=ExtResource("10_debug")]

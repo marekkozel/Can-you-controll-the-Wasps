@@ -48,6 +48,10 @@ func _execute() -> void:
 
 	killed.emit(_body, was_queen)
 
+	var director: BetrayalDirector = BetrayalDirector.find(get_tree())
+	if director != null:
+		director.report_execution(_body, was_queen)
+
 	var health: HealthComponent = _find(HealthComponent) as HealthComponent
 	if health != null:
 		health.take_damage(health.max_health, _body.global_position)
