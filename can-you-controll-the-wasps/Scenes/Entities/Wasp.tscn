@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://r07chgxywues" path="res://Scripts/Entities/wasp.gd" id="1_wasp"]
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthComponent.tscn" id="3_0um87"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
 [ext_resource type="BehaviorTree" uid="uid://duqipvlyjy31h" path="res://ai/trees/Wasp.tres" id="5_7c3bo"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
 
@@ -71,9 +70,6 @@ shape = SubResource("Shape_wasp")
 shape = SubResource("Shape_wasp")
 
 [node name="HealthComponent" parent="." unique_id=1964549127 instance=ExtResource("3_0um87")]
-
-[node name="WanderComponent" parent="." unique_id=990932676 instance=ExtResource("4_wander")]
-enabled = false
 
 [node name="JuiceComponent" parent="." unique_id=1935085118 instance=ExtResource("5_juice")]
 

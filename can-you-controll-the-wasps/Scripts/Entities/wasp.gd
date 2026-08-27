@@ -10,6 +10,8 @@ signal slammed(speed: float)
 @export_range(0.02, 1.0, 0.01) var facing_smoothing: float = 0.15
 
 @export_range(1, 100, 1) var damage: int = 1
+## 两次叮咬的间隔 / seconds between stings
+@export_range(0.0, 5.0, 0.05) var attack_cooldown: float = 0.6
 
 @export_group("Fling")
 @export_range(10.0, 600.0, 5.0) var resume_wander_speed: float = 140.0
@@ -41,6 +43,7 @@ var _t: float = 0.0
 var _is_flung: bool = false
 var _fling_time: float = 0.0
 var _last_speed: float = 0.0
+var _attack_timer: float = 0.0
 
 # Wander internal states
 var _wander_home: Vector2 = Vector2.ZERO
@@ -77,7 +80,7 @@ func _pick_wander_target() -> void:
 func wander(delta: float) -> void:
 	_wander_timer -= delta
 	var to_target: Vector2 = _wander_target - global_position
-  
+
 	if _wander_timer <= 0.0 or to_target.length() < 18.0:
 		_pick_wander_target()
 	
@@ -97,6 +100,10 @@ func _on_released() -> void:
 
 func _physics_process(delta: float) -> void:
 	_last_speed = linear_velocity.length()
+	# 冷却计时得走在提前 return 之前，否则被甩飞的黄蜂冷却会冻住
+	# Must tick before the early returns - a flung wasp would freeze its cooldown otherwise.
+	if _attack_timer > 0.0:
+		_attack_timer = maxf(_attack_timer - delta, 0.0)
 	if not _is_flung:
 		return
 
@@ -131,13 +138,19 @@ func _process(delta: float) -> void:
 	_wings.scale.y = 0.35 + 0.65 * absf(sin(_t * flap))
 
 
-func attack_enemy() -> void:
+# 真的打出去了才返回 true，冷却中返回 false
+# Returns true only when the sting actually landed; false while on cooldown.
+func attack_enemy() -> bool:
 	if target_enemy == null or not is_instance_valid(target_enemy):
-		return
-  
-	if target_enemy.has_method("take_damage"):
-		target_enemy.take_damage(damage, global_position)
-	# TODO: Add a cooldown
+		return false
+	if _attack_timer > 0.0:
+		return false
+	if not target_enemy.has_method("take_damage"):
+		return false
+
+	target_enemy.take_damage(damage, global_position)
+	_attack_timer = attack_cooldown
+	return true
 
 
 func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08) -> void:
@@ -150,5 +163,5 @@ func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0,
 
 
 func drop_carried_resource() -> void:
-  # TODO: Implement logic to drop food/cardboard
+	# TODO: Implement logic to drop food/cardboard
 	pass
