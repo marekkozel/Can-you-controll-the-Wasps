@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="3_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
 [ext_resource type="PackedScene" uid="uid://cr4idcmp0nnt1" path="res://Scenes/Mechanics/RaidComponent.tscn" id="5_raid"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/HuntComponent.tscn" id="6_hunt"]
 [ext_resource type="Texture2D" uid="uid://8b356513tl2" path="res://Assets/Entities/enemy.png" id="ph_enemy"]
 
 [sub_resource type="PhysicsMaterial" id="Material_enemy"]
@@ -39,3 +40,5 @@ wander_radius = 140.0
 speed = 40.0
 
 [node name="RaidComponent" parent="." instance=ExtResource("5_raid")]
+
+[node name="HuntComponent" parent="." instance=ExtResource("6_hunt")]

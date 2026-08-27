@@ -46,6 +46,7 @@ shape = SubResource("Shape_wasp")
 shape = SubResource("Shape_wasp")
 
 [node name="HealthComponent" parent="." unique_id=1964549127 instance=ExtResource("3_0um87")]
+max_health = 3
 
 [node name="CarryComponent" parent="." instance=ExtResource("4_carry")]
 

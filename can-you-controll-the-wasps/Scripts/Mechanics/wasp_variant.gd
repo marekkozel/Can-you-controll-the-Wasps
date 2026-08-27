@@ -19,8 +19,15 @@ extends Resource
 # 颜色告诉你这个血统能干什么，但完全不告诉你它站哪边。
 # One perk per lineage: colour tells you what it is good at, never whose side it is on.
 @export_group("Perks")
+## 叮咬倍率。走整数而不是浮点，属性面板的四格轨道才对得上
+## Integer, not a float multiplier - the four-pip track in the panel depends on it.
+## 全局基准在 Wasp.damage 上，这里是每个血统在基准上的倍数
+## The base lives on Wasp.damage; this multiplies it per lineage.
+@export_range(1, 4, 1) var attack_units: int = 1
 ## 飞得快 / cruise speed
-@export_range(0.5, 4.0, 0.1) var speed_multiplier: float = 1.0
+## 只收整数。属性面板拿格子表示数值，没有地方能把 x1.5 这种小数表达出来
+## Whole numbers only - the panel shows perks as pips and has no way to render a half.
+@export_range(1.0, 4.0, 1.0) var speed_multiplier: float = 1.0
 ## 一趟顶几份（纸板和食物都算）。视觉上还是叼一个，但交付量翻倍
 ## Still carries one piece, just delivers as more - far cheaper than a real second slot.
 @export_range(1, 4, 1) var carry_units: int = 1

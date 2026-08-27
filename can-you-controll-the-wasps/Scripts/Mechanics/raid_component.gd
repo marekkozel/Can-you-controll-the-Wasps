@@ -35,10 +35,9 @@ const HIVE_GROUP: StringName = &"hive"
 var phase: Phase = Phase.DORMANT
 
 var _body: RigidBody2D = null
-var _nav: NavigationAgent2D = null
+var _steering: NavSteering = null
 var _cell: HexCell = null
 var _cooldown: float = 0.0
-var _nav_goal: Vector2 = Vector2.INF
 # 从哪进来的就从哪出去 / leaves the way it came
 var _exit_point: Vector2 = Vector2.INF
 
@@ -49,7 +48,7 @@ func _ready() -> void:
 		push_warning("RaidComponent needs a RigidBody2D parent: %s" % get_path())
 		set_physics_process(false)
 		return
-	_nav = get_node_or_null("NavigationAgent2D") as NavigationAgent2D
+	_steering = NavSteering.new(_body, get_node_or_null("NavigationAgent2D") as NavigationAgent2D)
 	set_physics_process(false)
 
 
@@ -61,6 +60,15 @@ func begin(exit_point: Vector2 = Vector2.INF) -> void:
 	_exit_point = exit_point if exit_point != Vector2.INF else _body.global_position
 	phase = Phase.RAID
 	set_physics_process(true)
+
+
+# 只登记撤退路线，不进入 RAID。猎手用这个——它的行动交给 HuntComponent，
+# 但收兵时还是走这里飞出场，两种敌人共用同一条离场逻辑
+# Hunters arm the exit here and let HuntComponent drive; both breeds leave the same way.
+func arm_exit(exit_point: Vector2) -> void:
+	if _body == null:
+		return
+	_exit_point = exit_point if exit_point != Vector2.INF else _body.global_position
 
 
 # 收兵。已经在撤的不用再叫一次 / calling off an already-retreating raider is a no-op
@@ -92,8 +100,16 @@ func _physics_process(delta: float) -> void:
 
 func _do_raid(delta: float) -> void:
 	if not _is_usable(_cell) and not _acquire():
-		# 巢里已经没什么可抢的了，那就没必要待着 / nothing left worth taking
-		retreat()
+		# 巢里暂时没东西可抢。它从地图边缘飞进来，不可能知道这件事——所以压到巢口等着，
+		# 有卵孵出来就抢。**这里绝不能直接 retreat()**：撤退目标就是它刚进场的入口，
+		# 空巢时会在生成的同一帧走完"到达出口"判定，整只敌人当场消失
+		# It cannot know the hive is empty, so it presses to the nest and waits.
+		# Never retreat() here: the exit is where it just spawned, so on an empty hive it
+		# clears the arrival check on the same frame and vanishes on spawn.
+		# 什么时候收兵是 RaidDirector 的计时说了算 / when the raid ends is the director's call
+		var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+		if hive != null:
+			_steer(hive.global_position, delta)
 		return
 
 	_steer(_cell.global_position, delta)
@@ -187,40 +203,6 @@ func _is_usable(cell: HexCell) -> bool:
 
 
 func _steer(target: Vector2, delta: float) -> void:
-	var heading: Vector2 = _heading_towards(target)
-	if heading == Vector2.ZERO:
-		return
-	var desired: Vector2 = heading * fly_speed
-	# 换成和帧率无关的插值系数 / framerate independent, matches the drag spring's blend
-	var blend: float = 1.0 - pow(1.0 - clampf(steering, 0.0, 1.0), delta * 60.0)
-	_body.linear_velocity = _body.linear_velocity.lerp(desired, blend)
+	_steering.steer(target, delta, fly_speed, steering)
 
 
-# 抄的是 Wasp.steer_towards 那套：目标先吸到网格上，否则贴墙的巢室会被判成不可达，
-# 退回直线 steering 就是原地磨墙
-# Same trick as Wasp: snap the goal first, or a wall-hugging cell reads as unreachable
-# and the fallback straight line grinds into the divider.
-func _heading_towards(target: Vector2) -> Vector2:
-	var direct: Vector2 = (target - _body.global_position).normalized()
-	if _nav == null:
-		return direct
-
-	var goal: Vector2 = _snap_to_navmesh(target)
-	if _nav_goal.distance_squared_to(goal) > 256.0:
-		_nav_goal = goal
-		_nav.target_position = goal
-
-	if _nav.is_navigation_finished():
-		return direct
-
-	var to_waypoint: Vector2 = _nav.get_next_path_position() - _body.global_position
-	return direct if to_waypoint.length() < 0.01 else to_waypoint.normalized()
-
-
-func _snap_to_navmesh(point: Vector2) -> Vector2:
-	if not is_inside_tree():
-		return point
-	var map: RID = get_world_2d().navigation_map
-	if not map.is_valid():
-		return point
-	return NavigationServer2D.map_get_closest_point(map, point)

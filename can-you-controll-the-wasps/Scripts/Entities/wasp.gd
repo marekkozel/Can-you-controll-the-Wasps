@@ -2,6 +2,13 @@ class_name Wasp
 extends RigidBody2D
 
 signal slammed(speed: float)
+## 死了。尸体系统以后接这里 —— 一只蜂是"建格子→产卵→孵化→喂满→封盖→羽化"整条链换来的，
+## 它消失得无声无息是不对的。at 是倒下的位置，尸体就该出现在那儿。
+## 想区分死因看**信号顺序**：处决时 StingComponent.killed 先发（还带 was_false_queen），
+## 这一条后发；只收到这一条就是战死或其他。
+## The corpse system hooks here. To tell an execution apart, watch the order: on a sting
+## StingComponent.killed fires first and carries was_false_queen; this one always follows.
+signal died(wasp: Wasp, at: Vector2)
 ## 岗位变了 / the wasp switched posts
 signal job_changed(job: Job)
 
@@ -19,11 +26,16 @@ const HIVE_GROUP: StringName = &"hive"
 ## 进到这个半径开始减速 / start braking within this radius of the target
 @export_range(0.0, 400.0, 5.0) var arrive_radius: float = 45.0
 
+## 叮一下的基准伤害。全局旋钮：改这里影响所有蜂
+## Global knob - every wasp's base sting. Per-lineage multipliers ride on top of it.
 @export_range(1, 100, 1) var damage: int = 1
 ## 两次叮咬的间隔 / seconds between stings
 @export_range(0.0, 5.0, 0.05) var attack_cooldown: float = 0.6
 ## 缩一下的力道 / how hard a flinch pushes
 @export_range(0.0, 400.0, 5.0) var dodge_impulse: float = 130.0
+## 挨咬时被推开的力度。要小于 dodge_impulse，不然会被顶出猎手的攻击范围，
+## 变成永远打不死 / smaller than a flinch, or a bite knocks the wasp out of reach forever
+@export_range(0.0, 400.0, 5.0) var bite_knockback: float = 70.0
 
 @export_group("Fling")
 @export_range(10.0, 600.0, 5.0) var resume_wander_speed: float = 140.0
@@ -56,6 +68,11 @@ var job: Job = Job.HIVE
 ## 采集岗要搜什么 / what a GATHER wasp is after
 var job_payload: StringName = &""
 var job_post: Node2D = null
+## 个体名。在 _ready 里领，**领的时候它还是 LOYAL**——这一点是名字不泄露立场的全部理由
+## Drawn in _ready, while every wasp is still LOYAL. That ordering is the whole safeguard.
+var wasp_name: String = ""
+## 血统写进来的攻击倍率，跟 speed_scale 一个路子 / written by VariantComponent, like speed_scale
+var damage_scale: int = 1
 
 var target_enemy: Node2D = null
 var target_larva: Node2D = null
@@ -95,6 +112,7 @@ var _wander_timer: float = 0.0
 
 
 func _ready() -> void:
+	wasp_name = WaspNames.pick(get_tree())
 	_juice.target = _visual
 	_t = randf() * TAU
 
@@ -220,6 +238,9 @@ func _on_hovered() -> void:
 func _on_died(_from: Vector2) -> void:
 	_carry.drop()
 	_juice.burst()
+	# queue_free 之前发。接收方要留住尸体的话得自己 instantiate 一个，
+	# 别指望在这只蜂身上做文章 / emit before freeing; listeners must spawn their own corpse
+	died.emit(self, global_position)
 	queue_free()
 
 
@@ -318,6 +339,27 @@ func _process(delta: float) -> void:
 
 # 真的打出去了才返回 true，冷却中返回 false
 # Returns true only when the sting actually landed; false while on cooldown.
+# 挨咬 / bitten. 猎手走这条；处决走 StingComponent，那边直接打满血量
+# Hunters come through here; executions go via StingComponent and bypass it.
+func take_damage(amount: int, from: Vector2 = Vector2.ZERO) -> bool:
+	if not _health.is_alive():
+		return false
+	if not _health.take_damage(amount, from):
+		return false
+
+	_juice.burst()
+	var away: Vector2 = (global_position - from).normalized()
+	if away != Vector2.ZERO:
+		linear_velocity += away * bite_knockback
+
+	# 你把它扔进去挨打，它记着。数值放在 director 上，不安相关的常数统一在那儿调
+	# It remembers being sent to bleed - the constant lives on the director with the rest.
+	var betrayal_director: BetrayalDirector = BetrayalDirector.find(get_tree())
+	if betrayal_director != null:
+		betrayal_director.report_wound(self)
+	return true
+
+
 func attack_enemy() -> bool:
 	if target_enemy == null or not is_instance_valid(target_enemy):
 		return false
@@ -326,12 +368,18 @@ func attack_enemy() -> bool:
 	if not target_enemy.has_method("take_damage"):
 		return false
 
-	target_enemy.take_damage(damage, global_position)
+	target_enemy.take_damage(attack_damage(), global_position)
 	_attack_timer = attack_cooldown
 	return true
 
 
 # brake_radius < 0 就用 arrive_radius；传 0 就完全不减速 / negative means "use arrive_radius"
+# 实际叮咬伤害 = 全局基准 x 血统倍率。属性面板读的也是这个
+# Panel reads this too, so what it shows is what actually lands.
+func attack_damage() -> int:
+	return damage * maxi(damage_scale, 1)
+
+
 func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08, brake_radius: float = -1.0) -> void:
 	if _is_flung:
 		return

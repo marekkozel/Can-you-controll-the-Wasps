@@ -149,6 +149,19 @@ func spawn_enemy(count: int = 1) -> void:
 	_report("spawned %d enemies" % count)
 
 
+# ---------------- 季节 / seasons ----------------
+
+# 一个季节两分钟起步，不给个跳过键根本没法看交替那一下
+# A season runs minutes; without a skip you never get to watch the turnover.
+func skip_season() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null:
+		_report("no SeasonDirector in the scene")
+		return
+	d.advance()
+	_report("season -> %s (gen %d)" % [d.season_name(), d.generation])
+
+
 # ---------------- 叛乱 / betrayal ----------------
 
 func director() -> BetrayalDirector:

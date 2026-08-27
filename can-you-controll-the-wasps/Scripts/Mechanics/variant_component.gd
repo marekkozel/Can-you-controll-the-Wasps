@@ -27,6 +27,8 @@ func apply(next: WaspVariant) -> void:
 	var body: Node = get_parent()
 	if body != null and "speed_scale" in body:
 		body.speed_scale = next.speed_multiplier
+	if body != null and "damage_scale" in body:
+		body.damage_scale = next.attack_units
 
 	variant_changed.emit(next)
 

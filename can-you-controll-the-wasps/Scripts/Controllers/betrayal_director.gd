@@ -42,6 +42,10 @@ const WASP_GROUP: StringName = &"wasps"
 @export_range(0.0, 600.0, 10.0) var witness_radius: float = 220.0
 ## 被摔得够重 / slammed hard enough to matter
 @export var slam_penalty: float = 0.05
+## 被猎手咬伤，只记在个人头上不推群体不安——外敌造成的伤跟"你干的"不是一回事，
+## 但"是你把我派去挡的"这笔账它还是要算
+## Personal only, no colony unrest: an outsider drew the blood, but you chose the post.
+@export var wound_penalty: float = 0.04
 @export var larva_starved: float = 0.06
 @export var larva_murdered: float = 0.04
 @export var cell_fed: float = -0.03
@@ -127,6 +131,12 @@ func report_execution(victim: Node2D, was_false_queen: bool) -> void:
 			continue
 		if witness.global_position.distance_to(victim.global_position) <= witness_radius:
 			witness.allegiance().betrayal += witness_penalty
+
+
+func report_wound(wasp: Wasp) -> void:
+	if not is_instance_valid(wasp):
+		return
+	wasp.allegiance().betrayal += wound_penalty
 
 
 func report_slam(wasp: Wasp) -> void:

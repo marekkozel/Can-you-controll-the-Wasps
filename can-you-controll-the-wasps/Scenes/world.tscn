@@ -11,10 +11,10 @@
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
 [ext_resource type="PackedScene" uid="uid://df47gquo37qaf" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="Script" uid="uid://pu48dbwo85pg" path="res://Scripts/Controllers/betrayal_director.gd" id="12_betrayal"]
-[ext_resource type="Script" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
 [ext_resource type="Resource" path="res://Resources/Variants/crimson.tres" id="13_crimson"]
 [ext_resource type="Resource" path="res://Resources/Variants/violet.tres" id="14_violet"]
 [ext_resource type="Resource" path="res://Resources/Variants/teal.tres" id="15_teal"]
+[ext_resource type="Resource" path="res://Resources/Variants/lime.tres" id="26_lime"]
 [ext_resource type="Script" uid="uid://cm51co8hhoq6j" path="res://Scripts/UI/unrest_tint.gd" id="16_unrest"]
 [ext_resource type="Texture2D" uid="uid://c6dvtxt4yj1fl" path="res://Assets/UI/region_cardboard.png" id="17_ph_card"]
 [ext_resource type="Texture2D" uid="uid://c687eox8jpsx7" path="res://Assets/UI/region_enemies.png" id="18_ph_enemy"]
@@ -22,6 +22,10 @@
 [ext_resource type="Texture2D" uid="uid://c8w6w205ql85p" path="res://Assets/UI/region_info.png" id="20_ph_info"]
 [ext_resource type="Texture2D" uid="uid://dc5b6tp668gkf" path="res://Assets/UI/region_nest.png" id="21_ph_nest"]
 [ext_resource type="Texture2D" uid="uid://daaaman4bfiu1" path="res://Assets/UI/region_upgrades.png" id="22_ph_upgrade"]
+[ext_resource type="Script" uid="uid://bhfyfc82xueyc" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
+[ext_resource type="Resource" path="res://Resources/Variants/enemy_thief.tres" id="24_thief"]
+[ext_resource type="Resource" path="res://Resources/Variants/enemy_hunter.tres" id="25_hunter"]
+[ext_resource type="Script" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
@@ -71,20 +75,25 @@ payload = &"food"
 
 [node name="BetrayalDirector" type="Node2D" parent="Queen_controller" unique_id=1241915486 groups=["betrayal_director"]]
 script = ExtResource("12_betrayal")
-brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtResource("14_violet"), ExtResource("15_teal")])
+brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtResource("14_violet"), ExtResource("15_teal"), ExtResource("26_lime")])
 
-[node name="RaidDirector" type="Node2D" parent="Queen_controller" groups=["raid_director"]]
+[node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
+thief = ExtResource("24_thief")
+hunter = ExtResource("25_hunter")
 
-[node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
 position = Vector2(340, 72)
 
-[node name="EntryTop" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryTop" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=1082708076]
 position = Vector2(640, 72)
 
-[node name="EntryRight" type="Marker2D" parent="Queen_controller/RaidDirector"]
+[node name="EntryRight" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=1179819602]
 position = Vector2(940, 72)
+
+[node name="SeasonDirector" type="Node2D" parent="Queen_controller" groups=["season_director"]]
+script = ExtResource("26_season_dir")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
@@ -202,14 +211,12 @@ layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.4
 anchor_right = 0.2
-anchor_bottom = 1.0
 
 [node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
 layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
-anchor_bottom = 1.0
 
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
 anchors_preset = -1

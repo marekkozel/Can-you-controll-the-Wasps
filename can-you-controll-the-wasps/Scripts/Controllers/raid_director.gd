@@ -25,6 +25,15 @@ const ENTITIES_GROUP: StringName = &"entities"
 
 @export var enemy_scene: PackedScene
 
+@export_group("Breeds")
+## 偷卵那种，一波里至少保证有一只——没有小偷的入侵不威胁巢，只是场架
+## At least one always spawns: a raid with no thief threatens nothing, it is just a brawl.
+@export var thief: EnemyVariant
+## 索敌那种 / the one that hunts wasps
+@export var hunter: EnemyVariant
+## 一波里猎手占多少 / share of each wave that hunts instead of stealing
+@export_range(0.0, 1.0, 0.05) var hunter_share: float = 0.4
+
 @export_group("Schedule")
 ## 第一波来得晚，先让玩家把巢起起来 / the first wave waits for a hive worth raiding
 @export_range(0.0, 600.0, 5.0) var first_raid_delay: float = 90.0
@@ -51,6 +60,7 @@ var wave: int = 0
 
 var _raiders: Array = []
 var _entries: Array[Node2D] = []
+var _planned: int = 0
 var _timer: float = 0.0
 var _time_left: float = 0.0
 var _raiding: bool = false
@@ -140,6 +150,7 @@ func _start() -> void:
 	if hive != null:
 		count += int(hive.built_count() / float(cells_per_extra))
 	count = clampi(count, 1, max_count)
+	_planned = count
 
 	_raiders.clear()
 	for i in count:
@@ -169,16 +180,33 @@ func _spawn(index: int) -> Enemy:
 	if raider == null:
 		return null
 
+	raider.variant = _breed_for(index)
+
 	var entry: Vector2 = global_position
 	if not _entries.is_empty():
 		entry = _entries[index % _entries.size()].global_position
 	var spot: Vector2 = entry + Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * entry_scatter
 
+	# variant 必须在 add_child 之前写：_apply_variant() 在 _ready 里跑
+	# Must be set before the node enters the tree - _apply_variant() runs in _ready.
 	_spawn_root().add_child(raider)
 	raider.global_position = spot
 	raider.set_wander_home(spot)
 	raider.begin_raid(entry)  # 从哪进来的就从哪撤 / leaves the way it came
 	return raider
+
+
+# 前几只是猎手，剩下的是小偷。用固定切分而不是每只 randf()：随机会掷出"整波全是猎手"，
+# 那一波巢完全没有压力，玩家学不到"入侵是来偷东西的"
+# A fixed split, not a per-raider roll: randomness can produce an all-hunter wave, and
+# that wave teaches the player nothing about what a raid is for.
+func _breed_for(index: int) -> EnemyVariant:
+	if hunter == null:
+		return thief
+	if thief == null:
+		return hunter
+	var hunters: int = mini(int(round(float(_planned) * hunter_share)), maxi(_planned - 1, 0))
+	return hunter if index < hunters else thief
 
 
 func _spawn_root() -> Node:

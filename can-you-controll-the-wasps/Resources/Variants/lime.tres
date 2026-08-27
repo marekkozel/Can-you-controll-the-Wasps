@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WaspVariant" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/wasp_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+display_name = "Lime"
+body_color = Color(0.55, 0.85, 0.3, 1)
+stripe_color = Color(0.12, 0.2, 0.08, 1)
+head_color = Color(0.2, 0.3, 0.12, 1)
+outline_color = Color(0.28, 0.44, 0.14, 1)
+attack_units = 2
+speed_multiplier = 1.0
+carry_units = 1
+build_units = 1

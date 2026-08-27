@@ -8,6 +8,10 @@ extends RigidBody2D
 
 signal killed(enemy: Enemy)
 
+## 品种：颜色 + 血量 + 干什么。不设就是默认的小偷色和 1 血
+## Breed - colour, health, and which behaviour component runs. See EnemyVariant.
+@export var variant: EnemyVariant
+
 @export_group("Combat")
 ## 每次点击造成几点伤害 / damage per click
 @export_range(1, 20, 1) var click_damage: int = 1
@@ -32,6 +36,7 @@ signal killed(enemy: Enemy)
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _wander: WanderComponent = $WanderComponent
 @onready var _raid: RaidComponent = $RaidComponent
+@onready var _hunt: HuntComponent = $HuntComponent
 
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
@@ -41,6 +46,7 @@ var _is_dead: bool = false
 
 func _ready() -> void:
 	_juice.target = _visual
+	_apply_variant()
 
 	input_pickable = true
 	input_event.connect(_on_input_event)
@@ -59,19 +65,62 @@ func set_wander_home(position: Vector2) -> void:
 	_wander.set_home(position)
 
 
-# 入场即开打。exit_point 是收兵时往哪撤 / enters raiding; exit_point is where it leaves from
+# 入场。开哪个组件由品种决定，exit_point 是收兵时往哪撤
+# Which component drives it is the breed's call; exit_point is where it leaves from.
 func begin_raid(exit_point: Vector2 = Vector2.INF) -> void:
 	_wander.enabled = false
+	if hunts():
+		# 猎手不碰巢室，但离场还是走 RaidComponent，两种敌人共用一条撤退逻辑
+		# Hunters never touch a cell, but they leave through RaidComponent all the same.
+		_raid.arm_exit(exit_point)
+		_hunt.begin()
+		return
 	_raid.begin(exit_point)
 
 
 # 时间到了收兵，路上照样能被打死 / called off; still killable on the way out
 func retreat() -> void:
+	_hunt.stop()
 	_raid.retreat()
 
 
+func hunts() -> bool:
+	return variant != null and variant.behavior == EnemyVariant.Behavior.HUNTER
+
+
 func is_raiding() -> bool:
-	return not _is_dead and _raid.is_raiding()
+	if _is_dead:
+		return false
+	return _hunt.hunting or _raid.is_raiding()
+
+
+# 血量要在 HealthComponent._ready() 之后再写：子节点先 _ready，那时 health 已经按
+# max_health 初始化过一遍了，只改 max_health 不改 health 会得到一只 1 血的敌人
+# Children _ready first, so health is already initialised - both fields must be set here.
+func _apply_variant() -> void:
+	if variant == null:
+		return
+	_health.max_health = variant.max_health
+	_health.health = variant.max_health
+
+	_tint(_visual.get_node_or_null(^"Body"), variant.body_color)
+	_tint(_visual.get_node_or_null(^"Sheen"), variant.sheen_color)
+	_tint(_visual.get_node_or_null(^"Head"), variant.head_color)
+	_tint(_visual.get_node_or_null(^"EyeL"), variant.eye_color)
+	_tint(_visual.get_node_or_null(^"EyeR"), variant.eye_color)
+	var outline: Line2D = _visual.get_node_or_null(^"Outline") as Line2D
+	if outline != null:
+		outline.default_color = variant.outline_color
+
+
+func _tint(node: Node, color: Color) -> void:
+	var poly: Polygon2D = node as Polygon2D
+	if poly != null:
+		poly.color = color
+		return
+	var sprite: Sprite2D = node as Sprite2D
+	if sprite != null:
+		sprite.self_modulate = color  # 贴图画灰度，白 x 色 = 色 / greyscale sprites tint clean
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -104,10 +153,15 @@ func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 	if direction == Vector2.ZERO:  # 正好点在中心 / clicked dead centre
 		direction = Vector2.RIGHT.rotated(randf() * TAU)
 
+	# 只在击退期间停游荡，落地后要开回来。以前这里是永久关闭——1 血时非致命分支
+	# 根本走不到第二次所以没人发现，敌人一有血量就会让散兵挨一下之后永久僵住
+	# Wander must come back: this used to switch off for good, which only stayed invisible
+	# while one hit was always lethal.
 	_wander.enabled = false
 	apply_central_impulse(direction * knockback_force)
 	apply_torque_impulse(randf_range(-knockback_spin, knockback_spin))
 	_juice.punch(0.65, 0.3)
+	_resume_wander_after_knockback()
 
 
 func _on_died(_from: Vector2) -> void:
@@ -115,6 +169,7 @@ func _on_died(_from: Vector2) -> void:
 	input_pickable = false
 	_wander.enabled = false
 	_raid.stop()  # 不停的话组件会继续给冻住的尸体写速度 / else it steers a frozen corpse
+	_hunt.stop()
 	_visual.modulate = Color.WHITE
 	set_process(false)
 	killed.emit(self)
@@ -130,6 +185,16 @@ func _on_died(_from: Vector2) -> void:
 	tween.tween_property(_visual, "scale", Vector2.ONE * death_pop_scale, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_visual, "modulate:a", 0.0, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(queue_free)
+
+
+# 击退飞完再恢复游荡。入侵中的敌人本来就没开游荡，这条只对散兵有意义
+# Only loose wanderers care - a raider never had wander on in the first place.
+func _resume_wander_after_knockback() -> void:
+	await get_tree().create_timer(0.6).timeout
+	if _is_dead or not is_instance_valid(self):
+		return
+	if not _raid.is_raiding() and not _hunt.hunting:
+		_wander.enabled = true
 
 
 # 命中卡顿。用真实时间计时，不然自己会被自己的减速拖长

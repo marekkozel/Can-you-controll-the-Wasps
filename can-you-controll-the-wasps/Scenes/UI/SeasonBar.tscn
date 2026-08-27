@@ -1,11 +1,12 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
 [ext_resource type="Texture2D" uid="uid://ckyoq3e31wicq" path="res://Assets/UI/season_bar.png" id="2_ph_season"]
+[ext_resource type="Script" path="res://Scripts/UI/season_progress.gd" id="3_progress"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
 
-[node name="SeasonBar" type="PanelContainer"]
+[node name="SeasonBar" type="PanelContainer" groups=["season_bar"]]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -19,6 +20,11 @@ layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("2_ph_season")
 expand_mode = 1
+
+[node name="Fill" type="Control" parent="."]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_progress")
 
 [node name="Row" type="HBoxContainer" parent="."]
 layout_mode = 2
