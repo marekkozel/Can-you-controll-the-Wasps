@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://c4rr10nl00t01"]
+
+[ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="1_draggable"]
+[ext_resource type="Texture2D" uid="uid://bhgc556qhai7p" path="res://Assets/Entities/Meat_unit.png" id="1_meat"]
+[ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
+
+[sub_resource type="CircleShape2D" id="Shape_carrion"]
+radius = 12.0
+
+[node name="Carrion" type="RigidBody2D" groups=["carriable"]]
+mass = 0.5
+linear_damp = 2.0
+angular_damp = 3.0
+
+[node name="Fill" type="Sprite2D" parent="."]
+texture = ExtResource("1_meat")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_carrion")
+
+[node name="DraggableComponent" parent="." instance=ExtResource("1_draggable")]
+profile = ExtResource("2_profile")
+
+[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+shape = SubResource("Shape_carrion")
+
+[node name="DeliverableComponent" parent="." instance=ExtResource("3_deliver")]
+payload = &"carrion"
+
+[node name="ClaimComponent" parent="." instance=ExtResource("4_claim")]
+
+[editable path="DraggableComponent"]

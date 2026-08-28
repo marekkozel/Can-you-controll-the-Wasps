@@ -135,7 +135,16 @@ func _show_perks(wasp: Node2D) -> void:
 	var speed: int = wasp.speed_units() if wasp.has_method("speed_units") else 1
 	var carry: int = wasp.carry_units() if wasp.has_method("carry_units") else 1
 	var build: int = wasp.build_units() if wasp.has_method("build_units") else 1
-	var slots: int = PERK_SLOTS + (wasp.perk_bonus if "perk_bonus" in wasp else 0)
+	# 轨道要留够蜂王浆吃出来的那几格，否则 _set_perk 的 clamp 会把加成截掉，
+	# 面板报出比实际**更低**的数——这比不显示还糟
+	# The track must have room for the jelly bonus or the clamp below silently
+	# under-reports it, which is worse than not showing it at all.
+	var jelly: int = 0
+	if "trait_bonus" in wasp:
+		for value in wasp.trait_bonus:
+			jelly = maxi(jelly, value)
+	# 四条轨道等长，按最高的那条留位，看着才齐 / one length for all four, sized by the tallest
+	var slots: int = PERK_SLOTS + (wasp.perk_bonus if "perk_bonus" in wasp else 0) + jelly
 
 	# 格子就是数值，不再另外写一遍数字 / the pips are the number, nothing is spelled out
 	_set_perk(&"Speed", speed, slots)

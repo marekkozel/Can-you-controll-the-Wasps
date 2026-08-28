@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cpjfju8opl5or"]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/loot_component.gd" id="1_loot"]
+
+[node name="LootComponent" type="Node"]
+script = ExtResource("1_loot")

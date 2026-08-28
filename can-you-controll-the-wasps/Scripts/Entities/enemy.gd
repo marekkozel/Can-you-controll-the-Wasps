@@ -37,6 +37,7 @@ signal killed(enemy: Enemy)
 @onready var _wander: WanderComponent = $WanderComponent
 @onready var _raid: RaidComponent = $RaidComponent
 @onready var _hunt: HuntComponent = $HuntComponent
+@onready var _loot: LootComponent = $LootComponent
 
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
@@ -102,6 +103,7 @@ func _apply_variant() -> void:
 		return
 	_health.max_health = variant.max_health
 	_health.health = variant.max_health
+	_loot.count = variant.loot_count
 
 	_tint(_visual.get_node_or_null(^"Body"), variant.body_color)
 	_tint(_visual.get_node_or_null(^"Sheen"), variant.sheen_color)

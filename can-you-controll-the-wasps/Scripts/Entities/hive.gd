@@ -120,7 +120,7 @@ func accepts(payload: StringName) -> bool:
 	match payload:
 		&"cardboard":
 			return built_count() < _cells.size()
-		&"food":
+		&"food", &"royal_jelly":
 			return not hungry_cells().is_empty()
 	return false
 

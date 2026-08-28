@@ -22,6 +22,9 @@ enum Behavior {
 @export var display_name: String = "Thief"
 @export var behavior: Behavior = Behavior.THIEF
 @export_range(1, 20, 1) var max_health: int = 3
+## 死了掉几份战利品。猎手该给得多一点：它不偷东西，打死它没有"保住了什么"这层回报，
+## 掉落就是打它的**全部**理由 / a hunter steals nothing, so loot is the only reason to fight it
+@export_range(0, 8, 1) var loot_count: int = 1
 
 @export_group("Colours")
 @export var body_color: Color = Color(0.28, 0.32, 0.27)

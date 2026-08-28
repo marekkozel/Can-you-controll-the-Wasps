@@ -35,6 +35,8 @@ const LARVA_SCENE: PackedScene = preload("res://Scenes/Entities/Larva.tscn")
 const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 ## 羽化出来的黄蜂挂到哪一层 / group that hosts emerged wasps
 const ENTITIES_GROUP: StringName = &"entities"
+## 喂下蜂王浆时格子闪的颜色 / the flash a jelly feeding paints on the cell
+const JELLY_FLASH: Color = Color(1.0, 0.86, 0.35)
 
 ## 建成这一格要几块纸板 / cardboard pieces needed to build
 @export_range(1, 10, 1) var build_cost: int = 3
@@ -69,6 +71,9 @@ const ENTITIES_GROUP: StringName = &"entities"
 # 里面这颗是不是异色卵。叛军靠它认自己人，不然会把自己姐妹吃了
 # Rebels check this to spare their own brood - without it they eat their siblings.
 var rebel_brood: bool = false
+## 这一格吃下了几份蜂王浆。羽化时刻印给新蜂，然后清零；幼虫死了就作废
+## Jelly fed to this cell's brood; stamped at emergence, written off if the brood dies.
+var _gifts: int = 0
 var coord: Vector2i = Vector2i.ZERO
 var progress: int = 0
 var is_built: bool = false
@@ -126,6 +131,8 @@ func deliver(payload: StringName, amount: int = 1) -> bool:
 			return add_build_progress(amount)
 		&"food":
 			return _feed_occupant(amount)
+		&"royal_jelly":
+			return _feed_royal_jelly(amount)
 	return false
 
 
@@ -187,6 +194,7 @@ func destroy_occupant() -> bool:
 		return false
 
 	_set_occupant(null, Content.ROTTEN)
+	_gifts = 0  # 喂进去的蜂王浆跟着这颗一起没了 / the jelly dies with the brood
 	_refresh_visual()
 	_juice.punch(0.82, 0.35)
 	_juice.burst()
@@ -224,6 +232,11 @@ func _spawn_wasp() -> Wasp:
 	var season: SeasonDirector = SeasonDirector.find(get_tree())
 	if season != null:
 		season.dress_newborn(wasp)
+	# 蜂王浆兑现：一份掷一次，随机点亮一条专长。掷点放在这里而不是喂食那一刻，
+	# 是为了让开箱感落在蜂钻出来的瞬间 / rolled here so the reveal lands on emergence
+	for i in _gifts:
+		wasp.grant_random_trait()
+	_gifts = 0
 	wasp.global_position = global_position
 	wasp.set_wander_home(global_position)
 	return wasp
@@ -282,6 +295,21 @@ func _feed_occupant(amount: int) -> bool:
 	if content != Content.LARVA or _occupant == null:
 		return false
 	return (_occupant as Larva).feed(amount)
+
+
+# 蜂王浆走普通食物那条路：它**占用**幼虫的饭份，不是额外附加。所以一只幼虫最多
+# 吃下 required_units 份，加成上限自己就出来了，不用另写规则
+# Jelly consumes the larva's meals instead of adding to them, so the cap comes for free.
+#
+# 账记在格子上而不是幼虫上：幼虫一吃饱就被换成 SEALED 丢掉了，活不到羽化那一刻
+# Tracked here because the larva is discarded on satiation and never sees emergence.
+func _feed_royal_jelly(amount: int) -> bool:
+	if not _feed_occupant(amount):
+		return false
+	_gifts += amount
+	_juice.flash(_cell, JELLY_FLASH, _base_tint())
+	_juice.punch(1.22, 0.35)
+	return true
 
 
 func can_lay_egg() -> bool:
@@ -375,6 +403,7 @@ func _on_seal_matured() -> void:
 
 
 func _on_larva_starved(_larva: Larva) -> void:
+	_gifts = 0  # 同上：没能羽化就什么都没留下 / nothing survives an unfinished brood
 	content = Content.ROTTEN  # 尸体留在原地，等玩家按住清理 / corpse stays until the player holds to clean it
 	_update_hold()
 	_refresh_visual()
@@ -383,6 +412,7 @@ func _on_larva_starved(_larva: Larva) -> void:
 
 func _clean() -> void:
 	_set_occupant(null, Content.NONE)
+	_gifts = 0
 	_refresh_visual()
 	cleaned.emit(self)
 

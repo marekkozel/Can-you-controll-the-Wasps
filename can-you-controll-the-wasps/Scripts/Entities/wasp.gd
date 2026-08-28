@@ -16,10 +16,20 @@ signal job_changed(job: Job)
 # The drop point decides the job - that is the whole point of dragging a wasp around.
 enum Job { HIVE, GATHER }
 
+## 四条专长，蜂王浆随机点亮其中一条 / the four perks royal jelly rolls against
+enum Trait { SPEED, ATTACK, CARRY, BUILD }
+
 const ITEM_SOURCE_GROUP: StringName = &"item_source"
 const HIVE_GROUP: StringName = &"hive"
+## 专长轨道画到 7 格就读不出个数了（血统 4 + 基因 3），加成一律截在这里
+## The pip track tops out readable at 7; every bonus clamps to it. See GeneBank.max_rank.
+const MAX_UNITS: int = 7
 
 @export_range(0.05, 2.0, 0.05) var emerge_duration: float = 0.45
+## 每点蜂王浆加成让体型涨多少。**只跟蜂王浆挂钩，不算基因**——基因是全场蜂都有的，
+## 全体一起变大等于没变；这一格标记的是"这只是你亲手喂出来的"
+## Royal jelly only: genes apply colony-wide, so scaling on them would say nothing.
+@export_range(0.0, 0.4, 0.01) var trait_growth: float = 0.09
 @export_range(0.0, 20.0, 0.5) var bob_amount: float = 3.5
 @export_range(0.1, 5.0, 0.1) var bob_period: float = 1.6
 @export_range(0.02, 1.0, 0.01) var facing_smoothing: float = 0.15
@@ -82,6 +92,13 @@ var damage_scale: int = 1
 ## 已经在场的蜂不会因为你解锁了新基因而变强，加成只跟着新生的那一批
 ## Stamped once at birth: unlocking a gene never upgrades the wasps already flying.
 var perk_bonus: int = 0
+## 蜂王浆加成，按 Trait 下标存。跟 perk_bonus 分开是因为两者语义不同：
+## 基因是全场普适的，这个是**这一只**幼虫吃出来的，而且只点亮随机一条
+## Kept apart from perk_bonus on purpose: genes are colony-wide, this is one larva's meal.
+var trait_bonus: Array[int] = [0, 0, 0, 0]
+
+var _emerging: bool = false
+var _emerge_tween: Tween
 
 var target_enemy: Node2D = null
 var target_larva: Node2D = null
@@ -142,8 +159,20 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 	_visual.scale = Vector2.ZERO
-	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT) \
-		.tween_property(_visual, "scale", Vector2.ONE, emerge_duration)
+	_emerging = true
+	_start_emerge_tween()
+
+
+# 羽化的目标大小可能在动画途中才定下来：格子是 add_child() 之后才刻印蜂王浆加成的，
+# 那会儿这个 tween 已经在跑了，所以要能重新瞄准
+# The jelly bonus is stamped after add_child(), by which time this tween is already
+# running - hence re-aimable rather than fire-and-forget.
+func _start_emerge_tween() -> void:
+	if _emerge_tween != null and _emerge_tween.is_valid():
+		_emerge_tween.kill()
+	_emerge_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_emerge_tween.tween_property(_visual, "scale", _juice.base_scale, emerge_duration)
+	_emerge_tween.tween_callback(func(): _emerging = false)
 
 
 # 落地、刚羽化、被生成方摆位置都走这里，岗位重算挂在这一个口就够了
@@ -187,6 +216,30 @@ func _update_job() -> void:
 	job_changed.emit(job)
 
 
+# 这个岗位能搬哪几种货。主业永远在第一个；岗位挂在加工厂上的话，
+# 连它的原料和成品一起管——搬战利品进来，也把加工好的送出去
+# The post's own payload comes first. A refinery post owns its whole loop, so its
+# intake and output ride along - haul the raw in, carry the refined out.
+#
+# 范围由加工厂自己的配置决定，这里**不写死任何 payload 名**：再加一种加工厂
+# 只要配 .tscn，这条不用回来改
+# Nothing is hardcoded here on purpose - a second refinery needs no change to this.
+func job_payloads() -> Array[StringName]:
+	if job != Job.GATHER or job_payload == &"":
+		return []
+
+	var list: Array[StringName] = [job_payload]
+	var post: ItemSource = job_post as ItemSource
+	if post == null or not post.is_refinery():
+		return list
+
+	if not list.has(post.intake_payload):
+		list.append(post.intake_payload)
+	if post.output_payload != &"" and not list.has(post.output_payload):
+		list.append(post.output_payload)
+	return list
+
+
 func carry() -> CarryComponent:
 	return _carry
 
@@ -199,21 +252,54 @@ func allegiance() -> AllegianceComponent:
 # 那样拿到的是没算基因的裸值，而面板、行为树和伤害计算必须报同一个数
 # The wasp is the authority on its own numbers; reading the variant directly skips genes.
 func speed_units() -> int:
-	return int(round(speed_scale)) + perk_bonus
+	return _units(int(round(speed_scale)), Trait.SPEED)
 
 
 func attack_units() -> int:
-	return maxi(damage_scale, 1) + perk_bonus
+	return _units(maxi(damage_scale, 1), Trait.ATTACK)
 
 
 func carry_units() -> int:
 	var v: WaspVariant = _variant.variant
-	return (v.carry_units if v != null else 1) + perk_bonus
+	return _units(v.carry_units if v != null else 1, Trait.CARRY)
 
 
 func build_units() -> int:
 	var v: WaspVariant = _variant.variant
-	return (v.build_units if v != null else 1) + perk_bonus
+	return _units(v.build_units if v != null else 1, Trait.BUILD)
+
+
+# 血统值 + 基因（全属性）+ 蜂王浆（单项），最后截到轨道画得下的格数
+# Lineage + genes (all four) + jelly (one), clamped to what the pip track can render.
+func _units(base: int, which: Trait) -> int:
+	return mini(base + perk_bonus + trait_bonus[which], MAX_UNITS)
+
+
+# 随机点亮一条专长，返回中了哪条。幼虫吃下蜂王浆时**不掷**，掷点留到羽化那一刻——
+# 喂的时候就知道结果的话，这东西就退化成一个普通的加号了
+# Rolled at emergence, never at feeding time: knowing the outcome while you feed would
+# turn the whole thing back into a plain plus-one.
+func grant_random_trait() -> Trait:
+	var which: Trait = (randi() % trait_bonus.size()) as Trait
+	trait_bonus[which] += 1
+	_refresh_size()
+	return which
+
+
+# 体型跟着蜂王浆总数走 / size tracks the jelly count, nothing else
+func _refresh_size() -> void:
+	var total: int = 0
+	for value in trait_bonus:
+		total += value
+	var scale_factor: float = 1.0 + float(total) * trait_growth
+	# 只放大 Visual，**碰撞体不动**：采集/叮咬/猎手的判定距离全是按半径 19.5 手算死的
+	# Visual only - every reach in the project is hand-tuned against a 19.5 radius.
+	_juice.base_scale = Vector2.ONE * scale_factor
+	if _emerging:
+		_start_emerge_tween()  # 动画还在跑，换个目标继续 / re-aim, don't snap
+		return
+	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT) \
+		.tween_property(_visual, "scale", _juice.base_scale, 0.3)
 
 
 func variant() -> VariantComponent:

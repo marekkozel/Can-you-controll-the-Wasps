@@ -7,3 +7,4 @@ script = ExtResource("1_enemy_variant")
 display_name = "Thief"
 behavior = 0
 max_health = 3
+loot_count = 1

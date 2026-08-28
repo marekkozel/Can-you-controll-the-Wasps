@@ -14,6 +14,18 @@ extends Node2D
 ## 所以走平滑正弦；x/y 频率错开，走小八字 / so use a smooth sine, x and y offset for a figure-eight
 @export_range(0.5, 30.0, 0.5) var shake_frequency: float = 5.0
 
+## punch 回弹到的基准缩放。持有方体型不是 1 倍时必须写它，否则弹一下就被打回标准大小
+## The scale punch springs back to. Any owner that is not 1x must set this, or every
+## punch silently resets it to normal size.
+var base_scale: Vector2 = Vector2.ONE:
+	set(value):
+		base_scale = value
+		# 正在弹的时候改基准，让 tween 重新瞄准，不然这一次弹完还是回旧值
+		# Re-aim a punch in flight, or this one still lands on the old baseline.
+		if _punch_tween != null and _punch_tween.is_valid() and target != null:
+			_punch_tween.kill()
+			target.scale = base_scale
+
 ## 抖动幅度（像素），设 0 停止 / shake amplitude in px, 0 stops it
 var shake_amount: float = 0.0:
 	set(value):
@@ -54,9 +66,11 @@ func punch(amount: float = 1.15, duration: float = 0.25) -> void:
 		return
 	if _punch_tween != null and _punch_tween.is_valid():
 		_punch_tween.kill()
-	target.scale = Vector2.ONE * amount
+	# 乘基准而不是覆盖它：强化过的蜂本来就比标准大，弹一下不该把体型抹平
+	# Multiply the baseline instead of replacing it - a bigger wasp must stay bigger.
+	target.scale = base_scale * amount
 	_punch_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_punch_tween.tween_property(target, "scale", Vector2.ONE, duration)
+	_punch_tween.tween_property(target, "scale", base_scale, duration)
 
 
 # 把 item 刷成 color 再退回 restore / flash to color, tween back to restore

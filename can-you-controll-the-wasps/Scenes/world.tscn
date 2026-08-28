@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
+[ext_resource type="PackedScene" uid="uid://cj3llyr0y41xx" path="res://Scenes/Entities/RoyalJelly.tscn" id="9_jelly"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
 [ext_resource type="PackedScene" uid="uid://df47gquo37qaf" path="res://Scenes/Entities/Enemy.tscn" id="11_enemy"]
 [ext_resource type="Script" uid="uid://pu48dbwo85pg" path="res://Scripts/Controllers/betrayal_director.gd" id="12_betrayal"]
@@ -72,6 +73,10 @@ position = Vector2(1152, 144)
 mode = 1
 piece_scene = ExtResource("9_food")
 payload = &"food"
+intake_payload = &"carrion"
+intake_required = 2
+output_scene = ExtResource("9_jelly")
+output_payload = &"royal_jelly"
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 

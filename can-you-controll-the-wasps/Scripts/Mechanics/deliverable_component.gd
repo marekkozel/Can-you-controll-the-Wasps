@@ -1,12 +1,18 @@
 class_name DeliverableComponent
 extends Node
 
-# 可交付物 / deliverable: 松手时落在蜂巢格子上就把自己交出去。
+# 可交付物 / deliverable: 松手时落在收得下它的东西上就把自己交出去。
 # 纸板和食物共用这一条路径，格子那边靠 payload 决定怎么处理 / cell decides from payload.
+#
+# 收货方有两种：蜂巢格子，和会加工的产出点（战利品送进去换蜂王浆）。先问加工厂再问巢，
+# 因为加工厂在上带、巢在下带，物理上不可能重叠，顺序纯粹是为了让判断短路得早一点
+# Two kinds of receiver: hive cells, and refinery posts. They can never overlap - the
+# posts are in the top band and the hive in the bottom - so the order is just short-circuiting.
 
-signal delivered(cell: HexCell)
+signal delivered(target: Node)
 
 const HIVE_GROUP: StringName = &"hive"
+const ITEM_SOURCE_GROUP: StringName = &"item_source"
 
 ## 交给格子的东西 / payload: &"cardboard" 加建造进度, &"food" 喂幼虫
 @export var payload: StringName = &"cardboard"
@@ -37,17 +43,36 @@ func try_deliver(amount_override: int = -1) -> bool:
 	if body == null:
 		return false
 
-	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
-	if hive == null:
-		return false
-
-	# 没落在格子上或格子不收，东西留原地还能再拖 / not accepted, leave it where it is
-	var cell: HexCell = hive.cell_at_global(body.global_position)
 	var units: int = amount if amount_override < 1 else amount_override
-	if cell == null or not cell.deliver(payload, units):
+
+	var target: Node = _receiver_at(body.global_position, units)
+	# 没落在收货方身上，东西留原地还能再拖 / not accepted, leave it where it is
+	if target == null:
 		return false
 
-	delivered.emit(cell)
+	delivered.emit(target)
 	if consume_on_deliver:
 		body.queue_free()
 	return true
+
+
+# 找到并**立即完成**交付，返回收下它的那个节点。判断和交付合在一起是因为两边的
+# "收不收" 都得真调一次才知道（格子可能已经建满、幼虫可能刚被喂饱）
+# Probing and delivering are one step: both receivers only answer by actually trying.
+func _receiver_at(at: Vector2, units: int) -> Node:
+	for node in get_tree().get_nodes_in_group(ITEM_SOURCE_GROUP):
+		var post: ItemSource = node as ItemSource
+		if post == null or not post.accepts_intake(payload):
+			continue
+		if at.distance_to(post.global_position) > post.intake_radius:
+			continue
+		if post.deposit(payload, units):
+			return post
+
+	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+	if hive == null:
+		return null
+	var cell: HexCell = hive.cell_at_global(at)
+	if cell != null and cell.deliver(payload, units):
+		return cell
+	return null
