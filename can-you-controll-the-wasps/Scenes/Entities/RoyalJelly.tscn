@@ -6,11 +6,16 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_onxnw"]
+friction = 0.9
+bounce = 0.23
+
 [sub_resource type="CircleShape2D" id="Shape_jelly"]
 radius = 17.0
 
 [node name="RoyalJelly" type="RigidBody2D" unique_id=1160007476 groups=["carriable"]]
 mass = 0.5
+physics_material_override = SubResource("PhysicsMaterial_onxnw")
 continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0

@@ -101,16 +101,16 @@ size = Vector2(256, 40)
 size = Vector2(256, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_nest_side"]
-size = Vector2(40, 432)
+size = Vector2(298, 432)
 
 [sub_resource type="RectangleShape2D" id="Shape_nest_side_short"]
-size = Vector2(40, 288)
+size = Vector2(259, 288)
 
 [sub_resource type="RectangleShape2D" id="Shape_upgrade_floor"]
 size = Vector2(296, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_nest_bottom"]
-size = Vector2(1360, 49)
+size = Vector2(1360, 31)
 
 [node name="World" type="Node2D" unique_id=78065329]
 
@@ -120,57 +120,6 @@ size = Vector2(1360, 49)
 navigation_polygon = SubResource("NavPoly_world")
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
-
-[node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
-
-[node name="Cardboard" type="Sprite2D" parent="Resource_layer" unique_id=1041903529]
-position = Vector2(65, 222)
-texture = ExtResource("3_04jkj")
-
-[node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(49, 238)
-mode = 1
-piece_scene = ExtResource("8_cardboard")
-
-[node name="Food" type="Sprite2D" parent="Resource_layer" unique_id=1708185037]
-position = Vector2(1152, 217)
-texture = ExtResource("5_lkcvt")
-
-[node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(1159, 201)
-mode = 1
-piece_scene = ExtResource("9_food")
-payload = &"food"
-
-[node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(1210, 656)
-mode = 1
-payload = &"royal_jelly"
-scatter_radius = 32.0
-intake_payload = &"carrion"
-output_scene = ExtResource("9_jelly")
-output_payload = &"royal_jelly"
-
-[node name="Drop" type="Marker2D" parent="Resource_layer/Refinery" unique_id=1621565841]
-position = Vector2(-223, 14)
-
-[node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
-visible = false
-self_modulate = Color(0.78, 0.76, 0.72, 1)
-offset_left = -64.0
-offset_top = -32.0
-offset_right = 64.0
-offset_bottom = 32.0
-texture = ExtResource("32_slot")
-patch_margin_left = 8
-patch_margin_top = 8
-patch_margin_right = 8
-patch_margin_bottom = 8
-
-[node name="Queen" type="Sprite2D" parent="Resource_layer/Refinery" unique_id=1006420576]
-position = Vector2(0, -12)
-scale = Vector2(1.4, 1.4)
-texture = ExtResource("8_jwdyn")
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
@@ -217,6 +166,58 @@ z_index = -100
 position = Vector2(640, 464)
 scale = Vector2(1.5, 1.5)
 
+[node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
+
+[node name="Cardboard" type="Sprite2D" parent="Resource_layer" unique_id=1041903529]
+position = Vector2(65, 222)
+texture = ExtResource("3_04jkj")
+
+[node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
+position = Vector2(49, 238)
+mode = 1
+piece_scene = ExtResource("8_cardboard")
+
+[node name="Food" type="Sprite2D" parent="Resource_layer" unique_id=1708185037]
+position = Vector2(1152, 217)
+texture = ExtResource("5_lkcvt")
+
+[node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
+position = Vector2(1159, 201)
+mode = 1
+piece_scene = ExtResource("9_food")
+payload = &"food"
+
+[node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
+position = Vector2(1210, 656)
+mode = 1
+payload = &"royal_jelly"
+scatter_radius = 32.0
+intake_payload = &"carrion"
+intake_radius = 72.0
+output_scene = ExtResource("9_jelly")
+output_payload = &"royal_jelly"
+
+[node name="Drop" type="Marker2D" parent="Resource_layer/Refinery" unique_id=1621565841]
+position = Vector2(-223, 14)
+
+[node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
+visible = false
+self_modulate = Color(0.78, 0.76, 0.72, 1)
+offset_left = -64.0
+offset_top = -32.0
+offset_right = 64.0
+offset_bottom = 32.0
+texture = ExtResource("32_slot")
+patch_margin_left = 8
+patch_margin_top = 8
+patch_margin_right = 8
+patch_margin_bottom = 8
+
+[node name="Queen" type="Sprite2D" parent="Resource_layer/Refinery" unique_id=1006420576]
+position = Vector2(0, -12)
+scale = Vector2(1.4, 1.4)
+texture = ExtResource("8_jwdyn")
+
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=1743521047]
@@ -240,11 +241,11 @@ position = Vector2(1152, 308)
 shape = SubResource("Shape_divider_right")
 
 [node name="WallNestLeft" type="CollisionShape2D" parent="StaticBody2D" unique_id=1209315537]
-position = Vector2(236, 504)
+position = Vector2(107, 504)
 shape = SubResource("Shape_nest_side")
 
 [node name="WallNestRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=1967595214]
-position = Vector2(1044, 432)
+position = Vector2(1153.5, 432)
 shape = SubResource("Shape_nest_side_short")
 
 [node name="WallUpgradeFloor" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972845]
@@ -260,7 +261,7 @@ position = Vector2(-20, 504)
 shape = SubResource("Shape_nest_side")
 
 [node name="WallNestBottom" type="CollisionShape2D" parent="StaticBody2D" unique_id=751789722]
-position = Vector2(640, 695.5)
+position = Vector2(640, 704.5)
 shape = SubResource("Shape_nest_bottom")
 
 [node name="LayoutGuides" type="CanvasLayer" parent="." unique_id=1424308469]

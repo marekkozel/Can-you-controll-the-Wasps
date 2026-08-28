@@ -6,11 +6,15 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_aqjq3"]
+bounce = 0.26
+
 [sub_resource type="CircleShape2D" id="Shape_food"]
 radius = 12.0
 
 [node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
 mass = 0.5
+physics_material_override = SubResource("PhysicsMaterial_aqjq3")
 continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0
