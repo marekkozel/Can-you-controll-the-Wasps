@@ -32,7 +32,17 @@ enum Content { NONE, EGG, LARVA, SEALED, ROTTEN }
 
 const EGG_SCENE: PackedScene = preload("res://Scenes/Entities/Egg.tscn")
 const LARVA_SCENE: PackedScene = preload("res://Scenes/Entities/Larva.tscn")
-const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
+## **不能用 const preload。** 本脚本是 @tool，编辑器扫描阶段就会编译它，而那时
+## Wasp.tscn 里的 BTPlayer(limboai GDExtension) 未必就绪——preload 会拿到一个
+## node count 为 0 的空 PackedScene，并把这个空壳**永久固化进常量**。
+## 后果是 instantiate() 一路返回 null，伪王后的异色卵一只叛军都孵不出来，
+## 而且不报任何跟 limboai 有关的错，只说 "Failed to instantiate scene state of """。
+## Egg/Larva 用 const 没事：它们不含 GDExtension 节点。
+##
+## Never const-preload a scene containing GDExtension nodes from a @tool script: it can
+## be compiled before the extension is ready and the empty result is cached forever.
+const WASP_SCENE_PATH: String = "res://Scenes/Entities/Wasp.tscn"
+static var _wasp_scene: PackedScene
 ## 羽化出来的黄蜂挂到哪一层 / group that hosts emerged wasps
 const ENTITIES_GROUP: StringName = &"entities"
 ## 喂下蜂王浆时格子闪的颜色 / the flash a jelly feeding paints on the cell
@@ -220,9 +230,20 @@ func damage_build(amount: int = 1) -> bool:
 	return true
 
 
+# 第一次真正要用的时候才加载，而且拿到空壳会重新加载一次
+# Loaded on first real use, and re-loaded if what we hold turns out to be the empty shell.
+static func _wasp_scene_ref() -> PackedScene:
+	if _wasp_scene == null or not _wasp_scene.can_instantiate():
+		_wasp_scene = load(WASP_SCENE_PATH)
+	return _wasp_scene
+
+
 # 羽化和异色卵孵化共用 / shared by emergence and rebel hatching
 func _spawn_wasp() -> Wasp:
-	var wasp: Wasp = WASP_SCENE.instantiate()
+	var wasp: Wasp = _wasp_scene_ref().instantiate()
+	if wasp == null:
+		push_error("HexCell could not instantiate %s at %s" % [WASP_SCENE_PATH, coord])
+		return null
 	var host: Node = get_tree().get_first_node_in_group(ENTITIES_GROUP)
 	if host == null:
 		host = get_tree().current_scene
@@ -277,6 +298,7 @@ func clear_content() -> void:
 	if content == Content.NONE:
 		return
 	_set_occupant(null, Content.NONE)
+	_gifts = 0  # 喂进去的蜂王浆不能跨过冬天留给下一窝 / jelly never survives the clearing
 	_refresh_visual()
 
 

@@ -110,6 +110,11 @@ func _acquire(carry: CarryComponent) -> Node2D:
 		var item: Node2D = node as Node2D
 		if not _is_usable(carry, item):
 			continue
+		# 看不见的就当不存在。不加这道门每只蜂都在扫全场，采食蜂会为了地上一块
+		# 战利品横穿整张地图——那不是聪明，那是开了全图
+		# Out of sight is out of mind; without this every wasp behaves omnisciently.
+		if agent.has_method("can_see") and not agent.can_see(item.global_position):
+			continue
 		var payload: StringName = CarryComponent.payload_of(item)
 		if not wanted.is_empty() and not wanted.has(payload):
 			continue

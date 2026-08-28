@@ -54,6 +54,9 @@ enum Mode {
 @export var output_scene: PackedScene
 ## 成品的 payload，只用来记日志和给外部查询 / for logging and outside queries
 @export var output_payload: StringName = &""
+## 地上堆到这么多原料就算"满需求"。它决定蜂群多快回头去收拾战场
+## Raw units on the ground that count as full demand - sets how fast the swarm reacts.
+@export_range(1, 12, 1) var intake_saturation: int = 3
 
 # 点击判定比散布范围放宽一点，不然贴着边缘按下去没反应 / a little slack around the visual
 const GRAB_PADDING: float = 12.0
@@ -135,6 +138,25 @@ func is_refinery() -> bool:
 
 func accepts_intake(payload: StringName) -> bool:
 	return is_refinery() and payload == intake_payload
+
+
+# 地上躺着多少我收的原料，0..1。**加工厂得自己会喊饿。**
+# 不给这个数的话，战利品完全搭便车在"幼虫饿不饿"上：打完一波敌人、幼虫又都饱着，
+# 那堆肉就一直躺在战场上没人管，直到某只蜂碰巧因为别的原因被派到这边
+# Without this the loot rides entirely on the food demand, and a battlefield full of
+# carrion goes untouched as long as no larva happens to be hungry.
+func intake_demand() -> float:
+	if not is_refinery() or not is_inside_tree():
+		return 0.0
+
+	var loose: int = 0
+	for node in get_tree().get_nodes_in_group(&"carriable"):
+		if CarryComponent.payload_of(node) == intake_payload:
+			loose += 1
+	# 已经收进来的零头也算，不然差一块原料时没人愿意来补最后那一趟
+	# Part-filled intake counts too, or nobody comes to finish the last unit.
+	var pending: float = float(loose) + float(_intake) / float(maxi(intake_required, 1))
+	return clampf(pending / float(intake_saturation), 0.0, 1.0)
 
 
 # 交货入口。DeliverableComponent 调它，跟 HexCell.deliver() 平级

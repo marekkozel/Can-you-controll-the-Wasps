@@ -53,6 +53,8 @@ func _refresh() -> void:
 	lines.append(_raid_line())
 	lines.append(_allegiance_line())
 	lines.append(_unrest_line())
+	lines.append(_behaviour_line())
+	lines.append(_overlap_line())
 	lines.append("static mem %.1f MB" % (Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0))
 
 	text = "
@@ -113,6 +115,98 @@ func _unrest_line() -> String:
 			cunning = w.allegiance().cunning
 	return "unrest %.2f  morale x%.2f  striking %d  cunning %.2f" % [
 		director.unrest, lerpf(1.0, director.morale_floor, director.unrest), strikers, cunning]
+
+
+# 画像读数。调一个新蜂种就看这一行：它的区间有没有压在工蜂的区间里
+# The line to read when tuning a new BehaviourProfile - are the ranges still overlapping.
+#
+# at-hive 是"牌桌上坐了几只"。闲蜂聚回巢才谈得上横向比较，这个数低的时候
+# 玩家其实没有在观察，只是在看几只散兵 / the comparison only exists when they gather
+func _behaviour_line() -> String:
+	var sight_lo: float = INF
+	var sight_hi: float = 0.0
+	var sight_sum: float = 0.0
+	var total: int = 0
+	var at_hive: int = 0
+
+	var hive: Node2D = get_tree().get_first_node_in_group(&"hive") as Node2D
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp == null:
+			continue
+		total += 1
+		sight_lo = minf(sight_lo, wasp.sight_radius)
+		sight_hi = maxf(sight_hi, wasp.sight_radius)
+		sight_sum += wasp.sight_radius
+		if hive != null and wasp.global_position.distance_to(hive.global_position) <= wasp.loiter_radius:
+			at_hive += 1
+
+	if total == 0:
+		return "sight --  at-hive --  jobs --"
+
+	var gathering: int = 0
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var w: Wasp = node as Wasp
+		if w != null and w.job == Wasp.Job.GATHER:
+			gathering += 1
+
+	return "sight %d/%d/%d  at-hive %d/%d  jobs G%d H%d" % [
+		int(sight_lo), int(sight_sum / float(total)), int(sight_hi),
+		at_hive, total, gathering, total - gathering]
+
+
+# **这一行就是验收标准。** 伪王后的每个值都必须落在方括号里——那是群体（不含她）的
+# 实际范围。跑出去的那一条，就已经从线索变成了探测器：玩家抓一只就知道答案。
+# 调一个新的 BehaviourProfile 时盯着这行看，比对着 .tres 猜可靠得多。
+#
+# The impostor's numbers must fall inside the brackets, which is the live range of
+# everyone else. A value outside them is a detector, not a tell.
+func _overlap_line() -> String:
+	var queen: Wasp = null
+	var others: Array[Wasp] = []
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp == null:
+			continue
+		if wasp.allegiance().is_false_queen():
+			queen = wasp
+		else:
+			others.append(wasp)
+
+	if queen == null:
+		return "overlap  (no false queen awake)"
+	if others.is_empty():
+		return "overlap  (no one to compare against)"
+
+	return "Q %s  %s  %s" % [
+		_span("insp", queen.idle_weights[Wasp.IdleAct.INSPECT], others,
+			func(w: Wasp): return w.idle_weights[Wasp.IdleAct.INSPECT]),
+		_span("ante", queen.idle_weights[Wasp.IdleAct.ANTENNATE], others,
+			func(w: Wasp): return w.idle_weights[Wasp.IdleAct.ANTENNATE]),
+		_span("bias", queen.posting_bias, others, func(w: Wasp): return w.posting_bias),
+	]
+
+
+# 值落在范围里打 " "，跑出去打 "!" —— 一眼就能扫到出问题的那一条
+# A bang marks the one that escaped; it is meant to be scannable at a glance.
+func _span(name: String, value: float, others: Array[Wasp], getter: Callable) -> String:
+	var lo: float = INF
+	var hi: float = -INF
+	for wasp in others:
+		var v: float = getter.call(wasp)
+		lo = minf(lo, v)
+		hi = maxf(hi, v)
+	# 二元的"在不在范围内"在边界上会误报，而真正要看的是她有多偏：
+	# 落在群体的 0% 或 100% 那一端，意味着她总是全场之最——那本身就是模式
+	# What matters is how extreme she sits, not a boolean: always being the outlier is
+	# itself a pattern, even when the value is technically inside the range.
+	var below: int = 0
+	for wasp in others:
+		if getter.call(wasp) <= value:
+			below += 1
+	var pct: int = int(round(100.0 * float(below) / float(others.size())))
+	var flag: String = "!" if pct <= 8 or pct >= 92 else " "
+	return "%s%s%.2f p%d[%.2f..%.2f]" % [name, flag, value, pct, lo, hi]
 
 
 func _group_count(group: StringName) -> int:

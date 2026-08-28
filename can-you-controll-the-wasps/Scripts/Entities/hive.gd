@@ -125,6 +125,31 @@ func accepts(payload: StringName) -> bool:
 	return false
 
 
+# 巢现在有多需要这类货，0..1。响应阈值模型的**刺激**那一半，蜂拿它跟自己的阈值比
+# The stimulus half of the response-threshold model; each wasp weighs it against its own bar.
+#
+# 两条尺度是刻意不同的：
+#   纸板看的是"还差多少格没建"——一个缓慢的、结构性的需求
+#   食物看的是"最急的那只幼虫有多急"——一个尖锐的、会突然爆起来的需求
+# 用同一条尺度的话，饿死一只幼虫的分量会被总格数稀释到看不见，没有蜂会回头救它
+# Different scales on purpose: averaging the food demand over the whole hive would bury
+# a starving larva under the cell count, and nobody would ever turn back for it.
+func demand(payload: StringName) -> float:
+	var total: int = _cells.size()
+	if total == 0:
+		return 0.0
+
+	match payload:
+		&"cardboard":
+			return clampf(float(total - built_count()) / float(total), 0.0, 1.0)
+		&"food", &"royal_jelly":
+			var worst: float = 1.0
+			for cell in hungry_cells():
+				worst = minf(worst, cell.larva_hunger_ratio())
+			return clampf(1.0 - worst, 0.0, 1.0)
+	return 0.0
+
+
 # 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now
 func hungry_cells() -> Array:
 	return _cells.values().filter(func(c): return c.content == HexCell.Content.LARVA and c.is_hungry_larva())

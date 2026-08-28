@@ -79,9 +79,14 @@ func flash(item: CanvasItem, color: Color, restore: Color, duration: float = 0.4
 		return
 	if _flash_tween != null and _flash_tween.is_valid():
 		_flash_tween.kill()
-	item.set("color", color)
+	# Polygon2D 有 color，Sprite2D 没有。巢室换成贴图之后这里一直在往控制台喷
+	# "The tweened property color does not exist"，异色卵那一下闪光其实早就不亮了
+	# Sprites have no `color`; since the cells became sprites this silently stopped working.
+	# 贴图走 self_modulate，别用 modulate——后者会连子节点一起染
+	var prop: String = "color" if "color" in item else "self_modulate"
+	item.set(prop, color)
 	_flash_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_flash_tween.tween_property(item, "color", restore, duration)
+	_flash_tween.tween_property(item, prop, restore, duration)
 
 
 # 闪色期间调用方别抢同一个颜色属性 / don't fight the flash tween over the same property
