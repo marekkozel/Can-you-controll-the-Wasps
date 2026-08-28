@@ -4,11 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://s3x16rpani8" path="res://Scenes/Entities/Hive.tscn" id="3_hive"]
 [ext_resource type="PackedScene" uid="uid://cpwy2vfjit3dd" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
 [ext_resource type="Texture2D" uid="uid://5takgpafxr2n" path="res://Assets/Entities/food_resource.png" id="5_lkcvt"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
+[ext_resource type="PackedScene" uid="uid://dqy83c1c8nx0k" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
 [ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="6_7yui6"]
 [ext_resource type="PackedScene" uid="uid://m6nllk6lh3mm" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" uid="uid://d0smkcjdfwhqt" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
+[ext_resource type="Texture2D" uid="uid://hvevkl3rbua7" path="res://Assets/Entities/wasp_queen_small.png" id="8_jwdyn"]
 [ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
 [ext_resource type="PackedScene" uid="uid://cj3llyr0y41xx" path="res://Scenes/Entities/RoyalJelly.tscn" id="9_jelly"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
@@ -34,7 +35,6 @@
 [ext_resource type="Script" uid="uid://bmpj02h5wcn8" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
 [ext_resource type="Texture2D" uid="uid://ba6eqkvjt5d01" path="res://Assets/UI/background.png" id="31_p5wkl"]
-[ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/wasp.png" id="31_wasp"]
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="32_enemyvariant"]
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
 [ext_resource type="Script" uid="uid://diyfu5agmx1sk" path="res://Scripts/Controllers/selection_director.gd" id="33_selection"]
@@ -42,6 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://dyxqw1tt2q5cw" path="res://Assets/UI/cardboard_tag.png" id="38_w5giw"]
 [ext_resource type="Texture2D" uid="uid://tccfgek40ki2" path="res://Assets/UI/food_tag.png" id="39_jwdyn"]
 [ext_resource type="Texture2D" uid="uid://d0e7vj7306nx0" path="res://Assets/UI/info_tag.png" id="40_t6yt7"]
+[ext_resource type="Texture2D" uid="uid://bf5d1qtxhern3" path="res://Assets/UI/upgrades_tagt.png" id="41_jwdyn"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680, 984, 616, 1240, 616, 1240, 680)
@@ -102,7 +103,7 @@ piece_scene = ExtResource("9_food")
 payload = &"food"
 
 [node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(1217, 664)
+position = Vector2(1210, 656)
 mode = 1
 payload = &"royal_jelly"
 scatter_radius = 32.0
@@ -111,7 +112,7 @@ output_scene = ExtResource("9_jelly")
 output_payload = &"royal_jelly"
 
 [node name="Drop" type="Marker2D" parent="Resource_layer/Refinery" unique_id=1621565841]
-position = Vector2(-224, 8)
+position = Vector2(-106, 3)
 
 [node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
 visible = false
@@ -127,10 +128,9 @@ patch_margin_right = 8
 patch_margin_bottom = 8
 
 [node name="Queen" type="Sprite2D" parent="Resource_layer/Refinery" unique_id=1006420576]
-self_modulate = Color(0.937255, 0.752941, 0.309804, 1)
 position = Vector2(0, -12)
 scale = Vector2(1.4, 1.4)
-texture = ExtResource("31_wasp")
+texture = ExtResource("8_jwdyn")
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
@@ -320,7 +320,6 @@ offset_right = -10.0
 offset_bottom = -6.0
 
 [node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
-layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
@@ -364,6 +363,14 @@ offset_top = 296.0
 offset_right = 96.0
 offset_bottom = 336.0
 texture = ExtResource("40_t6yt7")
+
+[node name="Upgrades" type="TextureRect" parent="UI/Tags" unique_id=1342679668]
+layout_mode = 0
+offset_left = 1034.0
+offset_top = 296.0
+offset_right = 1162.0
+offset_bottom = 336.0
+texture = ExtResource("41_jwdyn")
 
 [node name="Atmosphere" type="CanvasLayer" parent="." unique_id=549371485]
 layer = 5

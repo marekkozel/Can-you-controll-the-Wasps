@@ -4,11 +4,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HoldComponent.tscn" id="3_hold"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/MaturationComponent.tscn" id="5_mat"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/BroodTimer.tscn" id="6_brood"]
+[ext_resource type="PackedScene" uid="uid://4p177kuyf2u0" path="res://Scenes/Mechanics/BroodTimer.tscn" id="6_brood"]
 [ext_resource type="Texture2D" uid="uid://c6itad5ae3l64" path="res://Assets/Entities/Cells.png" id="6_o12ny"]
-[ext_resource type="Texture2D" uid="uid://dafrwlgceq7ci" path="res://Assets/Entities/hex_border.png" id="ph_hex_border"]
-[ext_resource type="Texture2D" uid="uid://deg54sw18xqcg" path="res://Assets/Entities/hex_cap.png" id="ph_hex_cap"]
-[ext_resource type="Texture2D" uid="uid://umy81bjbprk4" path="res://Assets/Entities/hex_fill.png" id="ph_hex_fill"]
 
 [node name="HexCell" type="Area2D" unique_id=1145653249]
 script = ExtResource("1_hexcell")
@@ -22,7 +19,6 @@ hframes = 8
 [node name="Fill" type="Sprite2D" parent="Visual" unique_id=468818278]
 visible = false
 self_modulate = Color(0.9490196, 0.7490196, 0.24705882, 0.101960786)
-texture = ExtResource("ph_hex_fill")
 
 [node name="Content" type="Node2D" parent="Visual" unique_id=18961050]
 visible = false
@@ -30,12 +26,10 @@ visible = false
 [node name="Cap" type="Sprite2D" parent="Visual" unique_id=13301013]
 visible = false
 self_modulate = Color(0.8509804, 0.6627451, 0.32156864, 0.95)
-texture = ExtResource("ph_hex_cap")
 
 [node name="Border" type="Sprite2D" parent="Visual" unique_id=2000924027]
 visible = false
 self_modulate = Color(0.9411765, 0.78039217, 0.3019608, 0.54901963)
-texture = ExtResource("ph_hex_border")
 
 [node name="BroodTimer" parent="Visual" unique_id=1145653250 instance=ExtResource("6_brood")]
 

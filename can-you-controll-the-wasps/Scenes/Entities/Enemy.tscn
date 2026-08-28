@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/WanderComponent.tscn" id="4_wander"]
 [ext_resource type="PackedScene" uid="uid://cr4idcmp0nnt1" path="res://Scenes/Mechanics/RaidComponent.tscn" id="5_raid"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HuntComponent.tscn" id="6_hunt"]
-[ext_resource type="PackedScene" uid="uid://cl0otc0mp0nnt2" path="res://Scenes/Mechanics/LootComponent.tscn" id="7_loot"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthBarComponent.tscn" id="9_healthbar"]
+[ext_resource type="PackedScene" uid="uid://cpjfju8opl5or" path="res://Scenes/Mechanics/LootComponent.tscn" id="7_loot"]
 [ext_resource type="PackedScene" uid="uid://c4rr10nl00t01" path="res://Scenes/Entities/Carrion.tscn" id="8_carrion"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthBarComponent.tscn" id="9_healthbar"]
 
 [sub_resource type="PhysicsMaterial" id="Material_enemy"]
 friction = 0.2
@@ -45,9 +45,9 @@ speed = 40.0
 
 [node name="RaidComponent" parent="." unique_id=1834795983 instance=ExtResource("5_raid")]
 
-[node name="HuntComponent" parent="." instance=ExtResource("6_hunt")]
+[node name="HuntComponent" parent="." unique_id=1464771396 instance=ExtResource("6_hunt")]
 
-[node name="LootComponent" parent="." instance=ExtResource("7_loot")]
+[node name="LootComponent" parent="." unique_id=1149291715 instance=ExtResource("7_loot")]
 loot_scene = ExtResource("8_carrion")
 
 [node name="HealthBarComponent" parent="." unique_id=602123266 instance=ExtResource("9_healthbar")]
