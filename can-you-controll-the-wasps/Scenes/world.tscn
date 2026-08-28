@@ -57,31 +57,35 @@ display_name = "Beetle"
 max_health = 10
 loot_count = 5
 texture = ExtResource("19_t6yt7")
-spawn_cost = 3
+show_health_bar = true
+spawn_cost = 4
 metadata/_custom_type_script = "uid://plfkdm57opi8"
 
 [sub_resource type="Resource" id="Resource_te07t"]
 script = ExtResource("32_enemyvariant")
 display_name = "Mantis"
 behavior = 1
-max_health = 20
+max_health = 15
+loot_count = 6
 texture = ExtResource("22_6mm6r")
-collision_radius = 35.0
-move_speed = 80.0
-body_mass = 1.9000000000000001
+collision_radius = 43.0
+move_speed = 85.0
+body_mass = 1.9
 show_health_bar = true
-spawn_cost = 5
+spawn_cost = 7
 metadata/_custom_type_script = "uid://plfkdm57opi8"
 
-[sub_resource type="Resource" id="Resource_onxnw"]
+[sub_resource type="Resource" id="Resource_6mm6r"]
 script = ExtResource("32_enemyvariant")
+display_name = "Bird"
 max_health = 20
 loot_count = 8
 texture = ExtResource("23_xcb5n")
-collision_radius = 45.0
-move_speed = 55.0
-body_mass = 5.1
-one_per_raid = true
+collision_radius = 40.0
+move_speed = 65.0
+body_mass = 3.5
+show_health_bar = true
+spawn_cost = 9
 metadata/_custom_type_script = "uid://plfkdm57opi8"
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
@@ -148,7 +152,7 @@ output_scene = ExtResource("9_jelly")
 output_payload = &"royal_jelly"
 
 [node name="Drop" type="Marker2D" parent="Resource_layer/Refinery" unique_id=1621565841]
-position = Vector2(-106, 3)
+position = Vector2(-223, 14)
 
 [node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
 visible = false
@@ -177,9 +181,11 @@ brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtRe
 [node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
-breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), SubResource("Resource_4t8d5"), ExtResource("33_spider"), SubResource("Resource_te07t"), SubResource("Resource_onxnw")])
-raid_duration = 35.0
-disable_timer = true
+breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), SubResource("Resource_4t8d5"), ExtResource("33_spider"), SubResource("Resource_te07t"), SubResource("Resource_6mm6r")])
+raids_per_year = Vector2i(5, 7)
+min_gap = 0.02
+raid_duration = 40.0
+disable_timer = null
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
 position = Vector2(340, 72)

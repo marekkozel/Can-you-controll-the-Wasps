@@ -124,7 +124,7 @@ func _do_raid(delta: float) -> void:
 	if cell.content == HexCell.Content.LARVA or cell.content == HexCell.Content.EGG:
 		if cell.destroy_occupant():
 			raided.emit(cell, true)
-			_cooldown = bite_cooldown
+			retreat()
 			return
 		_cell = null
 		return

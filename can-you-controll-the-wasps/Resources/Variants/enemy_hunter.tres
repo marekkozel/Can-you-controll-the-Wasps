@@ -1,9 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyVariant" format=3 uid="uid://c064ffit4w1tc"]
 
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_k1h1t"]
-load_path = "res://.godot/imported/enemy_medium.png-9345c8dd96e353981687fcf7965c804f.ctex"
+[ext_resource type="Texture2D" uid="uid://bjddquufs5x04" path="res://Assets/Entities/Enemies/Fly.png" id="2_1b66f"]
 
 [resource]
 script = ExtResource("1_enemy_variant")
@@ -15,6 +13,7 @@ sheen_color = Color(0.62, 0.24, 0.22, 1)
 head_color = Color(0.24, 0.06, 0.07, 1)
 eye_color = Color(1, 0.86, 0.62, 1)
 outline_color = Color(0.15, 0.03, 0.04, 1)
-texture = SubResource("CompressedTexture2D_k1h1t")
+texture = ExtResource("2_1b66f")
 sprite_offset = Vector2(0, 1)
+show_health_bar = true
 spawn_cost = 2
