@@ -298,9 +298,10 @@ func _all_hunger() -> Array:
 	for cell in h.all_cells():
 		if cell.content != HexCell.Content.LARVA:
 			continue
-		var larva: Node = cell.get_node_or_null("Visual/Content").get_child(0)
-		if larva != null:
-			var hunger: HungerComponent = larva.get_node_or_null("HungerComponent")
+		# 占用物现在直接挂在格子下，不再走 Visual/Content
+		# Occupants are direct children of the cell now, no Visual/Content wrapper.
+		for child in cell.get_children():
+			var hunger: HungerComponent = child.get_node_or_null("HungerComponent")
 			if hunger != null:
 				out.append(hunger)
 	return out

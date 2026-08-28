@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovsqjnk4e726"
-path="res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"
+uid="uid://ridv6ppxicvr"
+path="res://.godot/imported/Health_upgrade.png-cb0596a9f9585a2465983f1999c8fc63.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Wasp.png"
-dest_files=["res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"]
+source_file="res://Assets/Entities/Health_upgrade.png"
+dest_files=["res://.godot/imported/Health_upgrade.png-cb0596a9f9585a2465983f1999c8fc63.ctex"]
 
 [params]
 

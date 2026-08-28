@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovsqjnk4e726"
-path="res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"
+uid="uid://n5c3re0psbty"
+path="res://.godot/imported/Ant_small_enemy.png-8aa77800832a70a43f4ab938bea5ad35.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Wasp.png"
-dest_files=["res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"]
+source_file="res://Assets/Entities/Ant_small_enemy.png"
+dest_files=["res://.godot/imported/Ant_small_enemy.png-8aa77800832a70a43f4ab938bea5ad35.ctex"]
 
 [params]
 

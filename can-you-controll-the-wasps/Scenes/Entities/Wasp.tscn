@@ -1,23 +1,23 @@
-[gd_scene load_steps=15 format=3 uid="uid://djjd505og54s0"]
+[gd_scene format=3 uid="uid://djjd505og54s0"]
 
 [ext_resource type="Script" uid="uid://r07chgxywues" path="res://Scripts/Entities/wasp.gd" id="1_wasp"]
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthComponent.tscn" id="3_0um87"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/CarryComponent.tscn" id="4_carry"]
+[ext_resource type="BehaviorTree" uid="uid://duqipvlyjy31h" path="res://ai/trees/Wasp.tres" id="5_7c3bo"]
+[ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/VariantComponent.tscn" id="6_variant"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/AllegianceComponent.tscn" id="7_allegiance"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/StingComponent.tscn" id="8_sting"]
-[ext_resource type="Resource" path="res://Resources/Variants/pure.tres" id="9_pure"]
-[ext_resource type="BehaviorTree" uid="uid://duqipvlyjy31h" path="res://ai/trees/Wasp.tres" id="5_7c3bo"]
-[ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
-[ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/wasp.png" id="ph_wasp"]
+[ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="9_pure"]
+[ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/Wasp.png" id="ph_wasp"]
 
 [sub_resource type="PhysicsMaterial" id="Material_wasp"]
 friction = 0.15
 bounce = 0.55
 
 [sub_resource type="CircleShape2D" id="Shape_wasp"]
-radius = 19.5
+radius = 30.066593
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_jh0a1"]
 
@@ -48,26 +48,25 @@ shape = SubResource("Shape_wasp")
 [node name="HealthComponent" parent="." unique_id=1964549127 instance=ExtResource("3_0um87")]
 max_health = 3
 
-[node name="CarryComponent" parent="." instance=ExtResource("4_carry")]
+[node name="CarryComponent" parent="." unique_id=1768569000 instance=ExtResource("4_carry")]
 
-[node name="VariantComponent" parent="." instance=ExtResource("6_variant")]
+[node name="VariantComponent" parent="." unique_id=983987032 instance=ExtResource("6_variant")]
 variant = ExtResource("9_pure")
 
-[node name="AllegianceComponent" parent="." instance=ExtResource("7_allegiance")]
+[node name="AllegianceComponent" parent="." unique_id=517835167 instance=ExtResource("7_allegiance")]
 
-[node name="StingComponent" parent="." instance=ExtResource("8_sting")]
+[node name="StingComponent" parent="." unique_id=1471745951 instance=ExtResource("8_sting")]
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-radius = 20.0
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=119256865]
 path_desired_distance = 24.0
 target_desired_distance = 12.0
 path_max_distance = 60.0
-max_speed = 220.0
 avoidance_enabled = true
+radius = 20.0
 neighbor_distance = 90.0
 max_neighbors = 6
 time_horizon_agents = 0.8
-debug_enabled = false
+max_speed = 220.0
 
 [node name="JuiceComponent" parent="." unique_id=1935085118 instance=ExtResource("5_juice")]
 

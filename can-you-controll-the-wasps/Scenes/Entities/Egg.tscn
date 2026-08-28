@@ -1,14 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://b82sbwknh7mqn"]
+[gd_scene format=3 uid="uid://b82sbwknh7mqn"]
 
 [ext_resource type="Script" uid="uid://gew42crgyl41" path="res://Scripts/Entities/egg.gd" id="1_egg"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/MaturationComponent.tscn" id="2_mat"]
-[ext_resource type="Texture2D" uid="uid://b86ajnmnlmt8" path="res://Assets/Entities/egg.png" id="ph_egg"]
+[ext_resource type="Texture2D" uid="uid://b86ajnmnlmt8" path="res://Assets/Entities/Egg.png" id="2_mf56c"]
 
 [node name="Egg" type="Node2D" unique_id=1497907240]
+visible = false
 script = ExtResource("1_egg")
 
 [node name="Body" type="Sprite2D" parent="." unique_id=155339429]
-texture = ExtResource("ph_egg")
+texture = ExtResource("2_mf56c")
 
 [node name="MaturationComponent" parent="." unique_id=1951054052 instance=ExtResource("2_mat")]
 autostart = true

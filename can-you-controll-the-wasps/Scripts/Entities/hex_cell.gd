@@ -70,15 +70,13 @@ var progress: int = 0
 var is_built: bool = false
 var content: Content = Content.NONE
 
-@onready var _fill: Sprite2D = $Visual/Fill
-@onready var _border: Sprite2D = $Visual/Border
 @onready var _ring: ProgressRing = $Visual/HoldRing
-@onready var _content_root: Node2D = $Visual/Content
-@onready var _cap: Sprite2D = $Visual/Cap
 @onready var _shape: CollisionPolygon2D = $Shape
 @onready var _hold: HoldComponent = $HoldComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _seal_timer: MaturationComponent = $SealTimer
+
+@onready var _cell: Sprite2D = $Visual/Cell
 
 var _is_hovered: bool = false
 var _occupant: Node2D = null
@@ -157,7 +155,7 @@ func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
 	# 它告诉你"一秒前有蜂来过这儿"，搜索范围从全场缩到附近那几只。
 	# The one tell that is never disguised - it narrows the search from the whole hive
 	# to whoever was standing nearby a second ago.
-	_juice.flash(_fill, variant.body_color, _target_fill())
+	_juice.flash(_cell, variant.body_color, Color.WHITE)
 	_juice.punch(1.18, 0.32)
 	rebel_egg_laid.emit(self, variant)
 	return true
@@ -292,12 +290,9 @@ func _on_egg_hatched(_egg: Egg) -> void:
 
 func _on_larva_hungry(_larva: Larva) -> void:
 	larva_hungry.emit(self)
-
-
 # 喂饱一次就封起来，10 秒后出黄蜂 / one full feed seals it, wasp emerges after the timer
 func _on_larva_satisfied(_larva: Larva) -> void:
 	_set_occupant(null, Content.SEALED)
-	_show_cap()
 	_seal_timer.start()
 	_juice.punch(1.18, 0.4)
 	_refresh_visual()
@@ -310,7 +305,6 @@ func _on_seal_progress(t: float) -> void:
 
 func _on_seal_matured() -> void:
 	_ring.set_progress(0.0)
-	_hide_cap()
 	_juice.punch(1.25, 0.45)
 	_juice.burst()
 
@@ -335,36 +329,16 @@ func _clean() -> void:
 	cleaned.emit(self)
 
 
-func _show_cap() -> void:
-	_cap.visible = true
-	_cap.modulate.a = 1.0
-	if Engine.is_editor_hint():
-		return
-	_cap.scale = Vector2.ZERO
-	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT) 		.tween_property(_cap, "scale", Vector2.ONE, 0.35)
-
-
-# 盖子被顶开：先撑大一点再淡出 / cap pops outward then fades
-func _hide_cap() -> void:
-	if Engine.is_editor_hint():
-		_cap.visible = false
-		return
-	var tween: Tween = create_tween().set_parallel(true)
-	tween.tween_property(_cap, "scale", Vector2.ONE * 1.3, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_cap, "modulate:a", 0.0, 0.3)
-	tween.chain().tween_callback(func(): _cap.visible = false)
-
-
-
 func _set_occupant(node: Node2D, new_content: Content) -> void:
 	rebel_brood = false  # 换内容就不再是叛乱之卵了 / any content change clears it
 	if _occupant != null:
 		_occupant.queue_free()
 	_occupant = node
 	if node != null:
-		_content_root.add_child(node)
+		add_child(node) 
 	content = new_content
 	_update_hold()
+	_refresh_visual()
 
 
 # 按住这一格能干什么，跟着内容走 / what a hold does depends on the content
@@ -437,7 +411,7 @@ func _on_hold_tick(_index: int) -> void:
 func _on_hold_completed() -> void:
 	_juice.shake_amount = 0.0
 	_juice.punch(1.22, 0.45)
-	_juice.flash(_fill, flash_color, _target_fill())
+	_juice.flash(_cell, flash_color, Color.WHITE)
 	_juice.burst()
 
 	if is_rotten():
@@ -451,24 +425,19 @@ func _on_hold_completed() -> void:
 func _progress_ratio() -> float:
 	return float(progress) / float(maxi(build_cost, 1))
 
-
-func _target_fill() -> Color:
-	if is_rotten():
-		return rotten_fill_color
-
-	var base: Color = fill_color.lerp(built_fill_color, _progress_ratio())
-	if not _is_hovered:
-		return base
-	# 能操作的格子 hover 亮一点，跟"只是建好了"区分开 / brighter hover when actionable
-	return base.lerp(hover_color, 0.85 if _can_hold() else 0.6)
-
-
 func _refresh_visual() -> void:
-	if _fill == null:
+	if _cell == null:
 		return
-
-	var t: float = _progress_ratio()
-	_border.self_modulate = sealed_border_color if content == Content.SEALED else border_color.lerp(built_border_color, t)
-
-	if not _juice.is_flashing():  # 闪白期间别抢颜色 / don't fight the flash tween
-		_fill.self_modulate = _target_fill()
+		
+	match content:
+		Content.ROTTEN:
+			_cell.frame = 7 # 7 died
+		Content.SEALED:
+			_cell.frame = 6 # 6 shut with cap (pupa)
+		Content.LARVA:
+			_cell.frame = 5 # 5 larva spawned
+		Content.EGG:
+			_cell.frame = 4 # 4 egg placed
+		Content.NONE:
+			# Maps exactly to 0: empty, 1: phase 1, 2: phase 2, 3: completed
+			_cell.frame = clampi(progress, 0, 3)

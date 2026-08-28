@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovsqjnk4e726"
-path="res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"
+uid="uid://bauqt16otm3s7"
+path="res://.godot/imported/Spider.png-47493734a5e45e6e8770b4ef0eb2f794.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Wasp.png"
-dest_files=["res://.godot/imported/Wasp.png-31694a3d3ef01cff4587bd9d84fd3ba6.ctex"]
+source_file="res://Assets/Entities/Spider.png"
+dest_files=["res://.godot/imported/Spider.png-47493734a5e45e6e8770b4ef0eb2f794.ctex"]
 
 [params]
 

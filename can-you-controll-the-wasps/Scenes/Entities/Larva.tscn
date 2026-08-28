@@ -1,17 +1,18 @@
-[gd_scene load_steps=6 format=3 uid="uid://daaiiu5swj2oa"]
+[gd_scene format=3 uid="uid://daaiiu5swj2oa"]
 
 [ext_resource type="Script" uid="uid://unmqvhi82wiy" path="res://Scripts/Entities/larva.gd" id="1_larva"]
+[ext_resource type="Texture2D" uid="uid://c3uxmguvic815" path="res://Assets/Entities/Larva.png" id="2_6ay88"]
 [ext_resource type="Script" uid="uid://b5ubkjrir028k" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
 [ext_resource type="PackedScene" uid="uid://dbdevgkd27o2g" path="res://Scenes/Mechanics/HungerComponent.tscn" id="3_hunger"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
-[ext_resource type="Texture2D" uid="uid://pvts0y0g5rg8" path="res://Assets/Entities/larva.png" id="ph_larva"]
 
 [node name="Larva" type="Node2D" unique_id=861015634]
 script = ExtResource("1_larva")
 
 [node name="Body" type="Sprite2D" parent="." unique_id=207719835]
+visible = false
 self_modulate = Color(0.93, 0.89, 0.74, 1)
-texture = ExtResource("ph_larva")
+texture = ExtResource("2_6ay88")
 offset = Vector2(1, -14)
 
 [node name="Ring" type="Line2D" parent="." unique_id=1194524495]
