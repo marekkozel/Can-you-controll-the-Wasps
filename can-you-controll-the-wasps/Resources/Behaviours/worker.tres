@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="BehaviourProfile" format=3 uid="uid://duqit4ccm47rt"]
+
+[ext_resource type="Script" uid="uid://dkjto4jtv8067" path="res://Scripts/Mechanics/behaviour_profile.gd" id="1_behaviour"]
+
+[resource]
+script = ExtResource("1_behaviour")

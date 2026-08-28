@@ -1,18 +1,22 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
+[ext_resource type="Script" path="res://Scripts/UI/hover_readout.gd" id="2_hover"]
+[ext_resource type="Script" path="res://Scripts/UI/pip_track.gd" id="3_pips"]
+[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="99_theme"]
+[ext_resource type="Script" path="res://Scripts/Mechanics/item_info.gd" id="10_iteminfo"]
+[ext_resource type="Resource" path="res://Resources/Items/cardboard.tres" id="11_card"]
+[ext_resource type="Resource" path="res://Resources/Items/food.tres" id="12_food"]
+[ext_resource type="Resource" path="res://Resources/Items/carrion.tres" id="13_carrion"]
+[ext_resource type="Resource" path="res://Resources/Items/royal_jelly.tres" id="14_jelly"]
 
 [node name="InfoPanel" type="Control"]
+theme = ExtResource("99_theme")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("1_collapsible")
-collapse_side = 0
 
 [node name="Body" type="Control" parent="."]
 layout_mode = 1
@@ -24,7 +28,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Panel" type="PanelContainer" parent="Body"]
-theme_override_styles/panel = SubResource("StyleBoxEmpty_bare")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,95 +44,221 @@ theme_override_constants/margin_bottom = 16
 
 [node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+mouse_filter = 2
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 15
-text = "HUD  /  INFO"
+text = "WASP"
 horizontal_alignment = 1
 
 [node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 
-[node name="Stats" type="GridContainer" parent="Body/Panel/Margin/Content"]
+[node name="Inspect" type="VBoxContainer" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 6
-columns = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+script = ExtResource("2_hover")
+items = Array[ExtResource("10_iteminfo")]([ExtResource("11_card"), ExtResource("12_food"), ExtResource("13_carrion"), ExtResource("14_jelly")])
 
-[node name="CardboardKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+[node name="Name" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Cardboard"
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "—"
+horizontal_alignment = 1
 
-[node name="CardboardValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
+[node name="Lineage" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "0"
-horizontal_alignment = 2
-
-[node name="FoodKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Food"
-
-[node name="FoodValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "0"
-horizontal_alignment = 2
-
-[node name="WaspsKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Wasps"
-
-[node name="WaspsValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "0"
-horizontal_alignment = 2
-
-[node name="WorkersKey" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Workers"
-
-[node name="WorkersValue" type="Label" parent="Body/Panel/Margin/Content/Stats"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "0"
-horizontal_alignment = 2
-
-[node name="NoteDivider" type="HSeparator" parent="Body/Panel/Margin/Content"]
-layout_mode = 2
-
-[node name="Note" type="Label" parent="Body/Panel/Margin/Content"]
-layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
-text = "Switches with info.
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+text = "Lineage"
+horizontal_alignment = 1
 
-When you press, HUD / info is displayed here in this box."
+[node name="Health" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Health"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_pips")
+shape = 2
+total = 3
+pip_size = 12.0
+
+[node name="Value" type="Label" parent="Body/Panel/Margin/Content/Inspect/Health"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+text = "0/0"
+
+[node name="Strike" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7725, 0.4039, 0.1608, 1)
+text = "SLACKING"
+horizontal_alignment = 1
+
+[node name="Action" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 0.902, 0.502, 1)
+text = "LEFT-CLICK TO LIFT"
+horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="Hint" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+text = "hover a wasp or a piece"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PerksDivider" type="HSeparator" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+
+[node name="PerksHeading" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+text = "PERKS"
+horizontal_alignment = 1
+
+[node name="Perks" type="VBoxContainer" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Attack" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Attack"
+
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_pips")
+shape = 3
+total = 4
+pip_size = 10.0
+gap = 5.0
+
+
+[node name="Speed" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Speed"
+
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_pips")
+shape = 3
+total = 4
+pip_size = 10.0
+gap = 5.0
+
+
+[node name="Carry" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Carry"
+
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_pips")
+shape = 3
+total = 4
+pip_size = 10.0
+gap = 5.0
+
+
+[node name="Build" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Build"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Build"
+
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Build"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_pips")
+shape = 3
+total = 4
+pip_size = 10.0
+gap = 5.0
+
+
+[node name="BuildNote" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+text = "Build applies to cardboard only"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ItemName" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 15
+text = "ITEM"
+horizontal_alignment = 1
+
+[node name="ItemText" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 12
+text = "..."
+horizontal_alignment = 1
+autowrap_mode = 2
 [node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_vertical = 3
 
-[node name="ToggleButton" type="Button" parent="Body"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -30.0
-offset_top = 12.0
-offset_right = 0.0
-offset_bottom = 60.0
-grow_horizontal = 0
-theme_override_font_sizes/font_size = 18
-text = "<"

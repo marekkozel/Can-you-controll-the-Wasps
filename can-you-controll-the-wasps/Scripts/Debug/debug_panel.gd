@@ -11,19 +11,23 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F4  Spawn wasp", "method": "spawn_wasp", "key": KEY_F4},
 	{"label": "F5  Make larvae hungry", "method": "make_all_hungry", "key": KEY_F5},
 	{"label": "F6  Feed all larvae", "method": "feed_all_larvae", "key": KEY_F6},
-	{"label": "F7  Time scale x2", "method": "cycle_time_scale", "key": KEY_F7},
-	{"label": "F8  Reset hive", "method": "reset_hive", "key": KEY_F8},
 	{"label": "F9  Start a raid", "method": "start_raid", "key": KEY_F9},
 	{"label": "F10 Kill all enemies", "method": "kill_all_enemies", "key": KEY_F10},
 	{"label": "F12 Awaken a false queen", "method": "awaken_false_queen", "key": KEY_F12},
 	{"label": "M   Toggle allegiance markers", "method": "toggle_markers", "key": KEY_M},
+	{"label": "T   Cycle time scale", "method": "cycle_time_scale", "key": KEY_T},
+	{"label": "     Time scale back to x1", "method": "reset_time_scale", "key": KEY_NONE},
+	{"label": "     Skip to next season", "method": "skip_season", "key": KEY_NONE},
+	{"label": "     Skip to winter", "method": "skip_to_winter", "key": KEY_NONE},
+	{"label": "     Crown someone now", "method": "crown_someone", "key": KEY_NONE},
+	{"label": "     Gene point +1", "method": "grant_gene_point", "key": KEY_NONE},
 	{"label": "     Call off the raid", "method": "end_raid", "key": KEY_NONE},
-	{"label": "     Spawn loose enemy", "method": "spawn_enemy", "key": KEY_NONE},
+	{"label": "     Spawn ant (small)", "method": "spawn_ant", "key": KEY_NONE},
+	{"label": "     Spawn hunter (medium)", "method": "spawn_hunter", "key": KEY_NONE},
+	{"label": "     Spawn spider (large)", "method": "spawn_spider", "key": KEY_NONE},
 	{"label": "     Reveal allegiances", "method": "reveal_allegiances", "key": KEY_NONE},
 	{"label": "     Unrest +0.2", "method": "bump_unrest", "key": KEY_NONE},
 	{"label": "     Clear unrest + grudges", "method": "clear_unrest", "key": KEY_NONE},
-	{"label": "     Spawn cardboard", "method": "spawn_cardboard", "key": KEY_NONE},
-	{"label": "     Spawn food", "method": "spawn_food", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
 	{"label": "     Clear enemies", "method": "clear_enemies", "key": KEY_NONE},
 ]
@@ -86,10 +90,6 @@ func _run(method: String) -> void:
 		"toggle_markers":
 			_markers.visible = not _markers.visible
 			_on_action_done("allegiance markers %s" % ("on" if _markers.visible else "off"))
-		"spawn_cardboard":
-			_actions.spawn_items(&"cardboard", 3)
-		"spawn_food":
-			_actions.spawn_items(&"food", 3)
 		_:
 			_actions.call(method)
 

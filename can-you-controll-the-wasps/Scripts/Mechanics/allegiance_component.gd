@@ -37,8 +37,18 @@ var cunning: float = 0.0
 var rally_bias: float = 1.0
 
 ## 集结意愿的两条区间，必须交叠 / the two bands, and they must overlap
-const LOYAL_RALLY: Vector2 = Vector2(0.75, 1.0)
-const QUEEN_RALLY: Vector2 = Vector2(0.60, 0.90)
+# **她的区间必须是工蜂区间的子集，不能只是"有交集"。**
+# 原本是 LOYAL(0.75..1.0) / QUEEN(0.60..0.90)：0.60~0.75 这一段是只有她才可能抽到的值，
+# 玩家只要制造一次入侵、找出那只反应半径明显最小的，就抓到了确定答案——那是探测器。
+# 现在下限对齐，她只是**更可能**偏低，而不是**只有她**能偏低。
+# The impostor's band must be a SUBSET of the workers', not merely overlap it: the old
+# 0.60-0.75 stretch was hers alone, which made one raid enough to identify her.
+#
+# 工蜂下限跟着降到 0.62，代价是忠诚蜂也会有几只不回防——那正是要的效果，
+# "入侵时谁没回来"从此不是确定答案
+# Loyal wasps now also sometimes stay away, which is exactly the point.
+const LOYAL_RALLY: Vector2 = Vector2(0.62, 1.0)
+const QUEEN_RALLY: Vector2 = Vector2(0.62, 0.88)
 
 # 冷却放在组件上而不是行为树任务里：任务只有被 tick 到才跑，
 # 而伪王后可能正卡在一段长达几秒的 Gather 里，冷却会跑得比真实时间慢
@@ -104,6 +114,22 @@ func rally_reach() -> float:
 func make_rebel(from_mother) -> void:
 	mother = from_mother
 	_change(State.REBEL)
+
+
+# 她被扶上了王座。不是屈服，是**得手了**——但机制上要的东西和屈服完全一样：
+# 留着颜色、照常干活、而且退出伪王后候选池（awaken_now 只从 LOYAL 里挑），
+# 所以复用 SUBDUED 而不是再开一个状态。状态名读起来是反的，行为是对的。
+# She won, but mechanically a winner and a submitter need the identical thing.
+func enthrone() -> void:
+	if state != State.FALSE_QUEEN:
+		return
+	# SecretLay 靠 brood_variant 为空停手：她合法了，不必再偷偷下卵
+	# SecretLay stops on a null brood_variant - she has no reason to sneak any more.
+	brood_variant = null
+	lay_cooldown = 0.0
+	decoy_cell = null
+	decoy_until = 0.0
+	_change(State.SUBDUED)
 
 
 # 母亲没了就不闹了，颜色和专长都留着 / gives in, keeps its colour and its perk

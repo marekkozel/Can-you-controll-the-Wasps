@@ -11,6 +11,7 @@ size = Vector2(44, 32)
 
 [node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
 mass = 0.6
+continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0
 

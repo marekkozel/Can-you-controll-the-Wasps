@@ -24,11 +24,15 @@ func _tick(delta: float) -> Status:
 	# Peacetime: only hive-posted wasps fight. Without this gate the gather branches
 	# never run, which is exactly why it exists.
 	#
+	# 问的是"玩家把它扔在巢边了吗"，不是"它这会儿闲着吗"。阈值模型上线之后
+	# job == HIVE 的含义变成了后者，照旧用它会让全部闲蜂变成卫兵
+	# Asks whether the player posted it here, not whether it happens to be idle.
+	#
 	# 警报期间门槛降下来，采集蜂也可能回防。这只有在入侵会结束的前提下才安全，
 	# RaidDirector 的 raid_duration 就是那个前提
 	# A raid lowers the bar. Safe only because raids end - see RaidDirector.raid_duration.
 	var raiding: bool = _alarm_is_up()
-	if not raiding and agent.job != Wasp.Job.HIVE:
+	if not raiding and not agent.is_posted_to_hive():
 		return FAILURE
 
 	# 罢工的和叛军不来支援。玩家看到的是"入侵时有几只蜂没动"，
@@ -74,14 +78,21 @@ func _alarm_is_up() -> bool:
 	return director != null and director.is_raiding()
 
 
-# 集结半径按个体算。守巢岗永远全额响应，采集蜂按自己的 rally_bias 打折——
+# 集结半径按个体算。**被玩家指派**的卫兵全额响应，其他人按自己的 rally_bias 打折——
 # 忠诚蜂和伪王后的区间是重叠的，所以"谁没回来"永远不是确定答案
 # Guards always answer in full; everyone else answers from their own band. The loyal and
 # the false queen's bands overlap on purpose, so "who stayed away" is never proof.
+#
+# 闲蜂走的是打折那一路，这一点是有意的：入侵是玩家注意力最集中在战斗上的时候，
+# 也就是她最好的作案窗口。她照样可能回防（rally_bias 上限 0.9，够近就来），
+# 但她不是必然回防——这个"有时来有时不来"就是她的伪装本身
+# Idle wasps take the discounted path on purpose: a raid is when the player's attention
+# is furthest from the hive, which makes it her best window. She may still answer - that
+# inconsistency is the disguise.
 func _reach_for(raiding: bool) -> float:
 	if not raiding:
 		return alert_radius
-	if agent.job == Wasp.Job.HIVE:
+	if agent.is_posted_to_hive():
 		return raid_alert_radius
 	return raid_alert_radius * agent.allegiance().rally_reach()
 

@@ -24,10 +24,11 @@ extends BTAction
 @export var decoy_duration: float = 10.0
 @export var fly_speed: float = 85.0
 ## 基础冷却 / base seconds between eggs
-@export var base_cooldown: float = 15.0
-## 每多一只存活叛军就多等这么久——叛乱越大扩张越慢，自带刹车
-## Each living rebel slows the next egg down, so the uprising throttles itself.
-@export var cooldown_per_rebel: float = 12.0
+@export var base_cooldown: float = 10.0
+## 每多一只存活叛军就多等这么久——叛乱越大扩张越慢，自带刹车。
+## 12 秒踩得太死：第三颗卵要等一分钟，玩家根本感觉不到有人在下蛋
+## Each living rebel slows the next egg; at 12 the third egg took a full minute.
+@export var cooldown_per_rebel: float = 6.0
 
 const HIVE_GROUP: StringName = &"hive"
 const WASP_GROUP: StringName = &"wasps"

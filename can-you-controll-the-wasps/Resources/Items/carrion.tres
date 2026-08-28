@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemInfo" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/item_info.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+payload = &"carrion"
+display_name = "CARRION"
+description = "Meat off a dead raider.
+Haul it to the food post - two of them refine into one royal jelly."

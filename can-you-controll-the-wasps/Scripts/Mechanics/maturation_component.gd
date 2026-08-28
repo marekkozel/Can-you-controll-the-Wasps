@@ -6,7 +6,7 @@ extends Node
 # 卵孵化、封盖羽化都用它。默认不自动开始，由持有方调 start() / shared by egg and cap.
 
 signal matured
-signal progress_changed(t: float)  # 0~1，接到进度环上就能看见倒计时 / wire to a ProgressRing to show the countdown
+signal progress_changed(t: float)  # 0~1，接到 BroodTimer 上就能看见倒计时 / wire to a BroodTimer to show it
 
 @export_range(0.1, 600.0, 0.1) var duration: float = 10.0
 ## 入树就开始跑 / start as soon as it enters the tree

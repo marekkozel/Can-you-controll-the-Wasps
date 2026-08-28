@@ -16,6 +16,9 @@ const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
 const FOOD_SCENE: PackedScene = preload("res://Scenes/Entities/Food.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://Scenes/Entities/Enemy.tscn")
+const ANT: EnemyVariant = preload("res://Resources/Variants/enemy_thief.tres")
+const HUNTER: EnemyVariant = preload("res://Resources/Variants/enemy_hunter.tres")
+const SPIDER: EnemyVariant = preload("res://Resources/Variants/enemy_spider.tres")
 
 ## 时间倍率循环用的档位 / time scale steps cycled by the hotkey
 const TIME_SCALES: Array[float] = [1.0, 2.0, 4.0, 8.0, 0.25, 0.5]
@@ -138,15 +141,95 @@ func end_raid() -> void:
 	_report("raid called off")
 
 
-# 不参与入侵的散兵，用来单测点击击杀 / a loose wanderer, for testing the click kill
-func spawn_enemy(count: int = 1) -> void:
-	for i in count:
-		var enemy: Enemy = ENEMY_SCENE.instantiate()
-		entities_root().add_child(enemy)
-		var spot: Vector2 = Vector2(randf_range(280.0, 1000.0), randf_range(50.0, 200.0))
-		enemy.global_position = spot
-		enemy.set_wander_home(spot)
-	_report("spawned %d enemies" % count)
+# 不参与入侵的散兵，一种体型一个按钮。用来对比大小、验证蜘蛛的血条和它够不够得着蜂
+# Loose wanderers, one button per build - for eyeballing the sizes and the spider's reach.
+func spawn_ant() -> void:
+	_spawn_breed(ANT)
+
+
+func spawn_hunter() -> void:
+	_spawn_breed(HUNTER)
+
+
+func spawn_spider() -> void:
+	_spawn_breed(SPIDER)
+
+
+func _spawn_breed(breed: EnemyVariant) -> void:
+	if breed == null:
+		_report("no breed resource")
+		return
+	var enemy: Enemy = ENEMY_SCENE.instantiate()
+	# variant 必须在 add_child 之前写：_apply_variant() 在 _ready 里跑
+	# Must be set before the node enters the tree - _apply_variant() runs in _ready.
+	enemy.variant = breed
+	entities_root().add_child(enemy)
+	# 按体型内缩，否则蜘蛛半个身子会生成在上带的墙里 / the spider would spawn half inside a wall
+	var margin: float = breed.collision_radius + 24.0
+	var spot: Vector2 = Vector2(
+		randf_range(280.0, 1000.0),
+		randf_range(40.0 + margin, 248.0 - margin))
+	enemy.global_position = spot
+	enemy.set_wander_home(spot)
+	_report("spawned a %s (r=%d, %d hp)" % [breed.display_name, int(breed.collision_radius), breed.max_health])
+
+
+# ---------------- 季节 / seasons ----------------
+
+# 一个季节两分钟起步，不给个跳过键根本没法看交替那一下
+# A season runs minutes; without a skip you never get to watch the turnover.
+func skip_season() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null:
+		_report("no SeasonDirector in the scene")
+		return
+	d.advance()
+	_report("season -> %s (gen %d)" % [d.season_name(), d.generation])
+
+
+# 直接跳到冬天，不用等两季 / straight to winter, no waiting through two seasons
+func skip_to_winter() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null:
+		_report("no SeasonDirector in the scene")
+		return
+	# 最多转一整轮，防止 season 卡在某个值时死循环 / bounded, never loops forever
+	for i in SeasonDirector.SEASON_COUNT:
+		if d.season == SeasonDirector.Season.WINTER:
+			break
+		d.advance()
+	_report("season -> %s (%s)" % [d.season_name(), d.rite_name()])
+
+
+# 立刻让蜂群推举一只。测的是"自动继位"那条链，玩家平时得等 throne_timeout
+func crown_someone() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null or not d.is_winter():
+		_report("not winter - no throne to take")
+		return
+	var candidates: Array = []
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null and wasp.allegiance().works():
+			candidates.append(wasp)
+	if candidates.is_empty():
+		_report("nobody eligible")
+		return
+	var heir: Wasp = candidates[randi() % candidates.size()]
+	if d.crown(heir):
+		_report("crowned %s" % heir.wasp_name)
+	else:
+		_report("the throne refused it")
+
+
+func grant_gene_point() -> void:
+	var bank: GeneBank = GeneBank.find(get_tree())
+	if bank == null:
+		_report("no GeneBank in the scene")
+		return
+	bank.points += 1
+	bank.points_changed.emit(bank.points)
+	_report("gene points: %d" % bank.points)
 
 
 # ---------------- 叛乱 / betrayal ----------------
@@ -285,9 +368,10 @@ func _all_hunger() -> Array:
 	for cell in h.all_cells():
 		if cell.content != HexCell.Content.LARVA:
 			continue
-		var larva: Node = cell.get_node_or_null("Visual/Content").get_child(0)
-		if larva != null:
-			var hunger: HungerComponent = larva.get_node_or_null("HungerComponent")
+		# 占用物现在直接挂在格子下，不再走 Visual/Content
+		# Occupants are direct children of the cell now, no Visual/Content wrapper.
+		for child in cell.get_children():
+			var hunger: HungerComponent = child.get_node_or_null("HungerComponent")
 			if hunger != null:
 				out.append(hunger)
 	return out

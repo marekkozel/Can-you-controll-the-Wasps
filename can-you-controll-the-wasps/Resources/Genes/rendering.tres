@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"rendering"
+display_name = "RENDERING"
+description = "The refinery yields 2 royal jelly per 3 carrion instead of 1 per 2."
+order = 2
+requires = Array[StringName]([])
+cost = 2
+max_rank = 1

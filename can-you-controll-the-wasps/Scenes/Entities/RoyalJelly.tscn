@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://cj3llyr0y41xx"]
+
+[ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="1_draggable"]
+[ext_resource type="Texture2D" uid="uid://cwsaukl1n1mi1" path="res://Assets/Entities/Energy_upgrade.png" id="1_jelly"]
+[ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
+
+[sub_resource type="CircleShape2D" id="Shape_jelly"]
+radius = 12.0
+
+[node name="RoyalJelly" type="RigidBody2D" groups=["carriable"]]
+mass = 0.5
+continuous_cd = 2
+linear_damp = 2.0
+angular_damp = 3.0
+
+[node name="Fill" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1_jelly")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_jelly")
+
+[node name="DraggableComponent" parent="." instance=ExtResource("1_draggable")]
+profile = ExtResource("2_profile")
+
+[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+shape = SubResource("Shape_jelly")
+
+[node name="DeliverableComponent" parent="." instance=ExtResource("3_deliver")]
+payload = &"royal_jelly"
+
+[node name="ClaimComponent" parent="." instance=ExtResource("4_claim")]
+
+[editable path="DraggableComponent"]

@@ -17,6 +17,23 @@ signal cell_sealed(cell: HexCell)
 signal cell_wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cell_cleaned(cell: HexCell)
 signal cell_occupant_destroyed(cell: HexCell)
+## 伪王后下了一颗异色卵。**只给氛围层用**，别拿它标记格子——标了就等于把答案画在巢上
+## For atmosphere only: marking the cell would paint the answer onto the comb.
+signal cell_rebel_egg_laid(cell: HexCell)
+
+# demand() 是"还有多少活"，不是"完成了百分之几"。
+#
+# 曾经这里返回未完成的**比例**，于是完成度越高需求越低，可剩下的活一点没少：
+# 一只被派在巢的蜂基线最高 0.37（posting_bias 0.28 + SWITCH_MARGIN 0.09），
+# 阈值中位 0.385，要它出门得 demand > 0.755——巢建到四成就再没人肯搬纸板，
+# 手动拖过去的蜂待一会儿也飘回来。剩下那截永远建不完。
+#
+# 下限只要压过"最勤快的那批"就够，不用压过所有蜂：cardboard_threshold 下限 0.22，
+# 0.59 是"总有蜂肯干"的分界线，取 0.65 留一点余量。压过全部反而抹掉了分工。
+# A ratio starves its own endgame; the floor only has to clear the keenest wasps.
+const BUILD_FLOOR: float = 0.65
+const FEED_FLOOR: float = 0.60
+const FEED_CAP: float = 0.85
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
@@ -69,6 +86,7 @@ func rebuild() -> void:
 		cell.wasp_emerged.connect(func(c, w): cell_wasp_emerged.emit(c, w))
 		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
 		cell.occupant_destroyed.connect(func(c): cell_occupant_destroyed.emit(c))
+		cell.rebel_egg_laid.connect(func(c, _v): cell_rebel_egg_laid.emit(c))
 		_cells[coord] = cell
 
 	
@@ -120,9 +138,42 @@ func accepts(payload: StringName) -> bool:
 	match payload:
 		&"cardboard":
 			return built_count() < _cells.size()
-		&"food":
+		&"food", &"royal_jelly":
 			return not hungry_cells().is_empty()
 	return false
+
+
+# 巢现在有多需要这类货，0..1。响应阈值模型的**刺激**那一半，蜂拿它跟自己的阈值比
+# The stimulus half of the response-threshold model; each wasp weighs it against its own bar.
+#
+# 两条尺度是刻意不同的：
+#   纸板看的是"还差多少格没建"——一个缓慢的、结构性的需求
+#   食物看的是"最急的那只幼虫有多急"——一个尖锐的、会突然爆起来的需求
+# 用同一条尺度的话，饿死一只幼虫的分量会被总格数稀释到看不见，没有蜂会回头救它
+# Different scales on purpose: averaging the food demand over the whole hive would bury
+# a starving larva under the cell count, and nobody would ever turn back for it.
+func demand(payload: StringName) -> float:
+	var total: int = _cells.size()
+	if total == 0:
+		return 0.0
+
+	match payload:
+		&"cardboard":
+			var unbuilt: int = total - built_count()
+			if unbuilt == 0:
+				return 0.0  # 全建完才归零，蜂回巢待命——牌桌就是这么来的 / the floor is the point
+			return clampf(BUILD_FLOOR + (1.0 - BUILD_FLOOR) * float(unbuilt) / float(total), 0.0, 1.0)
+		&"food", &"royal_jelly":
+			var urgent: float = 0.0
+			for cell in hungry_cells():
+				urgent = maxf(urgent, 1.0 - cell.larva_hunger_ratio())
+			# 只看"已经饿着的"等于让蜂等到濒死才动身，它还要飞过去、采、再搬回来。
+			# 幼虫越多备得越多；送不出去的那只就拿着等，下一只饿了立刻能喂
+			# Waiting for hunger means arriving too late; carried food is stock, not waste.
+			var brood: int = count_content(HexCell.Content.LARVA)
+			var stock: float = 0.0 if brood == 0 else minf(FEED_FLOOR + 0.1 * float(brood - 1), FEED_CAP)
+			return clampf(maxf(stock, urgent), 0.0, 1.0)
+	return 0.0
 
 
 # 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now

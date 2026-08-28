@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://unmqvhi82wiy" path="res://Scripts/Entities/larva.gd" id="1_larva"]
 [ext_resource type="Texture2D" uid="uid://c3uxmguvic815" path="res://Assets/Entities/Larva.png" id="2_6ay88"]
-[ext_resource type="Script" uid="uid://b5ubkjrir028k" path="res://Scripts/Mechanics/progress_ring.gd" id="2_ring"]
 [ext_resource type="PackedScene" uid="uid://dbdevgkd27o2g" path="res://Scenes/Mechanics/HungerComponent.tscn" id="3_hunger"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
 
@@ -14,14 +13,6 @@ visible = false
 self_modulate = Color(0.93, 0.89, 0.74, 1)
 texture = ExtResource("2_6ay88")
 offset = Vector2(1, -14)
-
-[node name="Ring" type="Line2D" parent="." unique_id=1194524495]
-width = 3.0
-default_color = Color(0.98, 0.55, 0.3, 0.9)
-joint_mode = 2
-begin_cap_mode = 2
-end_cap_mode = 2
-script = ExtResource("2_ring")
 
 [node name="HungerComponent" parent="." unique_id=811372680 instance=ExtResource("3_hunger")]
 

@@ -10,6 +10,9 @@ signal became_hungry(larva: Larva)
 signal fed(larva: Larva, current: int, required: int)
 signal satisfied(larva: Larva)
 signal starved(larva: Larva)
+## 倒计时，饱腹和饥饿两段都发。critical = 已经在救援窗口里了
+## Both phases report here; critical means the rescue window is already running.
+signal timer_changed(t: float, critical: bool)
 
 
 
@@ -25,7 +28,6 @@ signal starved(larva: Larva)
 @export var dead_color: Color = Color(0.34, 0.29, 0.22)
 
 @onready var _body: Sprite2D = $Body
-@onready var _ring: ProgressRing = $Ring
 @onready var _hunger: HungerComponent = $HungerComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 
@@ -50,7 +52,6 @@ func _ready() -> void:
 	_juice.target = $Body
 	_body.self_modulate = calm_color
 	_body.rotation = emerge_direction.angle() + PI * 0.5  # 贴图朝上画的 / the sprite is drawn pointing up
-	_build_ring()
 
 	if Engine.is_editor_hint():
 		set_process(false)
@@ -63,8 +64,17 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _hunger.is_hungry():
-		_ring.set_progress(_hunger.hunger_ratio())
+	timer_changed.emit(_hunger.phase_ratio(), _hunger.is_hungry())
+
+
+# FAT RESERVES。饱腹期一变，正在跑的那一段也要跟着重置——组件 _ready 时就按
+# 原时长起表了，只改上限的话这一轮还是老数
+# The component already started its clock, so the running phase has to be re-armed.
+func scale_satiation(factor: float) -> void:
+	if factor <= 1.0:
+		return
+	_hunger.satiated_duration *= factor
+	_hunger.time_left = _hunger.satiated_duration
 
 
 func feed(amount: int = 1) -> bool:
@@ -82,21 +92,10 @@ func hunger_ratio() -> float:
 
 # ---------------- 身体 / body ----------------
 
-func _build_ring() -> void:
-	var radius: float = length * 0.62
-	var circle: PackedVector2Array = PackedVector2Array()
-	for i in 24:
-		var a: float = TAU * float(i) / 24.0
-		circle.append(Vector2(cos(a), sin(a)) * radius)
-	_ring.set_ring_path(circle)
-	_ring.set_progress(0.0)
-
-
 # ---------------- 状态反馈 / state feedback ----------------
 
 func _on_became_hungry() -> void:
 	_tint(hungry_color, 0.4)
-	_ring.set_progress(1.0)
 	became_hungry.emit(self)
 
 
@@ -108,14 +107,12 @@ func _on_fed(current: int, required: int) -> void:
 
 func _on_satisfied() -> void:
 	_tint(calm_color, 0.5)
-	_ring.set_progress(0.0)
 	_juice.punch(1.18, 0.4)
 	satisfied.emit(self)
 
 
 func _on_starved() -> void:
 	_is_dead = true
-	_ring.set_progress(0.0)
 	_tint(dead_color, 0.8)
 	set_process(false)
 	_slump()

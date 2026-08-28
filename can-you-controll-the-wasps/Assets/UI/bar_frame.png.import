@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dafrwlgceq7ci"
-path="res://.godot/imported/hex_border.png-4fdf34542133112d6889a889c0277729.ctex"
+uid="uid://cmhpwy7si8rb6"
+path="res://.godot/imported/bar_frame.png-4903bab8c50fa8e9d1c841bdc05d7f9d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/hex_border.png"
-dest_files=["res://.godot/imported/hex_border.png-4fdf34542133112d6889a889c0277729.ctex"]
+source_file="res://Assets/UI/bar_frame.png"
+dest_files=["res://.godot/imported/bar_frame.png-4903bab8c50fa8e9d1c841bdc05d7f9d.ctex"]
 
 [params]
 

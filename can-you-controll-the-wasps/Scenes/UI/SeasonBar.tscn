@@ -1,85 +1,136 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
-[ext_resource type="Texture2D" uid="uid://ckyoq3e31wicq" path="res://Assets/UI/season_bar.png" id="2_ph_season"]
+[ext_resource type="Script" path="res://Scripts/UI/season_progress.gd" id="2_progress"]
+[ext_resource type="Texture2D" path="res://Assets/UI/bar_frame.png" id="3_frame"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_spring.png" id="4_spring"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_summer.png" id="5_summer"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_autumn.png" id="6_autumn"]
+[ext_resource type="Texture2D" path="res://Assets/UI/icon_winter.png" id="7_winter"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
-
-[node name="SeasonBar" type="PanelContainer"]
+[node name="SeasonBar" type="Control" groups=["season_bar"]]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_bare")
+mouse_filter = 2
 script = ExtResource("1_seasonbar")
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 2
+[node name="Frame" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_ph_season")
-expand_mode = 1
+texture = ExtResource("3_frame")
+patch_margin_left = 24
+patch_margin_top = 0
+patch_margin_right = 24
+patch_margin_bottom = 0
 
-[node name="Row" type="HBoxContainer" parent="."]
-layout_mode = 2
+[node name="Fill" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_progress")
+
+[node name="Segments" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 4.0
+offset_right = -14.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Seasons" type="HBoxContainer" parent="Row"]
+[node name="Spring" type="HBoxContainer" parent="Segments"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 0
+theme_override_constants/separation = 8
 
-[node name="Summer" type="Label" parent="Row/Seasons"]
+[node name="Icon" type="TextureRect" parent="Segments/Spring"]
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "Summer"
-horizontal_alignment = 1
-vertical_alignment = 1
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_spring")
+stretch_mode = 3
 
-[node name="Autumn" type="Label" parent="Row/Seasons"]
+[node name="Name" type="Label" parent="Segments/Spring"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "Autumn"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Winter" type="Label" parent="Row/Seasons"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "Winter"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Spring" type="Label" parent="Row/Seasons"]
-layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Spring"
-horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Duration" type="HBoxContainer" parent="Row"]
-custom_minimum_size = Vector2(220, 0)
+[node name="Summer" type="HBoxContainer" parent="Segments"]
 layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="Caption" type="Label" parent="Row/Duration"]
+[node name="Icon" type="TextureRect" parent="Segments/Summer"]
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Season Duration"
-vertical_alignment = 1
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("5_summer")
+stretch_mode = 3
 
-[node name="Dial" type="PanelContainer" parent="Row/Duration"]
-custom_minimum_size = Vector2(56, 28)
+[node name="Name" type="Label" parent="Segments/Summer"]
 layout_mode = 2
-
-[node name="Time" type="Label" parent="Row/Duration/Dial"]
-layout_mode = 2
+size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
-text = "00:00"
-horizontal_alignment = 1
+text = "Summer"
+vertical_alignment = 1
+
+[node name="Autumn" type="HBoxContainer" parent="Segments"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Segments/Autumn"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_autumn")
+stretch_mode = 3
+
+[node name="Name" type="Label" parent="Segments/Autumn"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 13
+text = "Autumn"
+vertical_alignment = 1
+
+[node name="Winter" type="HBoxContainer" parent="Segments"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Segments/Winter"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_winter")
+stretch_mode = 3
+
+[node name="Name" type="Label" parent="Segments/Winter"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 13
+text = "Winter"
 vertical_alignment = 1

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0c87g5ocgw8g"
-path="res://.godot/imported/food.png-415ed8902071c49001b435c3eef15ada.ctex"
+uid="uid://c0emngfhsc6m1"
+path="res://.godot/imported/button_normal.png-63a531f9bdb544635c2df243e7c5f7e2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/food.png"
-dest_files=["res://.godot/imported/food.png-415ed8902071c49001b435c3eef15ada.ctex"]
+source_file="res://Assets/UI/button_normal.png"
+dest_files=["res://.godot/imported/button_normal.png-63a531f9bdb544635c2df243e7c5f7e2.ctex"]
 
 [params]
 

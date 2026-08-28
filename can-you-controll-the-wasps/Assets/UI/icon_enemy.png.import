@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://deg54sw18xqcg"
-path="res://.godot/imported/hex_cap.png-f461d917ef65c7a8a0f5176d5e326cf9.ctex"
+uid="uid://d2uujwef8xwe3"
+path="res://.godot/imported/icon_enemy.png-523b71cf26cba4eb56e820c3d84b7053.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/hex_cap.png"
-dest_files=["res://.godot/imported/hex_cap.png-f461d917ef65c7a8a0f5176d5e326cf9.ctex"]
+source_file="res://Assets/UI/icon_enemy.png"
+dest_files=["res://.godot/imported/icon_enemy.png-523b71cf26cba4eb56e820c3d84b7053.ctex"]
 
 [params]
 

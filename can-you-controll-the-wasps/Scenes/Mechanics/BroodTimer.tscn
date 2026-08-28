@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://4p177kuyf2u0"]
+
+[ext_resource type="Script" uid="uid://ckidl5xaws05r" path="res://Scripts/Mechanics/brood_timer.gd" id="1_timer"]
+
+[node name="BroodTimer" type="Node2D" unique_id=861085323]
+z_index = 4
+script = ExtResource("1_timer")
+style = 1

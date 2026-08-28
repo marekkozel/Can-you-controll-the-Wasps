@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"thick_comb"
+display_name = "THICK COMB"
+description = "Every cell needs one less piece of cardboard."
+order = 1
+requires = Array[StringName]([])
+cost = 2
+max_rank = 1

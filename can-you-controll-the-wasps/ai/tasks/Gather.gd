@@ -12,6 +12,7 @@ extends BTAction
 
 const CARRIABLE_GROUP: StringName = &"carriable"
 const HIVE_GROUP: StringName = &"hive"
+const ITEM_SOURCE_GROUP: StringName = &"item_source"
 
 var _target: Node2D = null
 
@@ -29,8 +30,11 @@ func _tick(delta: float) -> Status:
 	# Deliver 又找不到去处原地放下，两个任务会死循环
 	# Without this the pair loops forever: Gather picks up, Deliver finds no target and
 	# drops it right back down.
+	#
+	# 岗位可能管好几种货（加工厂那种），只要**还有一种**有去处就继续开工
+	# A refinery post handles several payloads; one live sink is enough to keep working.
 	var hive: Hive = agent.get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
-	if hive == null or not hive.accepts(agent.job_payload):
+	if not _any_sink(hive):
 		return FAILURE
 
 	if not _is_usable(carry, _target):
@@ -57,6 +61,11 @@ func _fetch_from_post(carry: CarryComponent, delta: float) -> Status:
 	var post: ItemSource = agent.job_post as ItemSource
 	if post == null or post.payload != agent.job_payload:
 		return FAILURE
+	# 只收料不发货的加工厂（皇后的兑换台）没东西可领。不在这里拦的话蜂会飞完
+	# 整条走廊、到跟前才拿到 null，然后掉头——一趟白跑，而且看得出来是白跑
+	# A refinery mints nothing; without this the wasp flies the whole corridor to find out.
+	if post.piece_scene == null:
+		return FAILURE
 
 	agent.steer_towards(post.global_position, delta, fly_speed)
 	if agent.global_position.distance_to(post.global_position) > pick_distance:
@@ -76,8 +85,29 @@ func _exit() -> void:
 	_target = null
 
 
+# 这个岗位管的货里，还有哪一种是有地方送的 / does any of this post's payloads have a sink
+func _any_sink(hive: Hive) -> bool:
+	for payload in agent.job_payloads():
+		if _has_sink(hive, payload):
+			return true
+	return false
+
+
+# 去处有两种：收原料的加工厂，和收货的巢。战利品的去处是工厂，跟巢完全无关，
+# 所以光问 hive.accepts() 会把整条战利品线判死
+# Two kinds of sink. Loot's is the refinery, never the hive - asking only the hive
+# would declare the whole loot loop dead.
+func _has_sink(hive: Hive, payload: StringName) -> bool:
+	for node in agent.get_tree().get_nodes_in_group(ITEM_SOURCE_GROUP):
+		var post: ItemSource = node as ItemSource
+		if post != null and post.accepts_intake(payload):
+			return true
+	return hive != null and hive.accepts(payload)
+
+
 func _acquire(carry: CarryComponent) -> Node2D:
-	var wanted: StringName = agent.job_payload
+	var wanted: Array[StringName] = agent.job_payloads()
+	var hive: Hive = agent.get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
 	var best: Node2D = null
 	var best_dist: float = INF
 
@@ -85,7 +115,17 @@ func _acquire(carry: CarryComponent) -> Node2D:
 		var item: Node2D = node as Node2D
 		if not _is_usable(carry, item):
 			continue
-		if wanted != &"" and CarryComponent.payload_of(item) != wanted:
+		# 看不见的就当不存在。不加这道门每只蜂都在扫全场，采食蜂会为了地上一块
+		# 战利品横穿整张地图——那不是聪明，那是开了全图
+		# Out of sight is out of mind; without this every wasp behaves omnisciently.
+		if agent.has_method("can_see") and not agent.can_see(item.global_position):
+			continue
+		var payload: StringName = CarryComponent.payload_of(item)
+		if not wanted.is_empty() and not wanted.has(payload):
+			continue
+		# 捡起来没处送的别捡：巢建满时那堆纸板就该躺着
+		# Don't pick up what has nowhere to go, or it gets carried in circles.
+		if not _has_sink(hive, payload):
 			continue
 		var dist: float = agent.global_position.distance_to(item.global_position)
 		if dist < best_dist:

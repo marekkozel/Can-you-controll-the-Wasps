@@ -8,13 +8,17 @@ extends RigidBody2D
 
 signal killed(enemy: Enemy)
 
+## 品种：颜色 + 血量 + 干什么。不设就是默认的小偷色和 1 血
+## Breed - colour, health, and which behaviour component runs. See EnemyVariant.
+@export var variant: EnemyVariant
+
 @export_group("Combat")
 ## 每次点击造成几点伤害 / damage per click
 @export_range(1, 20, 1) var click_damage: int = 1
-## 击退力度，只对没被打死的生效 / knockback, only applied when the hit is not lethal
-@export_range(0.0, 4000.0, 10.0) var knockback_force: float = 600.0
-## 击退时顺带给的旋转 / spin that comes with the knockback
-@export_range(0.0, 2000.0, 10.0) var knockback_spin: float = 300.0
+## 击退力度，只对没被打死的生效。跟黄蜂一样 lock_rotation，所以只推不转——
+## 打一下就转个角度的话贴图朝向会乱掉，也看不出它在往哪走
+## Knockback on non-lethal hits. Rotation is locked like the wasp's: shoved, never spun.
+@export_range(0.0, 4000.0, 10.0) var knockback_force: float = 280.0
 
 @export_group("Juice")
 ## 命中瞬间的卡顿时长（真实秒，不受 time_scale 影响）/ hit stop, in real seconds
@@ -32,15 +36,22 @@ signal killed(enemy: Enemy)
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _wander: WanderComponent = $WanderComponent
 @onready var _raid: RaidComponent = $RaidComponent
+@onready var _hunt: HuntComponent = $HuntComponent
+@onready var _loot: LootComponent = $LootComponent
 
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
 
 var _is_dead: bool = false
 
+# 场景里那几个 reach 是照这个半径调的，别的体型按差值往上补
+# The scene's reach values are tuned for this radius; other builds scale off it.
+const BUILD_REFERENCE_RADIUS: float = 22.0
+
 
 func _ready() -> void:
 	_juice.target = _visual
+	_apply_variant()
 
 	input_pickable = true
 	input_event.connect(_on_input_event)
@@ -59,19 +70,113 @@ func set_wander_home(position: Vector2) -> void:
 	_wander.set_home(position)
 
 
-# 入场即开打。exit_point 是收兵时往哪撤 / enters raiding; exit_point is where it leaves from
+# 入场。开哪个组件由品种决定，exit_point 是收兵时往哪撤
+# Which component drives it is the breed's call; exit_point is where it leaves from.
 func begin_raid(exit_point: Vector2 = Vector2.INF) -> void:
 	_wander.enabled = false
+	if hunts():
+		# 猎手不碰巢室，但离场还是走 RaidComponent，两种敌人共用一条撤退逻辑
+		# Hunters never touch a cell, but they leave through RaidComponent all the same.
+		_raid.arm_exit(exit_point)
+		_hunt.begin()
+		return
 	_raid.begin(exit_point)
 
 
 # 时间到了收兵，路上照样能被打死 / called off; still killable on the way out
 func retreat() -> void:
+	_hunt.stop()
 	_raid.retreat()
 
 
+func hunts() -> bool:
+	return variant != null and variant.behavior == EnemyVariant.Behavior.HUNTER
+
+
 func is_raiding() -> bool:
-	return not _is_dead and _raid.is_raiding()
+	if _is_dead:
+		return false
+	return _hunt.hunting or _raid.is_raiding()
+
+
+# 血量要在 HealthComponent._ready() 之后再写：子节点先 _ready，那时 health 已经按
+# max_health 初始化过一遍了，只改 max_health 不改 health 会得到一只 1 血的敌人
+# Children _ready first, so health is already initialised - both fields must be set here.
+func _apply_variant() -> void:
+	if variant == null:
+		return
+	_health.max_health = variant.max_health
+	_health.health = variant.max_health
+	_loot.count = variant.loot_count
+	_apply_build()
+
+	# 三种敌人各有一张彩色专图，再乘 body_color 就是乘两遍，一片脏。
+	# 那几个颜色字段是灰度占位图那个年代留下的，只在没给 texture 时才有意义
+	# The colour fields date from the greyscale placeholders; a real sprite overrides them.
+	if variant.texture != null:
+		var body: Sprite2D = _visual.get_node_or_null(^"Body") as Sprite2D
+		if body != null:
+			body.self_modulate = Color.WHITE
+		return
+
+	_tint(_visual.get_node_or_null(^"Body"), variant.body_color)
+	_tint(_visual.get_node_or_null(^"Sheen"), variant.sheen_color)
+	_tint(_visual.get_node_or_null(^"Head"), variant.head_color)
+	_tint(_visual.get_node_or_null(^"EyeL"), variant.eye_color)
+	_tint(_visual.get_node_or_null(^"EyeR"), variant.eye_color)
+	var outline: Line2D = _visual.get_node_or_null(^"Outline") as Line2D
+	if outline != null:
+		outline.default_color = variant.outline_color
+
+
+# 体型：贴图、碰撞、速度。三种敌人共用 Enemy.tscn，靠这里拉开
+# One scene for all three builds; this is where they stop looking alike.
+func _apply_build() -> void:
+	var body: Sprite2D = _visual.get_node_or_null(^"Body") as Sprite2D
+	if body != null and variant.texture != null:
+		body.texture = variant.texture
+		body.offset = variant.sprite_offset  # 图的中心 = 实体原点 / art centre is the origin
+
+	# CircleShape2D 是场景里的 SubResource，实例之间**共享**——直接改半径会改全场，
+	# 最后一只生成的敌人的体型会套到所有敌人身上。跟 DragProfile 一个坑
+	# Shapes authored in a scene are shared between instances; duplicate before touching.
+	var col: CollisionShape2D = get_node_or_null(^"CollisionShape2D") as CollisionShape2D
+	if col != null:
+		var circle: CircleShape2D = col.shape as CircleShape2D
+		if circle != null:
+			circle = circle.duplicate()
+			circle.radius = variant.collision_radius
+			col.shape = circle
+
+	mass = variant.body_mass
+
+	if _wander != null:
+		_wander.speed = variant.move_speed
+
+	# **判定距离必须大于两者碰撞半径之和，否则永远走不到。**
+	# 场景里的 reach 是照中型（半径 22）调的：蜘蛛半径 48，加上黄蜂 grab 的 23，
+	# 不放大的话它会贴着蜂原地转圈，一口也咬不着
+	# Scene reach is tuned for the medium build; the spider would never land a bite.
+	var grew: float = maxf(0.0, variant.collision_radius - BUILD_REFERENCE_RADIUS)
+	if grew > 0.0:
+		if _hunt != null:
+			_hunt.reach += grew
+		if _raid != null:
+			_raid.reach += grew
+
+	var bar: Node2D = get_node_or_null(^"HealthBarComponent") as Node2D
+	if bar != null:
+		bar.visible = variant.show_health_bar
+
+
+func _tint(node: Node, color: Color) -> void:
+	var poly: Polygon2D = node as Polygon2D
+	if poly != null:
+		poly.color = color
+		return
+	var sprite: Sprite2D = node as Sprite2D
+	if sprite != null:
+		sprite.self_modulate = color  # 贴图画灰度，白 x 色 = 色 / greyscale sprites tint clean
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -104,10 +209,14 @@ func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 	if direction == Vector2.ZERO:  # 正好点在中心 / clicked dead centre
 		direction = Vector2.RIGHT.rotated(randf() * TAU)
 
+	# 只在击退期间停游荡，落地后要开回来。以前这里是永久关闭——1 血时非致命分支
+	# 根本走不到第二次所以没人发现，敌人一有血量就会让散兵挨一下之后永久僵住
+	# Wander must come back: this used to switch off for good, which only stayed invisible
+	# while one hit was always lethal.
 	_wander.enabled = false
 	apply_central_impulse(direction * knockback_force)
-	apply_torque_impulse(randf_range(-knockback_spin, knockback_spin))
 	_juice.punch(0.65, 0.3)
+	_resume_wander_after_knockback()
 
 
 func _on_died(_from: Vector2) -> void:
@@ -115,6 +224,7 @@ func _on_died(_from: Vector2) -> void:
 	input_pickable = false
 	_wander.enabled = false
 	_raid.stop()  # 不停的话组件会继续给冻住的尸体写速度 / else it steers a frozen corpse
+	_hunt.stop()
 	_visual.modulate = Color.WHITE
 	set_process(false)
 	killed.emit(self)
@@ -130,6 +240,16 @@ func _on_died(_from: Vector2) -> void:
 	tween.tween_property(_visual, "scale", Vector2.ONE * death_pop_scale, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_visual, "modulate:a", 0.0, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(queue_free)
+
+
+# 击退飞完再恢复游荡。入侵中的敌人本来就没开游荡，这条只对散兵有意义
+# Only loose wanderers care - a raider never had wander on in the first place.
+func _resume_wander_after_knockback() -> void:
+	await get_tree().create_timer(0.6).timeout
+	if _is_dead or not is_instance_valid(self):
+		return
+	if not _raid.is_raiding() and not _hunt.hunting:
+		_wander.enabled = true
 
 
 # 命中卡顿。用真实时间计时，不然自己会被自己的减速拖长
