@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://daaiiu5swj2oa"]
 
 [ext_resource type="Script" uid="uid://unmqvhi82wiy" path="res://Scripts/Entities/larva.gd" id="1_larva"]
-[ext_resource type="Texture2D" uid="uid://c3uxmguvic815" path="res://Assets/Entities/Larva.png" id="2_6ay88"]
+[ext_resource type="Texture2D" uid="uid://c3uxmguvic815" path="res://Assets/Entities/larva.png" id="2_6ay88"]
 [ext_resource type="PackedScene" uid="uid://dbdevgkd27o2g" path="res://Scenes/Mechanics/HungerComponent.tscn" id="3_hunger"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="4_juice"]
 
@@ -15,6 +15,7 @@ texture = ExtResource("2_6ay88")
 offset = Vector2(1, -14)
 
 [node name="HungerComponent" parent="." unique_id=811372680 instance=ExtResource("3_hunger")]
+hunger_window = 40.0
 
 [node name="JuiceComponent" parent="." unique_id=1011094095 node_paths=PackedStringArray("target") instance=ExtResource("4_juice")]
 target = NodePath("../Body")

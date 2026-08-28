@@ -6,7 +6,7 @@ class_name SecretLay
 extends BTAction
 
 ## 多近算到位 / how close before she can lay
-@export var lay_distance: float = 18.0
+@export var lay_distance: float = 19
 ## 产卵前要悬停多久。第一代停得久得离谱，老练之后刚好落在 Fidget 的区间里
 ## Lingers conspicuously at first, then just long enough to pass for a Fidget inspection.
 @export var hover_obvious: float = 5.0
