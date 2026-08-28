@@ -15,6 +15,8 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "F10 Kill all enemies", "method": "kill_all_enemies", "key": KEY_F10},
 	{"label": "F12 Awaken a false queen", "method": "awaken_false_queen", "key": KEY_F12},
 	{"label": "M   Toggle allegiance markers", "method": "toggle_markers", "key": KEY_M},
+	{"label": "T   Cycle time scale", "method": "cycle_time_scale", "key": KEY_T},
+	{"label": "     Time scale back to x1", "method": "reset_time_scale", "key": KEY_NONE},
 	{"label": "     Skip to next season", "method": "skip_season", "key": KEY_NONE},
 	{"label": "     Skip to winter", "method": "skip_to_winter", "key": KEY_NONE},
 	{"label": "     Crown someone now", "method": "crown_someone", "key": KEY_NONE},

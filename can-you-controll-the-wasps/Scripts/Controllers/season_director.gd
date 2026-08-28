@@ -45,12 +45,16 @@ const WASP_GROUP: StringName = &"wasps"
 const SOURCE_GROUP: StringName = &"item_source"
 const SEASON_COUNT: int = 4
 
+# 春 + 夏 + 秋 = 180 秒。一代的目标是三分半上下：三个生产季三分钟，
+# 加上冬天的仪式（顺利的话二十几秒）。冬天不在这里配，它的长度由仪式跑出来
+# Three minutes of growing seasons; winter's length comes from the rite, not from here.
 @export_group("Duration")
 ## 春天最短：新皇那一窝刚下，玩家在补冬天拆掉的巢，还没进入正经生产
 ## Shortest - the player is patching winter's damage, not producing yet.
-@export_range(10.0, 600.0, 5.0) var spring_duration: float = 90.0
-@export_range(10.0, 600.0, 5.0) var summer_duration: float = 150.0
-@export_range(10.0, 600.0, 5.0) var autumn_duration: float = 120.0
+@export_range(10.0, 600.0, 5.0) var spring_duration: float = 45.0
+## 夏天最长，这一代的产量基本都在这一段里 / the generation's output happens here
+@export_range(10.0, 600.0, 5.0) var summer_duration: float = 75.0
+@export_range(10.0, 600.0, 5.0) var autumn_duration: float = 60.0
 
 @export_group("Start")
 @export var start_season: Season = Season.SPRING
@@ -74,14 +78,14 @@ const SEASON_COUNT: int = 4
 ## 玩家自己挑继承人的窗口。到点蜂群就自己推举一只——**这条分支必须够短**，
 ## 短到玩家真的会撞上它，否则"你以为你在控制黄蜂"就只是一句写在文档里的话
 ## Short on purpose: the player must actually run into the colony choosing for them.
-@export_range(5.0, 120.0, 1.0) var throne_timeout: float = 20.0
+@export_range(5.0, 120.0, 1.0) var throne_timeout: float = 15.0
 ## 被推举的那只飞向王座的时限。她路上是可以被你一把拽走的
 ## She can be yanked out of the air the whole way there.
-@export_range(3.0, 60.0, 1.0) var heir_flight_timeout: float = 12.0
+@export_range(3.0, 60.0, 1.0) var heir_flight_timeout: float = 10.0
 ## 集结的硬上限 / hard cap on the gathering
-@export_range(3.0, 60.0, 1.0) var gather_timeout: float = 18.0
+@export_range(3.0, 60.0, 1.0) var gather_timeout: float = 15.0
 ## 到齐之后的最后一拍 / the closing beat once they are in place
-@export_range(1.0, 30.0, 0.5) var coronation_countdown: float = 6.0
+@export_range(1.0, 30.0, 0.5) var coronation_countdown: float = 5.0
 ## 到场率过了这条线就开始倒数，不必等最后一只
 ## Never waits for the last straggler.
 @export_range(0.1, 1.0, 0.05) var attendance_share: float = 0.7
