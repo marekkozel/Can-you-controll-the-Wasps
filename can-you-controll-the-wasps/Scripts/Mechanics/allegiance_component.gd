@@ -106,6 +106,22 @@ func make_rebel(from_mother) -> void:
 	_change(State.REBEL)
 
 
+# 她被扶上了王座。不是屈服，是**得手了**——但机制上要的东西和屈服完全一样：
+# 留着颜色、照常干活、而且退出伪王后候选池（awaken_now 只从 LOYAL 里挑），
+# 所以复用 SUBDUED 而不是再开一个状态。状态名读起来是反的，行为是对的。
+# She won, but mechanically a winner and a submitter need the identical thing.
+func enthrone() -> void:
+	if state != State.FALSE_QUEEN:
+		return
+	# SecretLay 靠 brood_variant 为空停手：她合法了，不必再偷偷下卵
+	# SecretLay stops on a null brood_variant - she has no reason to sneak any more.
+	brood_variant = null
+	lay_cooldown = 0.0
+	decoy_cell = null
+	decoy_until = 0.0
+	_change(State.SUBDUED)
+
+
 # 母亲没了就不闹了，颜色和专长都留着 / gives in, keeps its colour and its perk
 func submit() -> void:
 	if state != State.REBEL:

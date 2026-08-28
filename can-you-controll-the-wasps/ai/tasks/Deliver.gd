@@ -49,12 +49,11 @@ func _tick(delta: float) -> Status:
 
 # 载重对两种货都生效，筑巢只加纸板 / carrying counts for both, building only for cardboard
 func _units_for(payload: StringName) -> int:
-	var variant: WaspVariant = agent.variant().variant
-	if variant == null:
-		return 1
-	var units: int = variant.carry_units
+	# 问蜂不问血统资源：基因加成加在蜂身上，直接读 WaspVariant 会漏掉它
+	# Ask the wasp, not the resource - the gene bonus lives on the wasp.
+	var units: int = agent.carry_units()
 	if payload == &"cardboard":
-		units *= variant.build_units
+		units *= agent.build_units()
 	return maxi(units, 1)
 
 

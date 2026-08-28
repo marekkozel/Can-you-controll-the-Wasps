@@ -56,6 +56,17 @@ const ENTITIES_GROUP: StringName = &"entities"
 ## Survivors leave after this. Waiting for a total wipe lets one stray pin the alarm on.
 @export_range(10.0, 300.0, 5.0) var raid_duration: float = 45.0
 
+## 冬天暂停。不只是不排下一波——正在进行的那一波也当场收兵，
+## 否则加冕典礼上会站着几只敌人。由 SeasonDirector 写入
+## Calls off the wave in progress too: enemies at a coronation read as a bug.
+var paused: bool = false:
+	set(value):
+		if paused == value:
+			return
+		paused = value
+		if paused and _raiding:
+			call_off()
+
 var wave: int = 0
 
 var _raiders: Array = []
@@ -109,6 +120,8 @@ func start_now() -> bool:
 
 
 func _process(delta: float) -> void:
+	if paused:
+		return
 	if _raiding:
 		_tick_raid(delta)
 		return
@@ -136,9 +149,13 @@ func _tick_raid(delta: float) -> void:
 	if _time_left > 0.0:
 		return
 
-	# 时间到，活着的收兵。它们飞出去的路上还是可以被打死的 / still killable on the way out
+	call_off()
+
+
+# 收兵。活着的往外飞，路上还是可以被打死的 / still killable on the way out
+func call_off() -> void:
 	for raider in _raiders:
-		if raider.has_method("retreat"):
+		if is_instance_valid(raider) and raider.has_method("retreat"):
 			raider.retreat()
 	_end(false)
 

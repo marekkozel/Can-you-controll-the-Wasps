@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
 [ext_resource type="Script" path="res://Scripts/UI/hex_frame.gd" id="2_hexframe"]
+[ext_resource type="Script" path="res://Scripts/UI/upgrade_slots.gd" id="3_slots"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
 
@@ -53,9 +54,16 @@ horizontal_alignment = 1
 [node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 
+[node name="Points" type="Label" parent="Body/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "GENES  x0"
+horizontal_alignment = 1
+
 [node name="Slots" type="VBoxContainer" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 theme_override_constants/separation = 14
+script = ExtResource("3_slots")
 
 [node name="Row1" type="HBoxContainer" parent="Body/Panel/Margin/Content/Slots"]
 layout_mode = 2

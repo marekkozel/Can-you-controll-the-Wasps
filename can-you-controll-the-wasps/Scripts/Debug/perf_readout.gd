@@ -49,6 +49,7 @@ func _refresh() -> void:
 		int(Performance.get_monitor(Performance.PHYSICS_2D_COLLISION_PAIRS)),
 		int(Performance.get_monitor(Performance.PHYSICS_2D_ISLAND_COUNT))])
 	lines.append("wasps %d   items %d   enemies %d" % [_group_count(WASP_GROUP), _group_count(CARRIABLE_GROUP), _group_count(ENEMY_GROUP)])
+	lines.append(_season_line())
 	lines.append(_raid_line())
 	lines.append(_allegiance_line())
 	lines.append(_unrest_line())
@@ -56,6 +57,22 @@ func _refresh() -> void:
 
 	text = "
 ".join(lines)
+
+
+# 冬天的仪式走到哪一拍了。仪式卡住是这套系统最贵的 bug，得能一眼看出来
+# The rite stalling is the expensive failure mode, so it has to be visible.
+func _season_line() -> String:
+	var director: SeasonDirector = SeasonDirector.find(get_tree())
+	if director == null:
+		return "season --"
+	var dominant: String = director.dominant.display_name if director.dominant != null else "-"
+	var bank: GeneBank = GeneBank.find(get_tree())
+	var genes: String = "gene +%d (%d pts)" % [bank.perk_bonus(), bank.points] if bank != null else "gene --"
+	if not director.is_winter():
+		return "gen %d  %s %.0fs  dom %s  %s" % [
+			director.generation, director.season_name(), director.time_left(), dominant, genes]
+	return "gen %d  WINTER/%s %.0fs  dom %s  %s" % [
+		director.generation, director.rite_name(), director.time_left(), dominant, genes]
 
 
 func _raid_line() -> String:

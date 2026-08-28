@@ -6,7 +6,10 @@ extends PanelContainer
 
 signal season_changed(index: int)
 
-const SEASONS: PackedStringArray = ["Summer", "Autumn", "Winter", "Spring"]
+# 顺序要和 SeasonDirector.Season 以及 Row/Seasons 底下那四个 Label 一致——
+# _refresh_fill() 按下标取格子，错一位整条进度就落在别的季节上
+# Must match the enum and the label order: the fill is indexed by this.
+const SEASONS: PackedStringArray = ["Spring", "Summer", "Autumn", "Winter"]
 
 @export_range(0, 3, 1) var current_season: int = 0:
 	set(value):

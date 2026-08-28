@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/VariantComponent.tscn" id="6_variant"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/AllegianceComponent.tscn" id="7_allegiance"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/StingComponent.tscn" id="8_sting"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/SuccessionComponent.tscn" id="10_succession"]
 [ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="9_pure"]
 [ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/Wasp.png" id="ph_wasp"]
 
@@ -56,6 +57,8 @@ variant = ExtResource("9_pure")
 [node name="AllegianceComponent" parent="." unique_id=517835167 instance=ExtResource("7_allegiance")]
 
 [node name="StingComponent" parent="." unique_id=1471745951 instance=ExtResource("8_sting")]
+
+[node name="SuccessionComponent" parent="." instance=ExtResource("10_succession")]
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=119256865]
 path_desired_distance = 24.0

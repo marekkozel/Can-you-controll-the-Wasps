@@ -26,8 +26,9 @@ extends VBoxContainer
 # Polls instead of wiring per-wasp signals - wasps come and go constantly.
 
 const WASP_GROUP: StringName = &"wasps"
-## 专长轨道恒定四格：三个专长的 @export_range 上限都是 4
-## Fixed at four because every perk's export range tops out there.
+## 专长轨道的基础格数：血统专长的 @export_range 上限都是 4。
+## 解锁了基因就往外加格子——加成必须**看得见**，否则玩家花了点数没有反馈
+## Genes extend the track: an invisible bonus is an unrewarded purchase.
 const PERK_SLOTS: int = 4
 
 ## 光标离蜂中心多近算停在它上面。比碰撞半径（19.5）大一点，小目标好悬停
@@ -126,29 +127,30 @@ func _show_strike(wasp: Node2D) -> void:
 	_strike.visible = allegiance != null and allegiance.is_on_strike()
 
 
+# 报的是**蜂身上的**数（血统 + 基因），不是 WaspVariant 的裸值。
+# 面板和实际伤害/载重必须是同一个数，读血统资源会漏掉基因加成
+# Ask the wasp: the variant resource does not know about genes.
 func _show_perks(wasp: Node2D) -> void:
-	var variant: WaspVariant = _variant_of(wasp)
-	var attack: int = variant.attack_units if variant != null else 1
-	var speed: float = variant.speed_multiplier if variant != null else 1.0
-	var carry: int = variant.carry_units if variant != null else 1
-	var build: int = variant.build_units if variant != null else 1
+	var attack: int = wasp.attack_units() if wasp.has_method("attack_units") else 1
+	var speed: int = wasp.speed_units() if wasp.has_method("speed_units") else 1
+	var carry: int = wasp.carry_units() if wasp.has_method("carry_units") else 1
+	var build: int = wasp.build_units() if wasp.has_method("build_units") else 1
+	var slots: int = PERK_SLOTS + (wasp.perk_bonus if "perk_bonus" in wasp else 0)
 
 	# 格子就是数值，不再另外写一遍数字 / the pips are the number, nothing is spelled out
-	# speed_multiplier 声明成 float 只是为了乘进 speed_scale，取值被 @export_range 卡成整数，
-	# 所以这里取整是无损的 / float only so it can scale, but constrained to whole steps
-	_set_perk(&"Speed", int(round(speed)))
-	_set_perk(&"Attack", attack)
-	_set_perk(&"Carry", carry)
-	_set_perk(&"Build", build)
+	_set_perk(&"Speed", speed, slots)
+	_set_perk(&"Attack", attack, slots)
+	_set_perk(&"Carry", carry, slots)
+	_set_perk(&"Build", build, slots)
 	# build_units 只在送纸板时相乘（Deliver.gd 的 _units_for），不标玩家会拿它去送食物
 	# build_units only multiplies cardboard deliveries - say so or the player mis-assigns.
 	_build_note.visible = build > 1
 
 
-func _set_perk(key: StringName, pips: int) -> void:
+func _set_perk(key: StringName, pips: int, slots: int) -> void:
 	var track: PipTrack = _perks.get_node_or_null(NodePath("%s/Pips" % key)) as PipTrack
 	if track != null:
-		track.set_values(clampi(pips, 0, PERK_SLOTS), PERK_SLOTS)
+		track.set_values(clampi(pips, 0, slots), slots)
 
 
 func _variant_of(wasp: Node2D) -> WaspVariant:

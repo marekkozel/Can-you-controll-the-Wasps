@@ -33,6 +33,15 @@ enum Mode {
 # 点击判定比散布范围放宽一点，不然贴着边缘按下去没反应 / a little slack around the visual
 const GRAB_PADDING: float = 12.0
 
+## 冬天停产，继位之后恢复。由 SeasonDirector 写入 / winter shuts the sources down
+var producing: bool = true:
+	set(value):
+		if producing == value:
+			return
+		producing = value
+		if producing:
+			_refill()
+
 var _pieces: Array[Node] = []
 
 # 生成到父节点下而不是自己的子节点 / spawn into the parent, not as our own child;
@@ -66,6 +75,10 @@ func take() -> Node2D:
 # 指定落点的版本：玩家拖拽落在光标上，工蜂领货落在自己身上
 # Placed version - the player's lands under the cursor, a wasp's lands on the wasp.
 func take_at(at: Vector2) -> Node2D:
+	# 冬天这里什么都不给。Gather 拿到 null 会自己 FAILURE，行为树不用改
+	# Gather already handles a null and fails out, so winter needs no BT change.
+	if not producing:
+		return null
 	if piece_scene == null:
 		push_warning("ItemSource has no piece_scene: %s" % get_path())
 		return null
@@ -135,6 +148,14 @@ static func draggable_of(node: Node) -> DraggableComponent:
 		if child is DraggableComponent:
 			return child
 	return null
+
+
+# 停产期间把堆补回来 / tops the pile back up when production resumes
+func _refill() -> void:
+	if mode != Mode.STOCKED or not is_inside_tree():
+		return
+	for i in maxi(max_pieces - _pieces.size(), 0):
+		_spawn_piece.call_deferred()
 
 
 func _spawn_piece() -> void:

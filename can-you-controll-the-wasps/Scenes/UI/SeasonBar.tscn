@@ -35,6 +35,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
+[node name="Spring" type="Label" parent="Row/Seasons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Spring"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Summer" type="Label" parent="Row/Seasons"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -56,14 +64,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
 text = "Winter"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Spring" type="Label" parent="Row/Seasons"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "Spring"
 horizontal_alignment = 1
 vertical_alignment = 1
 

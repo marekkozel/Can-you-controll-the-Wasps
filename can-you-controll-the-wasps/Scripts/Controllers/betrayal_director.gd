@@ -67,6 +67,10 @@ const WASP_GROUP: StringName = &"wasps"
 @export var brood_variants: Array[WaspVariant] = []
 
 var unrest: float = 0.0
+## 下一只伪王后来得多快的倍率。< 1 = 更快。由 SeasonDirector 在继位时写入：
+## 扶错了人的那一代，麻烦一个接一个
+## Written at each coronation - a generation that crowned wrong never stops producing them.
+var awaken_scale: float = 1.0
 ## 调试用的注意力覆盖。headless 没鼠标，不留这个口子调虎离山根本没法测
 ## Debug override - there is no cursor headless, and the decoy logic is unreachable without it.
 var debug_attention: Vector2 = Vector2.INF
@@ -175,6 +179,30 @@ func awaken_now() -> Wasp:
 	return _queen
 
 
+# 她被扶上了王座，这一局她赢了。她停止偷偷产卵、她的叛军失去了闹下去的理由，
+# 巢里当场安静下来——玩家会以为自己选对了。代价要等下一代才浮出来（新蜂带背叛底噪 +
+# awaken_scale 腰斩），而那时他已经拿不出证据了。
+# The hive goes quiet and the player reads it as a win; the bill arrives next generation.
+func crown_false_queen(wasp: Wasp) -> void:
+	if wasp == null:
+		return
+
+	wasp.allegiance().enthrone()
+
+	# 她的叛军目标达成，自己屈服。留着颜色和专长，于是巢里从此有一批
+	# "异色但忠诚"的劳工——正是"颜色 ≠ 立场"最需要的那种混淆
+	# They keep their colour and become the odd-coloured loyal workers the design wants.
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var rebel: Wasp = node as Wasp
+		if rebel != null and rebel.allegiance().is_rebel() and rebel.allegiance().mother == wasp:
+			rebel.allegiance().submit()
+
+	if _queen == wasp:
+		_queen = null
+		_emerged_since = 0
+		false_queen_gone.emit(wasp)
+
+
 # 被你虐待过的那几只更可能变成下一个麻烦 / the ones you mistreated are likelier
 func _weighted_pick(candidates: Array) -> Wasp:
 	var total: float = 0.0
@@ -193,21 +221,37 @@ func _on_wasp_emerged(_cell: HexCell, _wasp: Wasp) -> void:
 	if has_false_queen():
 		return
 	_emerged_since += 1
-	var needed: int = int(roundf(lerpf(float(awaken_after), float(awaken_after_unrest), unrest)))
+	var needed: int = int(roundf(lerpf(float(awaken_after), float(awaken_after_unrest), unrest) * awaken_scale))
 	if _emerged_since >= maxi(needed, 1):
 		awaken_now()
 
 
 func _on_queen_gone(wasp: Wasp) -> void:
+	# 登基那一下已经把她从位子上摘了，之后她真的死掉时这里还会再响一次
+	# crown_false_queen already cleared the seat; her eventual death fires this again.
+	if _queen != wasp:
+		return
 	_queen = null
 	_emerged_since = 0
 	false_queen_gone.emit(wasp)
 
 
+# 叛军永远挑**非主导色**。玩家迟早会总结出"少数色 = 叛军"这条规则，
+# 而这条规则注定会反咬他：上一代的忠诚遗老也是少数色，而伪王后本人
+# 从来都藏在主导色里（awaken_now 只从 LOYAL 里挑，她还不改色）。
+# 玩家自己总结出来的规则在某一代失效，比任何设计师塞进去的诡计都狠。
+# The player will infer "minority colour means rebel" - and that rule is built to betray
+# them, because last generation's loyal veterans are a minority colour too.
 func _next_variant() -> WaspVariant:
 	if brood_variants.is_empty():
 		return null
-	return brood_variants[(_generation) % brood_variants.size()]
+
+	var season: SeasonDirector = SeasonDirector.find(get_tree())
+	var dominant: WaspVariant = season.dominant if season != null else null
+	var pool: Array = brood_variants.filter(func(v): return v != dominant)
+	if pool.is_empty():
+		pool = brood_variants
+	return pool[_generation % pool.size()]
 
 
 # ---------------- 士气 / morale ----------------

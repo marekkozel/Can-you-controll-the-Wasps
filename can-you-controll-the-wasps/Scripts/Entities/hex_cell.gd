@@ -43,6 +43,10 @@ const ENTITIES_GROUP: StringName = &"entities"
 ## 清理腐烂要按住多久 / hold seconds to clear rot
 @export_range(0.5, 30.0, 0.5) var clean_duration: float = 2.0
 
+## 冬天王座的底色。判定在 SeasonDirector 那边，这里只管认领和上色
+## The throne's tint - the rules live on SeasonDirector, this only wears the badge.
+@export var royal_color: Color = Color(1.0, 0.86, 0.45)
+
 @export_group("Idle")
 @export var fill_color: Color = Color(0.95, 0.75, 0.25, 0.1)
 @export var hover_color: Color = Color(0.98, 0.85, 0.45, 0.3)
@@ -69,6 +73,8 @@ var coord: Vector2i = Vector2i.ZERO
 var progress: int = 0
 var is_built: bool = false
 var content: Content = Content.NONE
+## 这一格是不是当代的王座 / is this winter's throne
+var is_royal: bool = false
 
 @onready var _ring: ProgressRing = $Visual/HoldRing
 @onready var _shape: CollisionPolygon2D = $Shape
@@ -155,7 +161,7 @@ func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
 	# 它告诉你"一秒前有蜂来过这儿"，搜索范围从全场缩到附近那几只。
 	# The one tell that is never disguised - it narrows the search from the whole hive
 	# to whoever was standing nearby a second ago.
-	_juice.flash(_cell, variant.body_color, Color.WHITE)
+	_juice.flash(_cell, variant.body_color, _base_tint())
 	_juice.punch(1.18, 0.32)
 	rebel_egg_laid.emit(self, variant)
 	return true
@@ -213,9 +219,61 @@ func _spawn_wasp() -> Wasp:
 	if host == null:
 		host = get_tree().current_scene
 	host.add_child(wasp)
+	# 新蜂穿什么颜色、带多少基因加成，全由当代蜂后决定。格子不该知道这些
+	# The reigning queen dresses every newborn; the cell has no business knowing how.
+	var season: SeasonDirector = SeasonDirector.find(get_tree())
+	if season != null:
+		season.dress_newborn(wasp)
 	wasp.global_position = global_position
 	wasp.set_wander_home(global_position)
 	return wasp
+
+
+# ---------------- 王座 / the throne ----------------
+
+# 冬天认领中心格。只上色 + 关掉按住，别的都在 SeasonDirector 手里
+# Winter claims the centre cell; this only paints it and stops the hold.
+func set_royal(on: bool) -> void:
+	if is_royal == on:
+		return
+	is_royal = on
+	if _cell != null:
+		_cell.self_modulate = _base_tint()
+	_update_hold()
+	if _juice != null and not Engine.is_editor_hint():
+		_juice.punch(1.16, 0.3)
+
+
+# 登基那一下 / the moment somebody takes it
+func celebrate() -> void:
+	if _juice == null or Engine.is_editor_hint():
+		return
+	_juice.punch(1.32, 0.5)
+	_juice.burst()
+
+
+# flash 结束后恢复到哪个底色。硬编码回白色会把王座的高亮擦掉
+# Where a flash lands back on - hardcoding white would wipe the throne's badge.
+func _base_tint() -> Color:
+	return royal_color if is_royal else Color.WHITE
+
+
+# 腾空一格，不留腐烂。只给王座用——正常玩法里清东西必须按住
+# Throne only: in play, clearing a cell always costs a hold.
+func clear_content() -> void:
+	if content == Content.NONE:
+		return
+	_set_occupant(null, Content.NONE)
+	_refresh_visual()
+
+
+# 下一颗普通卵。新皇继位后的那一窝走这里，之后是完整的喂养链
+# The new queen's brood comes through here and then onto the ordinary chain.
+func lay_egg() -> bool:
+	if not can_lay_egg():
+		return false
+	_lay_egg()
+	return true
 
 
 # ---------------- 内容槽 / content slot ----------------
@@ -345,6 +403,11 @@ func _set_occupant(node: Node2D, new_content: Content) -> void:
 func _update_hold() -> void:
 	if _hold == null:
 		return
+	# 王座期间不接受按住。往王座里产一颗普通卵就把继位口堵死了
+	# Laying into the throne would seal off the only way to crown anyone.
+	if is_royal:
+		_hold.enabled = false
+		return
 	if is_rotten():
 		_hold.hold_duration = clean_duration
 		_hold.enabled = true
@@ -356,7 +419,7 @@ func _update_hold() -> void:
 
 
 func _can_hold() -> bool:
-	return is_rotten() or can_lay_egg()
+	return not is_royal and (is_rotten() or can_lay_egg())
 
 
 # ---------------- 输入 / input ----------------
@@ -411,7 +474,7 @@ func _on_hold_tick(_index: int) -> void:
 func _on_hold_completed() -> void:
 	_juice.shake_amount = 0.0
 	_juice.punch(1.22, 0.45)
-	_juice.flash(_cell, flash_color, Color.WHITE)
+	_juice.flash(_cell, flash_color, _base_tint())
 	_juice.burst()
 
 	if is_rotten():
@@ -428,7 +491,8 @@ func _progress_ratio() -> float:
 func _refresh_visual() -> void:
 	if _cell == null:
 		return
-		
+	_cell.self_modulate = _base_tint()
+
 	match content:
 		Content.ROTTEN:
 			_cell.frame = 7 # 7 died

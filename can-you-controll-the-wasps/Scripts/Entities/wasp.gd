@@ -58,6 +58,11 @@ const HIVE_GROUP: StringName = &"hive"
 @export_range(0.0, 1.0, 0.01) var loyal_dodge_chance: float = 0.15
 @export_range(0.0, 1.0, 0.01) var queen_dodge_chance: float = 0.9
 
+@export_group("Coronation")
+## 飞向加冕站位的速度。比游荡快，仪式不该看着像散步
+## Faster than a wander - a procession should not read as loitering.
+@export_range(20.0, 400.0, 5.0) var attend_speed: float = 180.0
+
 @export_group("Wander")
 @export_range(10.0, 800.0, 5.0) var wander_radius: float = 200.0
 @export_range(5.0, 400.0, 5.0) var wander_speed: float = 55.0
@@ -73,6 +78,10 @@ var job_post: Node2D = null
 var wasp_name: String = ""
 ## 血统写进来的攻击倍率，跟 speed_scale 一个路子 / written by VariantComponent, like speed_scale
 var damage_scale: int = 1
+## 基因加成，四条专长通加。羽化时由 SeasonDirector 写死，之后不再变——
+## 已经在场的蜂不会因为你解锁了新基因而变强，加成只跟着新生的那一批
+## Stamped once at birth: unlocking a gene never upgrades the wasps already flying.
+var perk_bonus: int = 0
 
 var target_enemy: Node2D = null
 var target_larva: Node2D = null
@@ -99,6 +108,8 @@ var _last_speed: float = 0.0
 var _attack_timer: float = 0.0
 var _nav_goal: Vector2 = Vector2.INF
 var _steer_weight: float = 0.08
+## 加冕时该站的位置。INF = 没在集结 / the coronation slot, INF when not attending
+var _attend_target: Vector2 = Vector2.INF
 
 ## 变种专长写进来的速度倍率 / written by VariantComponent
 var speed_scale: float = 1.0
@@ -184,8 +195,59 @@ func allegiance() -> AllegianceComponent:
 	return _allegiance
 
 
+# 四条专长的对外口径 = 血统值 + 基因加成。**别绕过这几个函数直接读 WaspVariant**：
+# 那样拿到的是没算基因的裸值，而面板、行为树和伤害计算必须报同一个数
+# The wasp is the authority on its own numbers; reading the variant directly skips genes.
+func speed_units() -> int:
+	return int(round(speed_scale)) + perk_bonus
+
+
+func attack_units() -> int:
+	return maxi(damage_scale, 1) + perk_bonus
+
+
+func carry_units() -> int:
+	var v: WaspVariant = _variant.variant
+	return (v.carry_units if v != null else 1) + perk_bonus
+
+
+func build_units() -> int:
+	var v: WaspVariant = _variant.variant
+	return (v.build_units if v != null else 1) + perk_bonus
+
+
 func variant() -> VariantComponent:
 	return _variant
+
+
+# ---------------- 加冕集结 / the coronation gathering ----------------
+
+# 冬天被叫到王座边站位。行为树整个关掉，改由 _physics_process 直接把它推过去——
+# 走的是被甩飞时那条现成的路子，不用碰行为树，也就不会碰上"警报永远不结束"那类坑
+# Reuses the fling path: the tree goes quiet and physics steers, so no BT branch can hang.
+func attend(slot: Vector2) -> void:
+	_attend_target = slot
+	_btree.active = false
+	# 集结时必须关掉 RVO。避让的职责是"别占同一块地方"，而站位已经把这件事解决了——
+	# 两者一起跑的结果是蜂被互相推开，速度掉到 0 还在往外漂，永远到不了位
+	# Avoidance solves a problem the slots already solved; together they deadlock and the
+	# wasps drift outward at zero speed instead of landing.
+	if _nav != null:
+		_nav.avoidance_enabled = false
+
+
+func stop_attending() -> void:
+	if _attend_target == Vector2.INF:
+		return
+	_attend_target = Vector2.INF
+	if _nav != null:
+		_nav.avoidance_enabled = true
+	_btree.active = true
+	set_wander_home(global_position)
+
+
+func is_attending() -> bool:
+	return _attend_target != Vector2.INF
 
 
 # 异色卵孵出来的那一只 / hatched straight out of a rebel egg
@@ -300,15 +362,26 @@ func _physics_process(delta: float) -> void:
 	if _attack_timer > 0.0:
 		_attack_timer = maxf(_attack_timer - delta, 0.0)
 	if not _is_flung:
+		# 拿在手上时别推：拖拽弹簧和这里都写 linear_velocity，两边会打架
+		# Never while held - the drag spring writes the same velocity we would.
+		if _attend_target != Vector2.INF and not _draggable.is_grabbed():
+			# 方向还是听导航的：蜂可能在上带，直线飞过去会顶在巢室的墙上
+			# Still navmesh-guided: a straight line from the upper band walks into a wall.
+			# 制动半径要比容差大不少，转向权重也调高：站位是个点不是个区域，
+			# 刹车刹得晚就会绕着自己的位置来回过冲，到场率永远差最后一口气
+			# Brake early and steer hard - a slot is a point, and late braking orbits it.
+			steer_towards(_attend_target, delta, attend_speed, 0.35, 60.0)
 		return
 
 	_fling_time += delta
 	if _last_speed > resume_wander_speed and _fling_time < max_fling_time:
 		return
 
-	_btree.active = true
 	_is_flung = false
-	if rehome_on_landing:
+	# 集结中的那只被你抢过又扔回去了，落地后接着往王座飞，别让行为树抢回控制权
+	# A wasp yanked out of the procession resumes it on landing; the tree stays out.
+	_btree.active = not is_attending()
+	if rehome_on_landing and not is_attending():
 		set_wander_home(global_position)
 
 
@@ -377,7 +450,7 @@ func attack_enemy() -> bool:
 # 实际叮咬伤害 = 全局基准 x 血统倍率。属性面板读的也是这个
 # Panel reads this too, so what it shows is what actually lands.
 func attack_damage() -> int:
-	return damage * maxi(damage_scale, 1)
+	return damage * maxi(attack_units(), 1)
 
 
 func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08, brake_radius: float = -1.0) -> void:
@@ -396,7 +469,7 @@ func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0,
 		return
 
 	var radius: float = arrive_radius if brake_radius < 0.0 else brake_radius
-	var speed: float = move_speed * speed_scale * morale_scale
+	var speed: float = move_speed * float(maxi(speed_units(), 1)) * morale_scale
 	if radius > 0.0 and goal_distance < radius:
 		speed = move_speed * (goal_distance / radius)
 

@@ -162,6 +162,51 @@ func skip_season() -> void:
 	_report("season -> %s (gen %d)" % [d.season_name(), d.generation])
 
 
+# 直接跳到冬天，不用等两季 / straight to winter, no waiting through two seasons
+func skip_to_winter() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null:
+		_report("no SeasonDirector in the scene")
+		return
+	# 最多转一整轮，防止 season 卡在某个值时死循环 / bounded, never loops forever
+	for i in SeasonDirector.SEASON_COUNT:
+		if d.season == SeasonDirector.Season.WINTER:
+			break
+		d.advance()
+	_report("season -> %s (%s)" % [d.season_name(), d.rite_name()])
+
+
+# 立刻让蜂群推举一只。测的是"自动继位"那条链，玩家平时得等 throne_timeout
+func crown_someone() -> void:
+	var d: SeasonDirector = SeasonDirector.find(get_tree())
+	if d == null or not d.is_winter():
+		_report("not winter - no throne to take")
+		return
+	var candidates: Array = []
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null and wasp.allegiance().works():
+			candidates.append(wasp)
+	if candidates.is_empty():
+		_report("nobody eligible")
+		return
+	var heir: Wasp = candidates[randi() % candidates.size()]
+	if d.crown(heir):
+		_report("crowned %s" % heir.wasp_name)
+	else:
+		_report("the throne refused it")
+
+
+func grant_gene_point() -> void:
+	var bank: GeneBank = GeneBank.find(get_tree())
+	if bank == null:
+		_report("no GeneBank in the scene")
+		return
+	bank.points += 1
+	bank.points_changed.emit(bank.points)
+	_report("gene points: %d" % bank.points)
+
+
 # ---------------- 叛乱 / betrayal ----------------
 
 func director() -> BetrayalDirector:

@@ -26,6 +26,8 @@
 [ext_resource type="Resource" path="res://Resources/Variants/enemy_thief.tres" id="24_thief"]
 [ext_resource type="Resource" path="res://Resources/Variants/enemy_hunter.tres" id="25_hunter"]
 [ext_resource type="Script" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
+[ext_resource type="Resource" path="res://Resources/Variants/pure.tres" id="27_pure"]
+[ext_resource type="Script" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
@@ -94,6 +96,10 @@ position = Vector2(940, 72)
 
 [node name="SeasonDirector" type="Node2D" parent="Queen_controller" groups=["season_director"]]
 script = ExtResource("26_season_dir")
+dominant_variant = ExtResource("27_pure")
+
+[node name="GeneBank" type="Node2D" parent="Queen_controller" groups=["gene_bank"]]
+script = ExtResource("28_gene")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
