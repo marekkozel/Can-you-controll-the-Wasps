@@ -1,3 +1,4 @@
+@tool
 class_name ItemSource
 extends Node2D
 
@@ -86,6 +87,13 @@ var _intake: int = 0
 
 
 func _ready() -> void:
+	# @tool 只为了画编辑器辅助线，运行时逻辑一条都不要在编辑器里跑
+	# The @tool half only draws gizmos - none of the runtime logic may run in the editor.
+	if Engine.is_editor_hint():
+		set_process(true)
+		return
+	set_process(false)
+
 	var ring: Node2D = get_node_or_null("Ring")
 	if ring != null:
 		# 环画的是"东西会从这儿冒出来"。矩形散布画不出来，只收料不发货的点则根本没东西冒
@@ -308,3 +316,61 @@ func _on_piece_gone(piece: Node) -> void:
 		_spawn_piece.call_deferred()
 		return
 	tree.create_timer(respawn_delay).timeout.connect(_spawn_piece)
+
+
+# ---------------- 编辑器辅助线 / editor gizmo ----------------
+# 美术直接拖着摆位置，但一个 Sprite 看不出蜂会飞到哪、东西会撒开多大一圈。
+# 这里把三样看不见的东西画出来：锚点（蜂的落脚点）、散布范围、成品掉落点。
+# The sprite shows none of what matters when placing one of these, so draw the
+# anchor wasps fly to, the scatter spread, and where refined pieces land.
+
+const GIZMO_ANCHOR: Color = Color(1.0, 0.85, 0.3)
+const GIZMO_SCATTER: Color = Color(0.6, 0.9, 0.55, 0.85)
+const GIZMO_INTAKE: Color = Color(0.95, 0.55, 0.4, 0.85)
+const GIZMO_DROP: Color = Color(0.55, 0.75, 1.0)
+
+
+func _process(_delta: float) -> void:
+	# 拖 Drop 子节点、改 Inspector 数值都不会通知我们，编辑器里直接每帧重画
+	# Nothing notifies us when a child marker is dragged, so just redraw in the editor.
+	if Engine.is_editor_hint():
+		queue_redraw()
+
+
+func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
+
+	# 散布范围：矩形带和圆形堆是两套画法 / a band and a pile look nothing alike
+	if piece_scene != null:
+		if scatter_size != Vector2.ZERO:
+			draw_rect(Rect2(-scatter_size * 0.5, scatter_size), GIZMO_SCATTER, false, 2.0)
+		elif scatter_radius > 0.0:
+			draw_arc(Vector2.ZERO, scatter_radius, 0.0, TAU, 48, GIZMO_SCATTER, 2.0)
+
+	if is_refinery():
+		draw_arc(Vector2.ZERO, intake_radius, 0.0, TAU, 48, GIZMO_INTAKE, 2.0)
+		_draw_drop_marker()
+
+	# 锚点画在最上面。蜂飞的是这个点，不是贴图中心——两者能差出半个屏幕
+	# Wasps fly to this point, not to the sprite; the two can drift far apart.
+	draw_line(Vector2(-10, 0), Vector2(10, 0), GIZMO_ANCHOR, 2.0)
+	draw_line(Vector2(0, -10), Vector2(0, 10), GIZMO_ANCHOR, 2.0)
+	draw_arc(Vector2.ZERO, 5.0, 0.0, TAU, 16, GIZMO_ANCHOR, 2.0)
+
+	var label: String = String(payload)
+	if is_refinery():
+		label += " <- " + String(intake_payload)
+	draw_string(ThemeDB.fallback_font, Vector2(14, -12), label,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, GIZMO_ANCHOR)
+
+
+func _draw_drop_marker() -> void:
+	var drop: Node2D = get_node_or_null(^"Drop") as Node2D
+	var at: Vector2 = drop.position if drop != null else output_at
+	if at == Vector2.ZERO:
+		return
+	draw_dashed_line(Vector2.ZERO, at, GIZMO_DROP, 1.5, 6.0)
+	draw_arc(at, 10.0, 0.0, TAU, 24, GIZMO_DROP, 2.0)
+	draw_string(ThemeDB.fallback_font, at + Vector2(14, 4), String(output_payload),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GIZMO_DROP)

@@ -1,3 +1,4 @@
+@tool
 class_name RaidDirector
 extends Node2D
 
@@ -139,6 +140,11 @@ static func find(tree: SceneTree) -> RaidDirector:
 
 
 func _ready() -> void:
+	# @tool 只为了把入场点画出来给美术拖，调度逻辑一条都不能在编辑器里跑
+	# The @tool half only draws the entry markers - no scheduling in the editor.
+	if Engine.is_editor_hint():
+		return
+
 	add_to_group(GROUP)
 	for child in get_children():
 		var entry: Node2D = child as Node2D
@@ -266,6 +272,10 @@ func start_now() -> bool:
 
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		# 拖子节点不会通知我们，编辑器里直接每帧重画 / nothing notifies us on a drag
+		queue_redraw()
+		return
 	if paused:
 		return
 	if _raiding:
@@ -473,3 +483,54 @@ func _has_spoils() -> bool:
 
 func _prune() -> void:
 	_raiders = _raiders.filter(func(r): return is_instance_valid(r))
+
+
+# ---------------- 编辑器辅助线 / editor gizmo ----------------
+# 入场点是三个光秃秃的 Marker2D，在编辑器里只有一个小十字，看不出敌人实际会落在哪一圈，
+# 也看不出它离产出点够不够远。摆位置的两条硬约束（见文件头）现在直接画出来。
+# The markers are bare crosses: neither the spawn spread nor the clearance rule is visible.
+
+const GIZMO_ENTRY: Color = Color(0.95, 0.45, 0.45, 0.9)
+const GIZMO_BAD: Color = Color(1.0, 0.15, 0.15)
+const GIZMO_LABEL: Color = Color(1.0, 0.8, 0.75)
+## 入场点离产出点至少这么远，否则敌人会趴在上面吃掉玩家的点击
+## Any closer and a parked raider swallows the player's drag-from-source clicks.
+const ENTRY_CLEARANCE: float = 100.0
+
+
+func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
+
+	var index: int = 0
+	for child in get_children():
+		var entry: Node2D = child as Node2D
+		if entry == null:
+			continue
+		var at: Vector2 = entry.position
+		var crowded: bool = _too_close_to_source(entry.global_position)
+		var tint: Color = GIZMO_BAD if crowded else GIZMO_ENTRY
+
+		# 实心圈 = 这一批敌人实际会撒在哪 / where the wave actually lands
+		draw_arc(at, entry_scatter, 0.0, TAU, 32, tint, 2.0)
+		draw_line(at + Vector2(-8, 0), at + Vector2(8, 0), tint, 2.0)
+		draw_line(at + Vector2(0, -8), at + Vector2(0, 8), tint, 2.0)
+		# 虚线圈 = 不许有产出点进来的净空 / the clearance no post may enter
+		draw_arc(at, ENTRY_CLEARANCE, 0.0, TAU, 48, Color(tint, 0.3), 1.0)
+
+		var label: String = "%d %s" % [index, entry.name]
+		if crowded:
+			label += "  ! too close to a source"
+		draw_string(ThemeDB.fallback_font, at + Vector2(12, -12), label,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, GIZMO_LABEL if not crowded else GIZMO_BAD)
+		index += 1
+
+
+func _too_close_to_source(at: Vector2) -> bool:
+	if not is_inside_tree():
+		return false
+	for node in get_tree().get_nodes_in_group(&"item_source"):
+		var post: Node2D = node as Node2D
+		if post != null and post.global_position.distance_to(at) < ENTRY_CLEARANCE:
+			return true
+	return false

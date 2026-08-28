@@ -1,6 +1,5 @@
 [gd_resource type="Theme" format=3 uid="uid://cuaar2tatvj74"]
 
-[ext_resource type="StyleBox" path="res://Resources/UI/panel_frame.tres" id="1_panel"]
 [ext_resource type="Texture2D" uid="uid://c0emngfhsc6m1" path="res://Assets/UI/button_normal.png" id="2_bn"]
 [ext_resource type="Texture2D" uid="uid://u38nii3jsyyd" path="res://Assets/UI/button_hover.png" id="3_bh"]
 [ext_resource type="Texture2D" uid="uid://e3fqnwd8h6ep" path="res://Assets/UI/button_pressed.png" id="4_bp"]
@@ -51,6 +50,13 @@ texture_margin_top = 14.0
 texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 
+[sub_resource type="StyleBoxFlat" id="SB_panel"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.78039, 0.67059, 0.5098, 1)
+
 [sub_resource type="StyleBoxTexture" id="SB_tooltip"]
 content_margin_left = 12.0
 content_margin_top = 9.0
@@ -75,7 +81,7 @@ Button/styles/normal = SubResource("SB_normal")
 Button/styles/pressed = SubResource("SB_pressed")
 HSeparator/colors/color = Color(0.3922, 0.2078, 0.2667, 0.65)
 Label/colors/font_color = Color(0.1137, 0.2157, 0.2588, 1)
-PanelContainer/styles/panel = ExtResource("1_panel")
+PanelContainer/styles/panel = SubResource("SB_panel")
 TooltipLabel/colors/font_color = Color(0.1137, 0.2157, 0.2588, 1)
 TooltipLabel/font_sizes/font_size = 12
 TooltipPanel/styles/panel = SubResource("SB_tooltip")

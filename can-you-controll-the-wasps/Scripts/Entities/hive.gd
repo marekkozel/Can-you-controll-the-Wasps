@@ -29,11 +29,23 @@ signal cell_rebel_egg_laid(cell: HexCell)
 # 手动拖过去的蜂待一会儿也飘回来。剩下那截永远建不完。
 #
 # 下限只要压过"最勤快的那批"就够，不用压过所有蜂：cardboard_threshold 下限 0.22，
-# 0.59 是"总有蜂肯干"的分界线，取 0.65 留一点余量。压过全部反而抹掉了分工。
+# 0.59 是"总有蜂肯干"的分界线。压过全部反而抹掉了分工。
 # A ratio starves its own endgame; the floor only has to clear the keenest wasps.
-const BUILD_FLOOR: float = 0.65
+#
+# **0.65 曾经太高了。** 当年只比对了"纸板 vs 回巢待命"，没比对"纸板 vs 喂食"：
+# 纸板的地板 0.65 直接盖过了喂食的常态值（0.60~0.85），于是幼虫快饿死时
+# 纸板 0.615 + 惯性 0.09 = 0.705 还赢食物的 0.64，蜂群眼看着幼虫饿死照搬纸板。
+# The old floor sat above the feeding demand's normal band, so building beat feeding
+# even with a larva about to die. Compared against idling only, never against food.
+const BUILD_FLOOR: float = 0.62
 const FEED_FLOOR: float = 0.60
 const FEED_CAP: float = 0.85
+## 幼虫真的要死了时，喂食需求爬到这里。**故意超过 1.0**——纸板的天花板就是 1.0，
+## 再加上当前岗位 SWITCH_MARGIN 的惯性，喂食困在 0..1 里永远翻不过来。
+## demand() 只被拿去比大小，不需要归一化
+## Deliberately above 1.0: capped at 1.0 a dying larva still loses to cardboard plus the
+## switch hysteresis. Nothing normalises this value, it is only ever compared.
+const FEED_PEAK: float = 1.4
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
@@ -139,11 +151,15 @@ func accepts(payload: StringName) -> bool:
 		&"cardboard":
 			return built_count() < _cells.size()
 		&"food", &"royal_jelly":
-			return not hungry_cells().is_empty()
+			# 用"快饿了"而不是"已经饿了"。只认已经饿着的话，需求那边好不容易加的
+			# 提前量到这里又被砍掉：蜂想提前去采，Gather 一问去处得到否定，原地不动
+			# Must match the demand's lead time, or Gather refuses the trip the demand asked for.
+			return not feedable_cells().is_empty()
 	return false
 
 
-# 巢现在有多需要这类货，0..1。响应阈值模型的**刺激**那一半，蜂拿它跟自己的阈值比
+# 巢现在有多需要这类货。响应阈值模型的**刺激**那一半，蜂拿它跟自己的阈值比。
+# **不是归一化的**：纸板落在 0..1，喂食紧急时能到 FEED_PEAK。这个值只被拿去比大小
 # The stimulus half of the response-threshold model; each wasp weighs it against its own bar.
 #
 # 两条尺度是刻意不同的：
@@ -164,16 +180,38 @@ func demand(payload: StringName) -> float:
 				return 0.0  # 全建完才归零，蜂回巢待命——牌桌就是这么来的 / the floor is the point
 			return clampf(BUILD_FLOOR + (1.0 - BUILD_FLOOR) * float(unbuilt) / float(total), 0.0, 1.0)
 		&"food", &"royal_jelly":
+			# 紧迫度跨饱腹和饥饿两段连续爬（HungerComponent.urgency()），不是等饿了才跳。
+			# 只看"已经饿着的"等于让蜂等到濒死才动身，它还要飞过去、采、再搬回来
+			# Continuous across both phases: waiting for actual hunger means arriving too late.
+			var brood: Array = larva_cells()
 			var urgent: float = 0.0
-			for cell in hungry_cells():
-				urgent = maxf(urgent, 1.0 - cell.larva_hunger_ratio())
-			# 只看"已经饿着的"等于让蜂等到濒死才动身，它还要飞过去、采、再搬回来。
+			for cell in brood:
+				urgent = maxf(urgent, cell.larva_urgency())
+			# 一只都不在提前量窗口里 = 全都刚喂过。这时**必须归零**，不能留着备粮下限：
+			# 留着的话蜂会选中喂食岗，可 accepts() 那边没有去处，Gather 当场 FAILURE，
+			# 于是一批蜂顶着"我在喂幼虫"的岗位在巢里空转，纸板也没人搬
+			# Zero here or wasps take the feeding post, find no sink, and idle on both jobs.
+			if urgent <= 0.0:
+				return 0.0
 			# 幼虫越多备得越多；送不出去的那只就拿着等，下一只饿了立刻能喂
-			# Waiting for hunger means arriving too late; carried food is stock, not waste.
-			var brood: int = count_content(HexCell.Content.LARVA)
-			var stock: float = 0.0 if brood == 0 else minf(FEED_FLOOR + 0.1 * float(brood - 1), FEED_CAP)
-			return clampf(maxf(stock, urgent), 0.0, 1.0)
+			# Carried food is stock, not waste.
+			var stock: float = minf(FEED_FLOOR + 0.1 * float(brood.size() - 1), FEED_CAP)
+			return maxf(stock, urgent * FEED_PEAK)
 	return 0.0
+
+
+# 所有有幼虫的格子，不管饿没饿。需求要提前量，所以这里不能只收饿着的那批
+# Every larva cell, hungry or not - the demand needs lead time, so it cannot filter.
+func larva_cells() -> Array:
+	return _cells.values().filter(func(c): return c.content == HexCell.Content.LARVA)
+
+
+# 已经饿着的，加上快饿了的。**采集要看这个，交货要看下面那个**——
+# 蜂可以提前把饭备在手上，但只有幼虫真开口了才喂得进去
+# Gathering reads this one, delivering reads the next: a wasp may carry stock early,
+# but a satiated larva still refuses the mouthful.
+func feedable_cells() -> Array:
+	return larva_cells().filter(func(c): return c.larva_urgency() > 0.0)
 
 
 # 有幼虫正饿着的格子，喂食提示用 / cells whose larva is hungry right now

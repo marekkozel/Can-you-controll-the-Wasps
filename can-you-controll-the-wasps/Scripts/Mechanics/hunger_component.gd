@@ -18,6 +18,10 @@ enum State { SATIATED, HUNGRY, DEAD }
 @export_range(1.0, 120.0, 1.0) var hunger_window: float = 20.0
 ## 喂饱要几单位 / units needed to satisfy
 @export_range(1, 10, 1) var required_units: int = 3
+## 饱腹期最后这一段就开始算"快饿了"，urgency() 从这里起爬。蜂还要飞过去、采、
+## 再搬回来，等它真饿了才起需求就已经晚了
+## The tail of the satiated phase that already reads as hunger - a hauler needs lead time.
+@export_range(0.0, 1.0, 0.05) var lead_ratio: float = 0.35
 
 @export var active: bool = true:
 	set(value):
@@ -54,6 +58,26 @@ func hunger_ratio() -> float:
 	if state != State.HUNGRY:
 		return 0.0
 	return clampf(time_left / maxf(hunger_window, 0.01), 0.0, 1.0)
+
+
+# 连续紧迫度 0~1。饱腹期前段是 0，最后 lead_ratio 那一截爬到 HUNGRY_ONSET，
+# 饥饿窗口里再从 HUNGRY_ONSET 爬到 1。hunger_ratio() 是个阶跃，需求侧不能用它
+# hunger_ratio() is a step function; a demand curve needs this ramp instead.
+const HUNGRY_ONSET: float = 0.5
+
+func urgency() -> float:
+	match state:
+		State.SATIATED:
+			if lead_ratio <= 0.0:
+				return 0.0
+			var left: float = clampf(time_left / maxf(satiated_duration, 0.01), 0.0, 1.0)
+			if left >= lead_ratio:
+				return 0.0
+			return (1.0 - left / lead_ratio) * HUNGRY_ONSET
+		State.HUNGRY:
+			var remain: float = clampf(time_left / maxf(hunger_window, 0.01), 0.0, 1.0)
+			return HUNGRY_ONSET + (1.0 - HUNGRY_ONSET) * (1.0 - remain)
+	return 0.0
 
 
 # 喂一口。只有饿着的时候才吃 / only eats while hungry, returns whether accepted

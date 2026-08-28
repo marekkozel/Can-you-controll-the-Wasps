@@ -2,5 +2,24 @@
 
 [ext_resource type="Script" uid="uid://dkjto4jtv8067" path="res://Scripts/Mechanics/behaviour_profile.gd" id="1_behaviour"]
 
+; 工蜂画像。这里只覆盖两条工作阈值，其余全用 behaviour_profile.gd 的默认区间。
+;
+; 这两条以前是空的，等于用默认值 0.22~0.55 / 0.20~0.52——**几乎完全重合**，
+; 蜂群里因此没有"天生的奶妈"和"天生的建筑工"，谁去干什么全看 demand 谁大，
+; 一整群蜂的取向是同一个。拉开之后才有个体分工，"这只老在喂幼虫"变成可读的特征。
+;
+; The two bands used to sit on top of each other, so the colony had no nurses and no
+; builders - every wasp weighed the two jobs identically and they all moved as one.
+;
+; 喂食那条整体压低一档：喂食需求的常态值本来就比建巢低（0.60~0.85 对 0.62~1.00），
+; 阈值不补这一档的话，被拉去喂幼虫的永远只有紧急情况。
+; The feeding band sits lower to offset a demand that is structurally lower.
+;
+; 改这里要同步看 false_queen.tres —— 她的每条区间必须是这里对应区间的真子集，
+; 而且两头各留一成余量。拿 F11 的 overlap 读数验。
+; Changing these means re-checking hers: her bands must stay proper subsets with headroom.
+
 [resource]
 script = ExtResource("1_behaviour")
+cardboard_threshold = Vector2(0.24, 0.62)
+food_threshold = Vector2(0.14, 0.46)

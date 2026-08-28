@@ -38,6 +38,15 @@ func _tick(delta: float) -> Status:
 
 	var target: Node2D = _target
 	if target == null:
+		# 备粮可能比幼虫饿得早。这时**拿着等**，不放下——放下就退回"等饿了才动身"，
+		# 而蜂还要飞过去、采、再搬回来，那段时间幼虫等不起。
+		# FAILURE 让树落到 Fidget/Idle，蜂叼着饭飘回巢里待命，下一只开口立刻能喂。
+		# **不能在这里返回 RUNNING**：BTSelector 带记忆，会把蜂钉在这一条上，
+		# 入侵来了它也不回防
+		# Holding is the point of the lead time. FAILURE (never RUNNING - the selector has
+		# memory and would pin the wasp here through a raid) drops it to Idle, cargo in hand.
+		if _worth_holding(carry.payload()):
+			return FAILURE
 		# 没地方送就就地放下，别叼着飞一整局 / nowhere to take it, put it down
 		carry.drop()
 		return SUCCESS
@@ -66,6 +75,14 @@ func _units_for(payload: StringName) -> int:
 
 func _exit() -> void:
 	_target = null
+
+
+# 现在没地方送，但马上就有 / no sink right now, but one is about to open
+func _worth_holding(payload: StringName) -> bool:
+	if payload != &"food" and payload != &"royal_jelly":
+		return false
+	var hive: Hive = agent.get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+	return hive != null and not hive.feedable_cells().is_empty()
 
 
 # 目标格可能被别的黄蜂填满、幼虫可能被喂饱了 / another wasp may have finished it meanwhile

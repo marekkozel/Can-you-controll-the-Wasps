@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
 # 拖着时退场或窗口失焦：兜底还原重力，不然会永远悬空 / safety net, else gravity stays 0
 func _exit_tree() -> void:
 	if _is_grabbed:
-		_release()
+		_release(false)
 
 
 func _notification(what: int) -> void:
@@ -140,7 +140,7 @@ func _grab() -> void:
 	grabbed.emit()
 
 
-func _release() -> void:
+func _release(notify: bool = true) -> void:
 	if not _is_grabbed:
 		return
 
@@ -159,7 +159,10 @@ func _release() -> void:
 		_body.linear_velocity = throw.limit_length(profile.max_throw_speed)
 		_body.angular_velocity *= profile.spin_retention
 
-	released.emit()
+	# 拆树时不发：兄弟组件的 get_tree() 已经是 null，监听方一查全场就炸
+	# Not while tearing down - siblings are already detached and any group lookup is null
+	if notify:
+		released.emit()
 
 
 # 弹簧 + 阻尼跟随：stiffness 管跟手程度，damping 管刚性还是果冻 / spring-damper follow

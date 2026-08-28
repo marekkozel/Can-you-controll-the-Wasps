@@ -197,9 +197,9 @@ func _paint_segments() -> void:
 
 		var icon: CanvasItem = seg.get_node_or_null(^"Icon") as CanvasItem
 		if icon != null:
-      # Keep original colors (RGB = 1.0) but apply the tint's transparency
+	  # Keep original colors (RGB = 1.0) but apply the tint's transparency
 			icon.self_modulate = Color(1.0, 1.0, 1.0, tint.a)
-      
+	  
 		var label: Label = seg.get_node_or_null(^"Name") as Label
 		if label != null:
 			label.add_theme_color_override("font_color", tint)

@@ -388,6 +388,16 @@ func is_hungry_larva() -> bool:
 	return content == Content.LARVA and _occupant != null and (_occupant as Larva).is_hungry()
 
 
+# 喂食**需求**用的连续紧迫度 0~1，跨饱腹和饥饿两段。跟上面那个不是一回事：
+# larva_hunger_ratio() 只在已经饿着时才有读数，拿它算需求等于让蜂等到濒死才动身
+# Not the same thing as the ratio above, which only starts reading once it is already
+# too late to fly out, gather and haul back.
+func larva_urgency() -> float:
+	if content != Content.LARVA or _occupant == null:
+		return 0.0
+	return (_occupant as Larva).urgency()
+
+
 # 喂食排序用，越小越快饿死 / feeding priority, smaller is more urgent
 func larva_hunger_ratio() -> float:
 	if not is_hungry_larva():

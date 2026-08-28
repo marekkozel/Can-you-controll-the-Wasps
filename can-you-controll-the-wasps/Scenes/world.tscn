@@ -82,24 +82,24 @@ navigation_polygon = SubResource("NavPoly_world")
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 
+[node name="Cardboard" type="Sprite2D" parent="Resource_layer" unique_id=1041903529]
+position = Vector2(65, 222)
+texture = ExtResource("3_04jkj")
+
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(109, 222)
+position = Vector2(49, 238)
 mode = 1
 piece_scene = ExtResource("8_cardboard")
 
-[node name="Cardboard" type="Sprite2D" parent="Resource_layer/CardboardSource" unique_id=1041903529]
-position = Vector2(-44, 0)
-texture = ExtResource("3_04jkj")
+[node name="Food" type="Sprite2D" parent="Resource_layer" unique_id=1708185037]
+position = Vector2(1152, 217)
+texture = ExtResource("5_lkcvt")
 
 [node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(1152, 144)
+position = Vector2(1159, 201)
 mode = 1
 piece_scene = ExtResource("9_food")
 payload = &"food"
-
-[node name="Food" type="Sprite2D" parent="Resource_layer/FoodSource" unique_id=1708185037]
-position = Vector2(0, 73)
-texture = ExtResource("5_lkcvt")
 
 [node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(1217, 664)
@@ -222,6 +222,15 @@ shape = SubResource("Shape_nest_bottom")
 [node name="LayoutGuides" type="CanvasLayer" parent="." unique_id=1424308469]
 layer = -1
 
+[node name="PanelBacking" type="ColorRect" parent="LayoutGuides" unique_id=1780453992]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.78039, 0.67059, 0.5098, 1)
+
 [node name="RegionCardboard" type="TextureRect" parent="LayoutGuides" unique_id=1701210206]
 visible = false
 anchors_preset = -1
@@ -305,9 +314,10 @@ texture = ExtResource("31_p5wkl")
 [node name="InfoPanel" parent="UI" unique_id=1118697189 instance=ExtResource("4_info")]
 anchor_top = 0.4
 anchor_right = 0.2
-offset_top = 10.0
-offset_right = -9.0
-offset_bottom = 106.23999
+anchor_bottom = 1.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -6.0
 
 [node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
 layout_mode = 3

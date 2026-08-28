@@ -171,6 +171,11 @@ func _spawn_breed(breed: EnemyVariant) -> void:
 		randf_range(40.0 + margin, 248.0 - margin))
 	enemy.global_position = spot
 	enemy.set_wander_home(spot)
+	# 正式入侵的敌人是 begin_raid() 进场的，不叫它的话调试刷出来的敌人只会在上带游荡，
+	# 永远不靠近巢——测出来的"没人打架"是假的
+	# Without this a debug enemy just loiters in the top band and never approaches, so
+	# "nobody fights" reads as an AI bug when it is only a different code path.
+	enemy.begin_raid(spot)
 	_report("spawned a %s (r=%d, %d hp)" % [breed.display_name, int(breed.collision_radius), breed.max_health])
 
 

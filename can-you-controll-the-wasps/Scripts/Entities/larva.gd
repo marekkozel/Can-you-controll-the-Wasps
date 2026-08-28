@@ -90,6 +90,11 @@ func hunger_ratio() -> float:
 	return _hunger.hunger_ratio()
 
 
+# 连续紧迫度 0~1，饱腹期末尾就开始爬 / continuous, starts rising before it goes hungry
+func urgency() -> float:
+	return _hunger.urgency()
+
+
 # ---------------- 身体 / body ----------------
 
 # ---------------- 状态反馈 / state feedback ----------------

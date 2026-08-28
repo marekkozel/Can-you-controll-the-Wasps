@@ -10,6 +10,12 @@ extends BTAction
 ## 警报期间的集结半径。要够横穿地图，1280x720 的场子对角约 1470
 ## Rally radius during a raid - must span the map, this one's diagonal is about 1470.
 @export var raid_alert_radius: float = 900.0
+## 敌人摸到巢这么近，就算不在正式入侵期也当警报处理
+## An enemy this close to the hive raises the alarm even outside a scheduled raid.
+@export var hive_alarm_radius: float = 260.0
+
+const HIVE_GROUP: StringName = &"hive"
+const ENEMY_GROUP: StringName = &"Enemy"
 
 # 别在这里做副作用。任务每帧都会进来一次，_tick 返回 FAILURE 就退出，下帧重来——
 # 在 _enter 里扔货等于每秒把黄蜂手上的东西抢掉 60 次。
@@ -31,7 +37,12 @@ func _tick(delta: float) -> Status:
 	# 警报期间门槛降下来，采集蜂也可能回防。这只有在入侵会结束的前提下才安全，
 	# RaidDirector 的 raid_duration 就是那个前提
 	# A raid lowers the bar. Safe only because raids end - see RaidDirector.raid_duration.
-	var raiding: bool = _alarm_is_up()
+	# 敌人已经在啃巢的时候没人管，是这条门原来的漏洞：平时的门只放守巢岗过，
+	# 而 RaidComponent 摸进来抢幼虫走的恰恰是"平时"这条路。
+	# 这样加是安全的——入侵者要么被打死要么抢完就撤，警报照样会结束
+	# The peacetime gate let raiders eat the brood unopposed. Safe to widen: an intruder
+	# either dies or leaves, so the alarm still ends.
+	var raiding: bool = _alarm_is_up() or _enemy_at_the_hive()
 	if not raiding and not agent.is_posted_to_hive():
 		return FAILURE
 
@@ -76,6 +87,17 @@ func _exit() -> void:
 func _alarm_is_up() -> bool:
 	var director: RaidDirector = RaidDirector.find(agent.get_tree())
 	return director != null and director.is_raiding()
+
+
+func _enemy_at_the_hive() -> bool:
+	var hive: Node2D = agent.get_tree().get_first_node_in_group(HIVE_GROUP) as Node2D
+	if hive == null:
+		return false
+	for node in agent.get_tree().get_nodes_in_group(ENEMY_GROUP):
+		var enemy: Node2D = node as Node2D
+		if enemy != null and enemy.global_position.distance_to(hive.global_position) <= hive_alarm_radius:
+			return true
+	return false
 
 
 # 集结半径按个体算。**被玩家指派**的卫兵全额响应，其他人按自己的 rally_bias 打折——

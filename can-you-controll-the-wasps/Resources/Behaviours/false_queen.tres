@@ -35,6 +35,9 @@ groom_weight = Vector2(0.65, 1.1)
 linger_time = Vector2(1.9, 3.0)
 urge_interval = Vector2(2.4, 5)
 cardboard_threshold = Vector2(0.32, 0.52)
-food_threshold = Vector2(0.3, 0.49)
+; 工蜂的喂食区间从 0.20~0.52 拉低到 0.14~0.46 之后，原来的 0.30~0.49 上端伸出去了：
+; 0.46~0.49 那一段变成只有她抽得到的值，那就是探测器不是线索
+; The worker band moved down, and the old upper end poked out of it - queen-only values.
+food_threshold = Vector2(0.22, 0.4)
 posting_bias = Vector2(0.12, 0.22)
 reconsider_interval = Vector2(3.4, 6)
