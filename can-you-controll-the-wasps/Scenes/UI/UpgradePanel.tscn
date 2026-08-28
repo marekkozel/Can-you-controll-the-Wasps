@@ -1,25 +1,27 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3 uid="uid://dqy83c1c8nx0k"]
 
-[ext_resource type="Script" path="res://Scripts/UI/gene_tree.gd" id="1_tree"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="2_genenode"]
-[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
+[ext_resource type="Script" uid="uid://bk26eoci4xkxo" path="res://Scripts/UI/gene_tree.gd" id="1_tree"]
+[ext_resource type="Script" uid="uid://c1y3jqm4i0k27" path="res://Scripts/Mechanics/gene_node.gd" id="2_genenode"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
 [ext_resource type="Resource" path="res://Resources/Genes/all_perks.tres" id="4_all"]
-[ext_resource type="Resource" path="res://Resources/Genes/thick_comb.tres" id="thick_comb"]
-[ext_resource type="Resource" path="res://Resources/Genes/rendering.tres" id="rendering"]
 [ext_resource type="Resource" path="res://Resources/Genes/fat_reserves.tres" id="fat_reserves"]
 [ext_resource type="Resource" path="res://Resources/Genes/quick_hatch.tres" id="quick_hatch"]
+[ext_resource type="Resource" path="res://Resources/Genes/rendering.tres" id="rendering"]
+[ext_resource type="Resource" path="res://Resources/Genes/thick_comb.tres" id="thick_comb"]
 [ext_resource type="Resource" path="res://Resources/Genes/thick_hide.tres" id="thick_hide"]
 
-[node name="UpgradePanel" type="Control"]
+[node name="UpgradePanel" type="Control" unique_id=1543963970]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.99976313, 1)
+mouse_filter = 2
 theme = ExtResource("3_theme")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
 
-[node name="Body" type="Control" parent="."]
+[node name="Body" type="Control" parent="." unique_id=1487722478]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,45 +30,39 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Body"]
+[node name="Panel" type="PanelContainer" parent="Body" unique_id=1398944668]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
-grow_vertical = 1
+grow_vertical = 2
 mouse_filter = 2
 
-[node name="Margin" type="MarginContainer" parent="Body/Panel"]
+[node name="Margin" type="MarginContainer" parent="Body/Panel" unique_id=1821692730]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
+[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin" unique_id=277091463]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "UPGRADES"
-horizontal_alignment = 1
-
-[node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
+[node name="Label" type="Label" parent="Body/Panel/Margin/Content" unique_id=1341577825]
 layout_mode = 2
 
-[node name="Points" type="Label" parent="Body/Panel/Margin/Content"]
+[node name="Points" type="Label" parent="Body/Panel/Margin/Content" unique_id=247826379]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 theme_override_font_sizes/font_size = 12
 text = "GENES  x0"
 horizontal_alignment = 1
 
-[node name="Tree" type="ScrollContainer" parent="Body/Panel/Margin/Content"]
+[node name="Tree" type="ScrollContainer" parent="Body/Panel/Margin/Content" unique_id=1289569208]
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("1_tree")
-points_label = NodePath("../Points")
 nodes = Array[ExtResource("2_genenode")]([ExtResource("4_all"), ExtResource("thick_comb"), ExtResource("rendering"), ExtResource("fat_reserves"), ExtResource("quick_hatch"), ExtResource("thick_hide")])
+points_label = NodePath("../Points")

@@ -6,30 +6,35 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_onxnw"]
+friction = 0.96
+bounce = 0.23
+
 [sub_resource type="CircleShape2D" id="Shape_carrion"]
 radius = 12.0
 
-[node name="Carrion" type="RigidBody2D" groups=["carriable"]]
+[node name="Carrion" type="RigidBody2D" unique_id=1275447941 groups=["carriable"]]
 mass = 0.5
+physics_material_override = SubResource("PhysicsMaterial_onxnw")
 continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0
 
-[node name="Fill" type="Sprite2D" parent="."]
+[node name="Fill" type="Sprite2D" parent="." unique_id=2090812395]
 texture = ExtResource("1_meat")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1513428760]
 shape = SubResource("Shape_carrion")
 
-[node name="DraggableComponent" parent="." instance=ExtResource("1_draggable")]
+[node name="DraggableComponent" parent="." unique_id=1705499719 instance=ExtResource("1_draggable")]
 profile = ExtResource("2_profile")
 
-[node name="CollisionShape2D" parent="DraggableComponent" index="0"]
+[node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
 shape = SubResource("Shape_carrion")
 
-[node name="DeliverableComponent" parent="." instance=ExtResource("3_deliver")]
+[node name="DeliverableComponent" parent="." unique_id=736423151 instance=ExtResource("3_deliver")]
 payload = &"carrion"
 
-[node name="ClaimComponent" parent="." instance=ExtResource("4_claim")]
+[node name="ClaimComponent" parent="." unique_id=1227532806 instance=ExtResource("4_claim")]
 
 [editable path="DraggableComponent"]

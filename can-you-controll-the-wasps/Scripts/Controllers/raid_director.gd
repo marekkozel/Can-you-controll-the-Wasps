@@ -109,6 +109,9 @@ const ENTITIES_GROUP: StringName = &"entities"
 ## silently never happen. Raise the season durations if you want longer raids back.
 @export_range(10.0, 300.0, 5.0) var raid_duration: float = 38.0
 
+## If true, the timer is ignored and enemies fight until destroyed.
+@export var disable_timer: bool = false
+
 ## 冬天暂停。不只是不排下一波——正在进行的那一波也当场收兵，
 ## 否则加冕典礼上会站着几只敌人。由 SeasonDirector 写入
 ## Calls off the wave in progress too: enemies at a coronation read as a bug.
@@ -319,6 +322,10 @@ func _tick_raid(delta: float) -> void:
 	_prune()
 	if _raiders.is_empty():
 		_end(true)
+		return
+
+  # If the toggle is checked in the inspector, skip the timer countdown entirely
+	if disable_timer:
 		return
 
 	_time_left -= delta

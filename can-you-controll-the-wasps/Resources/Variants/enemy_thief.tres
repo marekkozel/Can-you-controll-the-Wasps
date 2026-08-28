@@ -1,18 +1,16 @@
-[gd_resource type="Resource" script_class="EnemyVariant" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyVariant" format=3 uid="uid://wn2d2okeodbq"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
-[ext_resource type="Texture2D" uid="uid://n5c3re0psbty" path="res://Assets/Entities/Ant_small_enemy.png" id="2_ant"]
+[ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oopbt"]
+load_path = "res://.godot/imported/Ant_small_enemy.png-ff3c4c0426e56806487062fdf80ff6da.ctex"
 
 [resource]
 script = ExtResource("1_enemy_variant")
 display_name = "Ant"
-behavior = 0
 max_health = 1
-loot_count = 1
-texture = ExtResource("2_ant")
+texture = SubResource("CompressedTexture2D_oopbt")
 sprite_offset = Vector2(1, -7)
 collision_radius = 10.0
-body_mass = 0.5
 move_speed = 58.0
-show_health_bar = false
-spawn_cost = 1
+body_mass = 0.5

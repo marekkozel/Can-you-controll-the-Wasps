@@ -6,11 +6,16 @@
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="4_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="5_claim"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_4t8d5"]
+bounce = 0.1
+absorbent = true
+
 [sub_resource type="RectangleShape2D" id="Shape_cardboard"]
 size = Vector2(44, 32)
 
 [node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
 mass = 0.6
+physics_material_override = SubResource("PhysicsMaterial_4t8d5")
 continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0

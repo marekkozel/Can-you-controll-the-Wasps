@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bauqt16otm3s7"
-path="res://.godot/imported/Spider.png-47493734a5e45e6e8770b4ef0eb2f794.ctex"
+uid="uid://dcltovuoe34gk"
+path="res://.godot/imported/Bird_big_enemy.png-ffcaa5a7be32b62523e3a562fdf98c64.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Spider.png"
-dest_files=["res://.godot/imported/Spider.png-47493734a5e45e6e8770b4ef0eb2f794.ctex"]
+source_file="res://Assets/Entities/Enemies/Bird_big_enemy.png"
+dest_files=["res://.godot/imported/Bird_big_enemy.png-ffcaa5a7be32b62523e3a562fdf98c64.ctex"]
 
 [params]
 
