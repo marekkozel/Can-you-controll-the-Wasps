@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemInfo" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/item_info.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+payload = &"food"
+display_name = "FOOD"
+description = "Drop it on a cell with a hungry larva.
+Three feeds and the cell seals itself."

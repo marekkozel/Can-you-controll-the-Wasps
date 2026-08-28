@@ -26,6 +26,7 @@ extends VBoxContainer
 # Polls instead of wiring per-wasp signals - wasps come and go constantly.
 
 const WASP_GROUP: StringName = &"wasps"
+const CARRIABLE_GROUP: StringName = &"carriable"
 ## 专长轨道的基础格数：血统专长的 @export_range 上限都是 4。
 ## 解锁了基因就往外加格子——加成必须**看得见**，否则玩家花了点数没有反馈
 ## Genes extend the track: an invisible bonus is an unrewarded purchase.
@@ -34,7 +35,16 @@ const PERK_SLOTS: int = 4
 ## 光标离蜂中心多近算停在它上面。比碰撞半径（19.5）大一点，小目标好悬停
 ## A little larger than the collision radius so a 20px target is not fiddly to hover.
 @export_range(8.0, 80.0, 1.0) var hover_radius: float = 26.0
+## 货物比蜂小（食物半径 12），判定放宽一点才好悬停 / items are smaller, so a wider grab
+@export_range(8.0, 80.0, 1.0) var item_hover_radius: float = 30.0
 @export_range(0.0, 0.5, 0.01) var refresh_interval: float = 0.05
+
+## 每种货物的说明。按 payload 匹配，加一种货就多一个 .tres
+## Matched on payload - a new carriable is a new resource, not new code.
+@export var items: Array[ItemInfo] = []
+## 面板标题，会跟着当前看的是蜂还是货物换 / swaps with the subject
+@export var title_path: NodePath = ^"../Title"
+@export var wasp_title: String = "WASP"
 
 @onready var _name: Label = $Name
 @onready var _lineage: Label = $Lineage
@@ -47,6 +57,9 @@ const PERK_SLOTS: int = 4
 @onready var _perks_divider: Control = $PerksDivider
 @onready var _perks_heading: Label = $PerksHeading
 @onready var _build_note: Label = $BuildNote
+@onready var _item_name: Label = $ItemName
+@onready var _item_text: Label = $ItemText
+@onready var _title: Label = get_node_or_null(title_path)
 
 var _timer: float = 0.0
 
@@ -61,7 +74,22 @@ func _process(delta: float) -> void:
 	if _timer > 0.0:
 		return
 	_timer = refresh_interval
-	_show(_wasp_under_cursor())
+
+	# 拿在手上的优先。**先看手上再看光标底下**：托着一块纸板从蜂群上空飞过时，
+	# 玩家问的是"这块纸板干嘛用"，不是"下面那只蜂是谁"
+	# What is in hand wins: carrying a piece over the swarm should not swap the readout.
+	var subject: Node2D = DraggableComponent.held_body()
+	if subject == null:
+		subject = _nearest_in_group(WASP_GROUP, hover_radius)
+	if subject == null:
+		subject = _nearest_in_group(CARRIABLE_GROUP, item_hover_radius)
+
+	if subject != null and subject.is_in_group(WASP_GROUP):
+		_show(subject)
+	elif subject != null:
+		_show_item(_info_for(subject))
+	else:
+		_show(null)
 
 
 # 光标要换算到世界坐标再跟黄蜂比。这个面板挂在 CanvasLayer 下，
@@ -69,34 +97,71 @@ func _process(delta: float) -> void:
 # 一加 Camera2D 悬停判定就会整体错位。allegiance_markers.gd 里踩过同一个坑
 # The panel lives on a CanvasLayer, so the Control-space cursor only happens to match
 # world space while there is no camera. Convert, the way the markers overlay does.
-func _wasp_under_cursor() -> Node2D:
+func _nearest_in_group(group: StringName, radius: float) -> Node2D:
 	var viewport: Viewport = get_viewport()
 	var cursor: Vector2 = viewport.get_canvas_transform().affine_inverse() * viewport.get_mouse_position()
 	var best: Node2D = null
-	var best_dist: float = hover_radius
-	for node in get_tree().get_nodes_in_group(WASP_GROUP):
-		var wasp: Node2D = node as Node2D
-		if wasp == null:
+	var best_dist: float = radius
+	for node in get_tree().get_nodes_in_group(group):
+		var item: Node2D = node as Node2D
+		if item == null:
 			continue
-		var dist: float = cursor.distance_to(wasp.global_position)
+		var dist: float = cursor.distance_to(item.global_position)
 		if dist <= best_dist:
 			best_dist = dist
-			best = wasp
+			best = item
 	return best
+
+
+# 货物报的是它自己的 payload，跟交付走的是同一个键 / same key the delivery uses
+func _info_for(node: Node2D) -> ItemInfo:
+	var deliverable: Node = node.get_node_or_null(^"DeliverableComponent")
+	if deliverable == null:
+		return null
+	for info in items:
+		if info != null and info.payload == deliverable.payload:
+			return info
+	return null
+
+
+func _show_item(info: ItemInfo) -> void:
+	_set_wasp_rows(false)
+	var found: bool = info != null
+	_item_name.visible = found
+	_item_text.visible = found
+	_hint.visible = not found
+	if not found:
+		return
+	if _title != null:
+		_title.text = info.display_name
+	_item_name.text = info.display_name
+	_item_text.text = info.description
+
+
+# 蜂那一整组读数的显隐，蜂和货物两条路都要用 / shared by both subjects
+func _set_wasp_rows(shown: bool) -> void:
+	_health_row.visible = shown
+	_perks.visible = shown
+	_perks_divider.visible = shown
+	_perks_heading.visible = shown
+	_lineage.visible = shown
+	_name.visible = shown
+	if not shown:
+		_strike.visible = false
+		_build_note.visible = false
 
 
 func _show(wasp: Node2D) -> void:
 	var found: bool = wasp != null
-	_health_row.visible = found
-	_perks.visible = found
-	_perks_divider.visible = found
-	_perks_heading.visible = found
+	_item_name.visible = false
+	_item_text.visible = false
+	_set_wasp_rows(found)
 	_hint.visible = not found
-	_lineage.visible = found
+	if _title != null:
+		_title.text = wasp_title
 	if not found:
+		_name.visible = true
 		_name.text = "—"
-		_strike.visible = false
-		_build_note.visible = false
 		return
 
 	_name.text = _name_of(wasp)

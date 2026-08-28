@@ -83,7 +83,18 @@ func _raid_line() -> String:
 		return "raid --"
 	if director.is_raiding():
 		return "RAID w%d  %d raiders  %.0fs left" % [director.wave, director.raiders_left(), director.time_left()]
-	return "raid w%d clear  next in %.0fs" % [director.wave, director.time_to_next()]
+	# 时间表按整年进度走，不是倒计时。这一行读的是"这一代还剩几波、下一波画在哪"
+	# The schedule lives on the year axis, so report the mark, not a countdown.
+	var pending: int = 0
+	for mark in director.schedule():
+		if mark[&"state"] == RaidDirector.MarkState.PENDING:
+			pending += 1
+	var next_at: float = director.next_mark_at()
+	if next_at < 0.0:
+		return "raid w%d clear  no more this year" % director.wave
+	var season: SeasonDirector = SeasonDirector.find(get_tree())
+	var now: float = season.year_progress() if season != null else 0.0
+	return "raid w%d clear  next at %.3f (now %.3f, %d left)" % [director.wave, next_at, now, pending]
 
 
 # 调试用。正式玩法里这一行就是答案，别留给玩家看

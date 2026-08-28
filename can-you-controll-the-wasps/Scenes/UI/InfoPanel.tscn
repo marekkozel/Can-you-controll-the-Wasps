@@ -1,8 +1,13 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/hover_readout.gd" id="2_hover"]
 [ext_resource type="Script" path="res://Scripts/UI/pip_track.gd" id="3_pips"]
 [ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="99_theme"]
+[ext_resource type="Script" path="res://Scripts/Mechanics/item_info.gd" id="10_iteminfo"]
+[ext_resource type="Resource" path="res://Resources/Items/cardboard.tres" id="11_card"]
+[ext_resource type="Resource" path="res://Resources/Items/food.tres" id="12_food"]
+[ext_resource type="Resource" path="res://Resources/Items/carrion.tres" id="13_carrion"]
+[ext_resource type="Resource" path="res://Resources/Items/royal_jelly.tres" id="14_jelly"]
 
 [node name="InfoPanel" type="Control"]
 theme = ExtResource("99_theme")
@@ -57,6 +62,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 script = ExtResource("2_hover")
+items = Array[ExtResource("10_iteminfo")]([ExtResource("11_card"), ExtResource("12_food"), ExtResource("13_carrion"), ExtResource("14_jelly")])
 
 [node name="Name" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
 layout_mode = 2
@@ -106,7 +112,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
-text = "hover a wasp"
+text = "hover a wasp or a piece"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -227,6 +233,21 @@ text = "Build applies to cardboard only"
 horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="ItemName" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 15
+text = "ITEM"
+horizontal_alignment = 1
+
+[node name="ItemText" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 12
+text = "..."
+horizontal_alignment = 1
+autowrap_mode = 2
 [node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 mouse_filter = 2

@@ -37,6 +37,14 @@ static func is_dragging() -> bool:
 	return _active_component != null
 
 
+# 手上那个刚体本身。给 UI 用：拿着什么就说明什么，不用满场扫 is_grabbed()
+# For the readout - what is in hand right now, without scanning every draggable.
+static func held_body() -> RigidBody2D:
+	if _active_component == null:
+		return null
+	return (_active_component as DraggableComponent)._body
+
+
 # 给生成方用：刚造出来的物件直接落到光标上，跳过"先点中它"这一步
 # For spawners: a freshly minted piece goes straight onto the cursor, no click needed.
 # 抓在正中心，不留 _grab_offset / dead-centre grab, no offset to preserve
