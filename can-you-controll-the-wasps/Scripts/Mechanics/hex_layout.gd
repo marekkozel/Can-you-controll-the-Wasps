@@ -11,7 +11,10 @@ const SQRT3: float = 1.7320508
 
 @export var orientation: HexOrientation = HexOrientation.POINTY_TOP
 ## 中心到顶点的距离，压扁前 / center to corner, before squash
-@export_range(8.0, 200.0, 1.0) var cell_size: float = 42.0
+## 步长 0.1：要跟贴图对齐的话这个值不是整数（现在是 25.4034），
+## 步长留 1.0 的话在 Inspector 里碰一下就被抹平，蜂窝当场咬合不上
+## Fractional on purpose - a step of 1.0 silently destroys the sprite alignment.
+@export_range(8.0, 200.0, 0.1) var cell_size: float = 42.0
 ## 1.0 = 正六边形俯视，0.5~0.75 = 等距斜视感 / 1.0 = flat top-down
 @export_range(0.2, 1.0, 0.01) var squash: float = 0.7
 

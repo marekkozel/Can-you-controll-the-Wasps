@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="6_7yui6"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
+[ext_resource type="PackedScene" uid="uid://d0smkcjdfwhqt" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
 [ext_resource type="PackedScene" uid="uid://cj3llyr0y41xx" path="res://Scenes/Entities/RoyalJelly.tscn" id="9_jelly"]
 [ext_resource type="PackedScene" path="res://Scenes/Debug/DebugPanel.tscn" id="10_debug"]
@@ -15,7 +15,6 @@
 [ext_resource type="Resource" path="res://Resources/Variants/crimson.tres" id="13_crimson"]
 [ext_resource type="Resource" path="res://Resources/Variants/violet.tres" id="14_violet"]
 [ext_resource type="Resource" path="res://Resources/Variants/teal.tres" id="15_teal"]
-[ext_resource type="Resource" path="res://Resources/Variants/lime.tres" id="26_lime"]
 [ext_resource type="Script" uid="uid://cm51co8hhoq6j" path="res://Scripts/UI/unrest_tint.gd" id="16_unrest"]
 [ext_resource type="Texture2D" uid="uid://c6dvtxt4yj1fl" path="res://Assets/UI/region_cardboard.png" id="17_ph_card"]
 [ext_resource type="Texture2D" uid="uid://c687eox8jpsx7" path="res://Assets/UI/region_enemies.png" id="18_ph_enemy"]
@@ -26,9 +25,10 @@
 [ext_resource type="Script" uid="uid://bhfyfc82xueyc" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
 [ext_resource type="Resource" path="res://Resources/Variants/enemy_thief.tres" id="24_thief"]
 [ext_resource type="Resource" path="res://Resources/Variants/enemy_hunter.tres" id="25_hunter"]
-[ext_resource type="Script" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
-[ext_resource type="Resource" path="res://Resources/Variants/pure.tres" id="27_pure"]
-[ext_resource type="Script" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
+[ext_resource type="Resource" path="res://Resources/Variants/lime.tres" id="26_lime"]
+[ext_resource type="Script" uid="uid://cshrps3hmb0mi" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
+[ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="27_pure"]
+[ext_resource type="Script" uid="uid://cms3picejnr03" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
@@ -74,7 +74,6 @@ mode = 1
 piece_scene = ExtResource("9_food")
 payload = &"food"
 intake_payload = &"carrion"
-intake_required = 2
 output_scene = ExtResource("9_jelly")
 output_payload = &"royal_jelly"
 
@@ -99,17 +98,19 @@ position = Vector2(640, 72)
 [node name="EntryRight" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=1179819602]
 position = Vector2(940, 72)
 
-[node name="SeasonDirector" type="Node2D" parent="Queen_controller" groups=["season_director"]]
+[node name="SeasonDirector" type="Node2D" parent="Queen_controller" unique_id=846595448 groups=["season_director"]]
 script = ExtResource("26_season_dir")
 dominant_variant = ExtResource("27_pure")
 
-[node name="GeneBank" type="Node2D" parent="Queen_controller" groups=["gene_bank"]]
+[node name="GeneBank" type="Node2D" parent="Queen_controller" unique_id=923760956 groups=["gene_bank"]]
 script = ExtResource("28_gene")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
 [node name="Hive" parent="Nest_grid" unique_id=1929662079 instance=ExtResource("3_hive")]
-position = Vector2(640, 504)
+z_index = -100
+position = Vector2(640, 464)
+scale = Vector2(1.5, 1.5)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
 
@@ -230,6 +231,7 @@ anchor_left = 0.8
 anchor_top = 0.4
 
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
+layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.9333333
 
