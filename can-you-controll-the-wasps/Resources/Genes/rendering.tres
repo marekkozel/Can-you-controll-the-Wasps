@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_gene")
-id = &"vigour"
-display_name = "HP"
-description = "Placeholder - needs both branches above it."
-cell = Vector2i(2, 2)
-requires = Array[StringName]([&"carry", &"attack"])
+id = &"rendering"
+display_name = "RENDERING"
+description = "The refinery yields 2 royal jelly per 3 carrion instead of 1 per 2."
+order = 2
+requires = Array[StringName]([])
 cost = 2
 max_rank = 1

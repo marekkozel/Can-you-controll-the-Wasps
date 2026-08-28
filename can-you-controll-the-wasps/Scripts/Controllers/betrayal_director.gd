@@ -30,7 +30,7 @@ const WASP_GROUP: StringName = &"wasps"
 ## 潜伏期：觉醒后先老老实实干这么久才下第一颗卵。
 ## 不给缓冲的话她一觉醒就产，玩家还没意识到蜂群里混进了东西。
 ## Without it she lays the moment she wakes, before the player can notice anything is off.
-@export_range(0.0, 300.0, 5.0) var dormant_duration: float = 30.0
+@export_range(0.0, 300.0, 5.0) var dormant_duration: float = 12.0
 ## 几代之后伪王后练到满级。第一代 cunning=0（好找），之后一路退化到难以分辨
 ## Generations to full cunning: the first is meant to be findable, later ones are not.
 @export_range(1, 10, 1) var cunning_ramp: int = 3

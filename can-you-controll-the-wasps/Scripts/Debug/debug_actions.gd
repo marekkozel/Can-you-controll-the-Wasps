@@ -16,6 +16,9 @@ const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
 const FOOD_SCENE: PackedScene = preload("res://Scenes/Entities/Food.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://Scenes/Entities/Enemy.tscn")
+const ANT: EnemyVariant = preload("res://Resources/Variants/enemy_thief.tres")
+const HUNTER: EnemyVariant = preload("res://Resources/Variants/enemy_hunter.tres")
+const SPIDER: EnemyVariant = preload("res://Resources/Variants/enemy_spider.tres")
 
 ## 时间倍率循环用的档位 / time scale steps cycled by the hotkey
 const TIME_SCALES: Array[float] = [1.0, 2.0, 4.0, 8.0, 0.25, 0.5]
@@ -138,15 +141,37 @@ func end_raid() -> void:
 	_report("raid called off")
 
 
-# 不参与入侵的散兵，用来单测点击击杀 / a loose wanderer, for testing the click kill
-func spawn_enemy(count: int = 1) -> void:
-	for i in count:
-		var enemy: Enemy = ENEMY_SCENE.instantiate()
-		entities_root().add_child(enemy)
-		var spot: Vector2 = Vector2(randf_range(280.0, 1000.0), randf_range(50.0, 200.0))
-		enemy.global_position = spot
-		enemy.set_wander_home(spot)
-	_report("spawned %d enemies" % count)
+# 不参与入侵的散兵，一种体型一个按钮。用来对比大小、验证蜘蛛的血条和它够不够得着蜂
+# Loose wanderers, one button per build - for eyeballing the sizes and the spider's reach.
+func spawn_ant() -> void:
+	_spawn_breed(ANT)
+
+
+func spawn_hunter() -> void:
+	_spawn_breed(HUNTER)
+
+
+func spawn_spider() -> void:
+	_spawn_breed(SPIDER)
+
+
+func _spawn_breed(breed: EnemyVariant) -> void:
+	if breed == null:
+		_report("no breed resource")
+		return
+	var enemy: Enemy = ENEMY_SCENE.instantiate()
+	# variant 必须在 add_child 之前写：_apply_variant() 在 _ready 里跑
+	# Must be set before the node enters the tree - _apply_variant() runs in _ready.
+	enemy.variant = breed
+	entities_root().add_child(enemy)
+	# 按体型内缩，否则蜘蛛半个身子会生成在上带的墙里 / the spider would spawn half inside a wall
+	var margin: float = breed.collision_radius + 24.0
+	var spot: Vector2 = Vector2(
+		randf_range(280.0, 1000.0),
+		randf_range(40.0 + margin, 248.0 - margin))
+	enemy.global_position = spot
+	enemy.set_wander_home(spot)
+	_report("spawned a %s (r=%d, %d hp)" % [breed.display_name, int(breed.collision_radius), breed.max_health])
 
 
 # ---------------- 季节 / seasons ----------------

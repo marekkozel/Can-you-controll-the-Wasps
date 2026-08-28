@@ -11,6 +11,7 @@ radius = 12.0
 
 [node name="Carrion" type="RigidBody2D" groups=["carriable"]]
 mass = 0.5
+continuous_cd = 2
 linear_damp = 2.0
 angular_damp = 3.0
 

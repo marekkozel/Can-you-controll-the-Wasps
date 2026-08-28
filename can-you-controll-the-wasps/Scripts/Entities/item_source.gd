@@ -57,6 +57,13 @@ enum Mode {
 ## 地上堆到这么多原料就算"满需求"。它决定蜂群多快回头去收拾战场
 ## Raw units on the ground that count as full demand - sets how fast the swarm reacts.
 @export_range(1, 12, 1) var intake_saturation: int = 3
+## 成品掉在哪，相对本节点。皇后的兑换台在走廊尽头，成品落在她脚下的话，
+## 喂幼虫的蜂每次都要多跑一趟整条走廊
+## Dropping at the queen's feet would cost every nurse a round trip down the corridor.
+##
+## 挂一个名叫 Drop 的 Marker2D 当子节点就用它的位置，在编辑器里直接拖着调，
+## 比在这里填数字好使 / a child Marker2D named "Drop" wins, and can just be dragged
+@export var output_at: Vector2 = Vector2.ZERO
 
 # 点击判定比散布范围放宽一点，不然贴着边缘按下去没反应 / a little slack around the visual
 const GRAB_PADDING: float = 12.0
@@ -81,7 +88,9 @@ var _intake: int = 0
 func _ready() -> void:
 	var ring: Node2D = get_node_or_null("Ring")
 	if ring != null:
-		ring.visible = scatter_size == Vector2.ZERO  # 圆形指示环只在圆形散布时有意义
+		# 环画的是"东西会从这儿冒出来"。矩形散布画不出来，只收料不发货的点则根本没东西冒
+		# The ring means "things appear here" - untrue for a band, and for a pure refinery.
+		ring.visible = scatter_size == Vector2.ZERO and piece_scene != null
 
 	if mode == Mode.ON_DEMAND:
 		_build_grab_area()
@@ -145,6 +154,15 @@ func accepts_intake(payload: StringName) -> bool:
 # 那堆肉就一直躺在战场上没人管，直到某只蜂碰巧因为别的原因被派到这边
 # Without this the loot rides entirely on the food demand, and a battlefield full of
 # carrion goes untouched as long as no larva happens to be hungry.
+# 实际配方 [要几份原料, 出几份成品]。RENDERING 之前是 2 换 1，之后 3 换 2
+# The live recipe; RENDERING turns 2:1 into 3:2.
+func recipe() -> Vector2i:
+	var bank: GeneBank = GeneBank.find(get_tree()) if is_inside_tree() else null
+	if bank == null:
+		return Vector2i(intake_required, 1)
+	return bank.refinery_recipe(intake_required)
+
+
 func intake_demand() -> float:
 	if not is_refinery() or not is_inside_tree():
 		return 0.0
@@ -155,7 +173,7 @@ func intake_demand() -> float:
 			loose += 1
 	# 已经收进来的零头也算，不然差一块原料时没人愿意来补最后那一趟
 	# Part-filled intake counts too, or nobody comes to finish the last unit.
-	var pending: float = float(loose) + float(_intake) / float(maxi(intake_required, 1))
+	var pending: float = float(loose) + float(_intake) / float(maxi(recipe().x, 1))
 	return clampf(pending / float(intake_saturation), 0.0, 1.0)
 
 
@@ -170,12 +188,14 @@ func deposit(payload: StringName, amount: int = 1) -> bool:
 	if not accepts_intake(payload) or amount <= 0:
 		return false
 
+	var mix: Vector2i = recipe()
 	_intake += amount
-	intake_changed.emit(_intake, intake_required)
+	intake_changed.emit(_intake, mix.x)
 
-	while _intake >= intake_required:
-		_intake -= intake_required
-		_produce_output()
+	while _intake >= mix.x:
+		_intake -= mix.x
+		for i in maxi(mix.y, 1):
+			_produce_output()
 	return true
 
 
@@ -190,7 +210,9 @@ func _produce_output() -> void:
 		return
 
 	_spawn_parent.add_child(piece)
-	piece.global_position = global_position + _random_offset()
+	var drop: Node2D = get_node_or_null(^"Drop") as Node2D
+	var at: Vector2 = drop.global_position if drop != null else global_position + output_at
+	piece.global_position = at + _random_offset()
 	piece.rotation = randf_range(-PI, PI)
 	if piece.has_method("set_wander_home"):
 		piece.set_wander_home(piece.global_position)

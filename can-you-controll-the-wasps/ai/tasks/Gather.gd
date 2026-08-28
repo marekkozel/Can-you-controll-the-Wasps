@@ -61,6 +61,11 @@ func _fetch_from_post(carry: CarryComponent, delta: float) -> Status:
 	var post: ItemSource = agent.job_post as ItemSource
 	if post == null or post.payload != agent.job_payload:
 		return FAILURE
+	# 只收料不发货的加工厂（皇后的兑换台）没东西可领。不在这里拦的话蜂会飞完
+	# 整条走廊、到跟前才拿到 null，然后掉头——一趟白跑，而且看得出来是白跑
+	# A refinery mints nothing; without this the wasp flies the whole corridor to find out.
+	if post.piece_scene == null:
+		return FAILURE
 
 	agent.steer_towards(post.global_position, delta, fly_speed)
 	if agent.global_position.distance_to(post.global_position) > pick_distance:

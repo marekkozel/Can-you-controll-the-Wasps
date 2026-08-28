@@ -54,16 +54,18 @@ const RITE_SPAN: Dictionary = {
 	Rite.COUNTDOWN: Vector2(0.8, 1.0),
 }
 
-# 春 + 夏 + 秋 = 180 秒。一代的目标是三分半上下：三个生产季三分钟，
+# 春 + 夏 + 秋 = 360 秒。一代的目标是六分半上下：三个生产季六分钟，
 # 加上冬天的仪式（顺利的话二十几秒）。冬天不在这里配，它的长度由仪式跑出来
-# Three minutes of growing seasons; winter's length comes from the rite, not from here.
+# Six minutes of growing seasons; winter's length comes from the rite, not from here.
+# 配比没动，还是 1 : 1.67 : 1.33——夏天最长，那一段才是产量所在
+# The ratio is unchanged; summer stays the longest because that is where output happens.
 @export_group("Duration")
 ## 春天最短：新皇那一窝刚下，玩家在补冬天拆掉的巢，还没进入正经生产
 ## Shortest - the player is patching winter's damage, not producing yet.
-@export_range(10.0, 600.0, 5.0) var spring_duration: float = 45.0
+@export_range(10.0, 600.0, 5.0) var spring_duration: float = 90.0
 ## 夏天最长，这一代的产量基本都在这一段里 / the generation's output happens here
-@export_range(10.0, 600.0, 5.0) var summer_duration: float = 75.0
-@export_range(10.0, 600.0, 5.0) var autumn_duration: float = 60.0
+@export_range(10.0, 600.0, 5.0) var summer_duration: float = 150.0
+@export_range(10.0, 600.0, 5.0) var autumn_duration: float = 120.0
 
 @export_group("Start")
 @export var start_season: Season = Season.SPRING
@@ -250,6 +252,14 @@ func dress_newborn(wasp: Wasp) -> void:
 	var bank: GeneBank = GeneBank.find(get_tree())
 	if bank != null:
 		wasp.perk_bonus = bank.perk_bonus()
+		# THICK HIDE。max_health 和 health 都要写：组件 _ready 时已经按原上限满血了
+		# Both fields: the component already topped itself up at the authored maximum.
+		var bonus: int = bank.health_bonus()
+		if bonus > 0:
+			var health: HealthComponent = wasp.get_node_or_null(^"HealthComponent") as HealthComponent
+			if health != null:
+				health.max_health += bonus
+				health.health += bonus
 
 	# 选错了的那一代生下来就带着气。它不改任何规则，只改数值——
 	# 玩家拿不出证据，只有"这一代不知道怎么回事"的体感

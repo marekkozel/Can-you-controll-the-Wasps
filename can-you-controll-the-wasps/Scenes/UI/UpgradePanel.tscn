@@ -4,11 +4,11 @@
 [ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="2_genenode"]
 [ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
 [ext_resource type="Resource" path="res://Resources/Genes/all_perks.tres" id="4_all"]
-[ext_resource type="Resource" path="res://Resources/Genes/carry.tres" id="5_car"]
-[ext_resource type="Resource" path="res://Resources/Genes/attack.tres" id="6_atk"]
-[ext_resource type="Resource" path="res://Resources/Genes/build.tres" id="7_bld"]
-[ext_resource type="Resource" path="res://Resources/Genes/vigour.tres" id="8_hp"]
-[ext_resource type="Resource" path="res://Resources/Genes/wings.tres" id="9_win"]
+[ext_resource type="Resource" path="res://Resources/Genes/thick_comb.tres" id="thick_comb"]
+[ext_resource type="Resource" path="res://Resources/Genes/rendering.tres" id="rendering"]
+[ext_resource type="Resource" path="res://Resources/Genes/fat_reserves.tres" id="fat_reserves"]
+[ext_resource type="Resource" path="res://Resources/Genes/quick_hatch.tres" id="quick_hatch"]
+[ext_resource type="Resource" path="res://Resources/Genes/thick_hide.tres" id="thick_hide"]
 
 [node name="UpgradePanel" type="Control"]
 theme = ExtResource("3_theme")
@@ -34,7 +34,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 1
 mouse_filter = 2
 
 [node name="Margin" type="MarginContainer" parent="Body/Panel"]
@@ -64,10 +64,9 @@ theme_override_font_sizes/font_size = 12
 text = "GENES  x0"
 horizontal_alignment = 1
 
-[node name="Tree" type="Control" parent="Body/Panel/Margin/Content"]
+[node name="Tree" type="ScrollContainer" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
 script = ExtResource("1_tree")
 points_label = NodePath("../Points")
-nodes = Array[ExtResource("2_genenode")]([ExtResource("4_all"), ExtResource("5_car"), ExtResource("6_atk"), ExtResource("7_bld"), ExtResource("8_hp"), ExtResource("9_win")])
+nodes = Array[ExtResource("2_genenode")]([ExtResource("4_all"), ExtResource("thick_comb"), ExtResource("rendering"), ExtResource("fat_reserves"), ExtResource("quick_hatch"), ExtResource("thick_hide")])

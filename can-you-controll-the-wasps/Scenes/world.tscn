@@ -29,12 +29,17 @@
 [ext_resource type="Script" uid="uid://cshrps3hmb0mi" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
 [ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="27_pure"]
 [ext_resource type="Script" uid="uid://cms3picejnr03" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
-[ext_resource type="Script" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
+[ext_resource type="Script" uid="uid://bmpj02h5wcn8" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
+[ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/wasp.png" id="31_wasp"]
+[ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="32_enemyvariant"]
+[ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
+[ext_resource type="Script" uid="uid://diyfu5agmx1sk" path="res://Scripts/Controllers/selection_director.gd" id="33_selection"]
+[ext_resource type="Resource" path="res://Resources/Variants/enemy_spider.tres" id="33_spider"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
-vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 9, 8)])
+vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680, 984, 616, 1240, 616, 1240, 680)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 10, 9, 8), PackedInt32Array(10, 11, 12, 9)])
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
 size = Vector2(1320, 40)
@@ -51,8 +56,14 @@ size = Vector2(256, 40)
 [sub_resource type="RectangleShape2D" id="Shape_nest_side"]
 size = Vector2(40, 432)
 
+[sub_resource type="RectangleShape2D" id="Shape_nest_side_short"]
+size = Vector2(40, 288)
+
+[sub_resource type="RectangleShape2D" id="Shape_upgrade_floor"]
+size = Vector2(296, 40)
+
 [sub_resource type="RectangleShape2D" id="Shape_nest_bottom"]
-size = Vector2(848, 40)
+size = Vector2(1360, 49)
 
 [node name="World" type="Node2D" unique_id=78065329]
 
@@ -60,6 +71,14 @@ size = Vector2(848, 40)
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment" unique_id=1075432323]
 navigation_polygon = SubResource("NavPoly_world")
+
+[node name="LowerRightGround" type="ColorRect" parent="Enviroment" unique_id=1076879989]
+offset_left = 1024.0
+offset_top = 288.0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0, 0.105882, 0.266667, 1)
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
@@ -75,9 +94,36 @@ position = Vector2(1152, 144)
 mode = 1
 piece_scene = ExtResource("9_food")
 payload = &"food"
+
+[node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
+position = Vector2(1152, 628)
+mode = 1
+payload = &"royal_jelly"
+scatter_radius = 32.0
 intake_payload = &"carrion"
 output_scene = ExtResource("9_jelly")
 output_payload = &"royal_jelly"
+
+[node name="Drop" type="Marker2D" parent="Resource_layer/Refinery" unique_id=1621565841]
+position = Vector2(-224, 8)
+
+[node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
+self_modulate = Color(0.78, 0.76, 0.72, 1)
+offset_left = -64.0
+offset_top = -32.0
+offset_right = 64.0
+offset_bottom = 32.0
+texture = ExtResource("32_slot")
+patch_margin_left = 8
+patch_margin_top = 8
+patch_margin_right = 8
+patch_margin_bottom = 8
+
+[node name="Queen" type="Sprite2D" parent="Resource_layer/Refinery" unique_id=1006420576]
+self_modulate = Color(0.937255, 0.752941, 0.309804, 1)
+position = Vector2(0, -12)
+scale = Vector2(1.4, 1.4)
+texture = ExtResource("31_wasp")
 
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
@@ -88,8 +134,7 @@ brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtRe
 [node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
-thief = ExtResource("24_thief")
-hunter = ExtResource("25_hunter")
+breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), ExtResource("33_spider")])
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
 position = Vector2(340, 72)
@@ -107,8 +152,11 @@ dominant_variant = ExtResource("27_pure")
 [node name="GeneBank" type="Node2D" parent="Queen_controller" unique_id=923760956 groups=["gene_bank"]]
 script = ExtResource("28_gene")
 
-[node name="Announcer" type="Node2D" parent="Queen_controller"]
+[node name="Announcer" type="Node2D" parent="Queen_controller" unique_id=611226105]
 script = ExtResource("29_announcer")
+
+[node name="SelectionDirector" type="Node2D" parent="Queen_controller" unique_id=611226106 groups=["selection_director"]]
+script = ExtResource("33_selection")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
@@ -144,11 +192,23 @@ position = Vector2(236, 504)
 shape = SubResource("Shape_nest_side")
 
 [node name="WallNestRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=1967595214]
-position = Vector2(1044, 504)
+position = Vector2(1044, 432)
+shape = SubResource("Shape_nest_side_short")
+
+[node name="WallUpgradeFloor" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972845]
+position = Vector2(1172, 556)
+shape = SubResource("Shape_upgrade_floor")
+
+[node name="WallLowerRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972843]
+position = Vector2(1300, 504)
+shape = SubResource("Shape_nest_side")
+
+[node name="WallLowerLeft" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972844]
+position = Vector2(-20, 504)
 shape = SubResource("Shape_nest_side")
 
 [node name="WallNestBottom" type="CollisionShape2D" parent="StaticBody2D" unique_id=751789722]
-position = Vector2(640, 740)
+position = Vector2(640, 695.5)
 shape = SubResource("Shape_nest_bottom")
 
 [node name="LayoutGuides" type="CanvasLayer" parent="." unique_id=1424308469]
@@ -234,13 +294,14 @@ layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
+offset_bottom = -144.0
 
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
 layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.9333333
 
-[node name="Herald" parent="UI" instance=ExtResource("30_herald")]
+[node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 layout_mode = 3
 
 [node name="Atmosphere" type="CanvasLayer" parent="." unique_id=549371485]

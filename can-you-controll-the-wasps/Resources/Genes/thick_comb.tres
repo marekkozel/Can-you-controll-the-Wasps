@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_gene")
-id = &"attack"
-display_name = "ATK"
-description = "Placeholder - sting damage."
-cell = Vector2i(3, 1)
-requires = Array[StringName]([&"all_perks"])
-cost = 1
+id = &"thick_comb"
+display_name = "THICK COMB"
+description = "Every cell needs one less piece of cardboard."
+order = 1
+requires = Array[StringName]([])
+cost = 2
 max_rank = 1

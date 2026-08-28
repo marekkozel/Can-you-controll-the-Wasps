@@ -9,9 +9,12 @@ extends Resource
 # Enemies may be colour-coded; wasps may not. That red line is about hiding allegiance,
 # and an enemy has none to hide.
 #
-# 整体约定：**敌人一律暗且低饱和，黄蜂血统一律亮**。别把敌人调进黄蜂那个亮度带
-# （琥珀 0.95/0.76/0.18、绯红 0.86/0.24/0.28、紫 0.62/0.36/0.85、青 0.2/0.72/0.68），
-# 两个色带混在一起，玩家第一眼分不出敌我。
+# 整体约定：**敌人一律暗且低饱和，黄蜂血统一律亮**，两个色带混在一起玩家第一眼分不出敌我。
+# 现在这条约束落在**贴图**上而不是颜色字段上——每种敌人有自己的一张彩图，
+# 给了 texture 就不再走 body_color 那套染色（彩图再乘颜色 = 乘两遍）。
+# The rule now lives in the art: a breed with a texture is never tinted on top.
+# 中型和蜘蛛都在青灰蓝那一带，符合约定；蚂蚁那张用了 #ffa328 / #c46829，
+# 跟黄蜂和巢室是同一个暖橙，**离得有点近**
 # Enemies stay dark and desaturated, wasp lineages stay bright - keep the bands apart.
 
 enum Behavior {
@@ -32,3 +35,29 @@ enum Behavior {
 @export var head_color: Color = Color(0.18, 0.2, 0.17)
 @export var eye_color: Color = Color(0.85, 0.18, 0.16)
 @export var outline_color: Color = Color(0.12, 0.14, 0.11)
+
+# 体型 / build. 贴图、碰撞和速度跟着品种走，不再写死在 Enemy.tscn 里——
+# 三种敌人共用一个场景，靠这几个字段拉开。
+# One scene, three builds: the sheet no longer decides how big a raider is.
+@export_group("Build")
+## 换掉 Enemy.tscn 上那张图 / replaces the texture authored on the scene
+@export var texture: Texture2D
+## 图的内容不居中就用它补。蚂蚁那张内容全在下半部分 / Ant art sits in the lower half
+@export var sprite_offset: Vector2 = Vector2.ZERO
+## 按贴图**内容**的实际尺寸给，不是按图幅 / measured from the content, not the sheet
+@export_range(4.0, 80.0, 1.0) var collision_radius: float = 22.0
+@export_range(10.0, 200.0, 5.0) var move_speed: float = 40.0
+## 质量。三种体型共用一个 mass 的话，同样一拳推蚂蚁和推蜘蛛滑得一样远，
+## 一只 12 血的大家伙就没有分量了 / a spider shoved like an ant has no weight to it
+@export_range(0.1, 10.0, 0.1) var body_mass: float = 0.9
+## 血条只给大型开。小的挂上血条画面就糊了，而且「这东西打不死」的压迫感
+## 正是靠只有它有血条撑起来的 / only the big one earns a bar
+@export var show_health_bar: bool = false
+
+@export_group("Raids")
+## 编队点数。一波的预算由玩家当前实力算出来，再用这个填满
+## Formation cost - a wave's budget is derived from colony strength, then spent on these.
+@export_range(1, 10, 1) var spawn_cost: int = 1
+## 一波最多来一只。硬上限不是概率——随机会掷出「整波全是蜘蛛」，
+## 那一波玩家学不到任何东西 / a hard cap: an all-spider wave teaches nothing
+@export var one_per_raid: bool = false

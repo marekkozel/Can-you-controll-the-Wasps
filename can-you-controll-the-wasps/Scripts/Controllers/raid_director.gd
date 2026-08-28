@@ -43,18 +43,21 @@ const SEASON_COUNT: int = 4
 ## Breathing room between waves, as a multiple of one raid's length.
 const DURATION_HEADROOM: float = 1.35
 const HIVE_GROUP: StringName = &"hive"
+const WASP_GROUP: StringName = &"wasps"
 const ENTITIES_GROUP: StringName = &"entities"
 
 @export var enemy_scene: PackedScene
 
 @export_group("Breeds")
-## 偷卵那种，一波里至少保证有一只——没有小偷的入侵不威胁巢，只是场架
-## At least one always spawns: a raid with no thief threatens nothing, it is just a brawl.
-@export var thief: EnemyVariant
-## 索敌那种 / the one that hunts wasps
-@export var hunter: EnemyVariant
-## 一波里猎手占多少 / share of each wave that hunts instead of stealing
-@export_range(0.0, 1.0, 0.05) var hunter_share: float = 0.4
+## 一波来什么，全在这个数组里。加第四种敌人 = 多一个 .tres，不用碰代码
+## Everything about a wave's make-up lives in these resources.
+@export var breeds: Array[EnemyVariant] = []
+## 重甲兵占比每往后一次涨多少。头一波以轻兵为主（数量压巢），越往后越多重的（威胁蜂）——
+## 强度递增体现在**构成**上，不改 EnemyVariant 的血量：同一种敌人血量不固定的话，
+## 玩家没法对"这是什么东西"建立预期
+## Later waves shift toward the heavier troop; per-breed health stays fixed so it stays learnable.
+@export_range(0.0, 1.0, 0.05) var heavy_share: float = 0.35
+@export_range(0.0, 0.4, 0.05) var heavy_share_step: float = 0.15
 
 @export_group("Schedule")
 ## 入侵窗口，按整年进度算：0 = 初春，0.25 = 入夏，0.5 = 入秋，0.75 = 入冬。
@@ -75,17 +78,20 @@ const ENTITIES_GROUP: StringName = &"entities"
 @export var require_something_to_take: bool = true
 
 @export_group("Size")
-@export_range(1, 12, 1) var base_count: int = 2
-## 每建成这么多格子多来一只 / one extra raider per this many finished cells
-@export_range(1, 20, 1) var cells_per_extra: int = 5
+## 一波的规模不再是固定数字，而是按玩家**当前**实力算出的预算，再用 spawn_cost 填满。
+# 蜂多、巢大、崽多 = 更凶的一波；被打残之后下一波自己会松一口气，
+# 这是"第几波 + 巢多大"那套固定公式做不到的
+## A budget derived from how strong the colony is right now, then spent on breeds.
+@export_range(0.0, 3.0, 0.05) var wasp_weight: float = 1.0
+@export_range(0.0, 2.0, 0.05) var cell_weight: float = 0.35
+@export_range(0.0, 2.0, 0.05) var brood_weight: float = 0.5
+## 预算 = 实力 x 压力。压力随波次和代数上升，是长期曲线
+@export_range(0.05, 2.0, 0.05) var base_pressure: float = 0.22
+@export_range(0.0, 0.5, 0.01) var pressure_step: float = 0.05
+@export_range(0.0, 0.5, 0.01) var generation_pressure: float = 0.04
+@export_range(1.0, 40.0, 0.5) var min_budget: float = 2.0
+@export_range(2.0, 80.0, 1.0) var max_budget: float = 26.0
 @export_range(1, 16, 1) var max_count: int = 6
-## 同一代里每往后一次多来几只 / extra raiders per later raid in the same year
-@export_range(0, 6, 1) var per_raid_extra: int = 1
-## 猎手占比每往后一次涨多少。头一波以小偷为主（威胁巢），越往后越多猎手（威胁蜂）——
-## 强度递增体现在**构成**上，不改 EnemyVariant 的血量：同一种敌人血量不固定的话，
-## 玩家没法对"这是什么东西"建立预期
-## Later waves shift toward hunters; per-breed health stays fixed so the player can learn it.
-@export_range(0.0, 0.4, 0.05) var hunter_share_step: float = 0.15
 ## 进场位置的散布，别让一波敌人叠在同一个点上 / keeps a wave from stacking on one pixel
 @export_range(0.0, 200.0, 5.0) var entry_scatter: float = 40.0
 
@@ -124,6 +130,8 @@ var _raiding: bool = false
 var _schedule: Array = []
 ## 这一代已经打到第几次（1-based），强度按它递增 / 1-based, drives the ramp
 var _raid_index: int = 0
+# 压力曲线要按代数走，所以得留着——信号参数用完就没了 / kept for the pressure curve
+var _generation: int = 0
 
 
 static func find(tree: SceneTree) -> RaidDirector:
@@ -153,7 +161,8 @@ func _bind_season() -> void:
 	roll_schedule()
 
 
-func _on_generation_advanced(_generation: int) -> void:
+func _on_generation_advanced(generation: int) -> void:
+	_generation = generation
 	roll_schedule()
 
 
@@ -319,18 +328,12 @@ func call_off() -> void:
 
 func _start() -> void:
 	wave += 1
-	# 两条叠加：巢越大来得越多（长期压力），同一代里越往后来得越多（单代内的递进）
-	# Hive size is the long arc; the index is the ramp inside a single year.
-	var count: int = base_count + (maxi(_raid_index, 1) - 1) * per_raid_extra
-	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
-	if hive != null:
-		count += int(hive.built_count() / float(cells_per_extra))
-	count = clampi(count, 1, max_count)
-	_planned = count
+	var formation: Array[EnemyVariant] = _plan_formation()
+	_planned = formation.size()
 
 	_raiders.clear()
-	for i in count:
-		var raider: Enemy = _spawn(i)
+	for i in formation.size():
+		var raider: Enemy = _spawn(i, formation[i])
 		if raider != null:
 			_raiders.append(raider)
 
@@ -358,12 +361,12 @@ func _mark_active_as(state: MarkState) -> void:
 	_push_marks()
 
 
-func _spawn(index: int) -> Enemy:
+func _spawn(index: int, breed: EnemyVariant) -> Enemy:
 	var raider: Enemy = enemy_scene.instantiate() as Enemy
 	if raider == null:
 		return null
 
-	raider.variant = _breed_for(index)
+	raider.variant = breed
 
 	var entry: Vector2 = global_position
 	if not _entries.is_empty():
@@ -379,18 +382,72 @@ func _spawn(index: int) -> Enemy:
 	return raider
 
 
-# 前几只是猎手，剩下的是小偷。用固定切分而不是每只 randf()：随机会掷出"整波全是猎手"，
-# 那一波巢完全没有压力，玩家学不到"入侵是来偷东西的"
-# A fixed split, not a per-raider roll: randomness can produce an all-hunter wave, and
-# that wave teaches the player nothing about what a raid is for.
-func _breed_for(index: int) -> EnemyVariant:
-	if hunter == null:
-		return thief
-	if thief == null:
-		return hunter
-	var share: float = clampf(hunter_share + float(maxi(_raid_index, 1) - 1) * hunter_share_step, 0.0, 1.0)
-	var hunters: int = mini(int(round(float(_planned) * share)), maxi(_planned - 1, 0))
-	return hunter if index < hunters else thief
+# 玩家现在有多强。蜂是战力，巢和崽既是规模也是**可抢的东西**——
+# 全都算进来，一波的凶狠程度才跟得上局面
+# Wasps are the muscle; cells and brood are both scale and spoils.
+func colony_strength() -> float:
+	var strength: float = float(get_tree().get_nodes_in_group(WASP_GROUP).size()) * wasp_weight
+	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+	if hive != null:
+		strength += float(hive.built_count()) * cell_weight
+		var brood: int = hive.egg_count() + hive.count_content(HexCell.Content.LARVA)
+		strength += float(brood) * brood_weight
+	return strength
+
+
+func _budget() -> float:
+	var pressure: float = base_pressure
+	pressure += float(maxi(_raid_index, 1) - 1) * pressure_step
+	pressure += float(_generation) * generation_pressure
+	return clampf(colony_strength() * pressure, min_budget, max_budget)
+
+
+# 按预算编队。重的先填一部分，剩下全给轻的——**固定切分而不是每只 randf()**：
+# 随机会掷出"整波全是重的"，那一波巢完全没有压力，玩家学不到"入侵是来偷东西的"
+# A fixed split, not a per-raider roll: randomness produces waves that teach nothing.
+func _plan_formation() -> Array[EnemyVariant]:
+	var out: Array[EnemyVariant] = []
+	var elites: Array[EnemyVariant] = []
+	var troops: Array[EnemyVariant] = []
+	for breed in breeds:
+		if breed == null:
+			continue
+		if breed.one_per_raid:
+			elites.append(breed)
+		else:
+			troops.append(breed)
+	if troops.is_empty():
+		return out
+	troops.sort_custom(func(a: EnemyVariant, b: EnemyVariant): return a.spawn_cost > b.spawn_cost)
+
+	var budget: float = _budget()
+
+	# 大家伙一波最多一只，而且要留得下几个小兵陪它——一只光杆蜘蛛只是个血包
+	# One at most, and only if there is budget left for an escort.
+	for elite in elites:
+		var escort: float = float(troops[troops.size() - 1].spawn_cost) * 2.0
+		if budget >= float(elite.spawn_cost) + escort:
+			out.append(elite)
+			budget -= float(elite.spawn_cost)
+			break
+
+	var heavy: EnemyVariant = troops[0]
+	var light: EnemyVariant = troops[troops.size() - 1]
+	if heavy != light:
+		var share: float = clampf(heavy_share + float(maxi(_raid_index, 1) - 1) * heavy_share_step, 0.0, 1.0)
+		var heavy_budget: float = budget * share
+		while heavy_budget >= float(heavy.spawn_cost) and out.size() < max_count:
+			out.append(heavy)
+			heavy_budget -= float(heavy.spawn_cost)
+			budget -= float(heavy.spawn_cost)
+
+	while budget >= float(light.spawn_cost) and out.size() < max_count:
+		out.append(light)
+		budget -= float(light.spawn_cost)
+
+	if out.is_empty():
+		out.append(light)  # 保底一只，空袭等于没袭 / a raid of nobody is not a raid
+	return out
 
 
 func _spawn_root() -> Node:

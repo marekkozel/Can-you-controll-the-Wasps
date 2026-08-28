@@ -21,6 +21,20 @@ signal cell_occupant_destroyed(cell: HexCell)
 ## For atmosphere only: marking the cell would paint the answer onto the comb.
 signal cell_rebel_egg_laid(cell: HexCell)
 
+# demand() 是"还有多少活"，不是"完成了百分之几"。
+#
+# 曾经这里返回未完成的**比例**，于是完成度越高需求越低，可剩下的活一点没少：
+# 一只被派在巢的蜂基线最高 0.37（posting_bias 0.28 + SWITCH_MARGIN 0.09），
+# 阈值中位 0.385，要它出门得 demand > 0.755——巢建到四成就再没人肯搬纸板，
+# 手动拖过去的蜂待一会儿也飘回来。剩下那截永远建不完。
+#
+# 下限只要压过"最勤快的那批"就够，不用压过所有蜂：cardboard_threshold 下限 0.22，
+# 0.59 是"总有蜂肯干"的分界线，取 0.65 留一点余量。压过全部反而抹掉了分工。
+# A ratio starves its own endgame; the floor only has to clear the keenest wasps.
+const BUILD_FLOOR: float = 0.65
+const FEED_FLOOR: float = 0.60
+const FEED_CAP: float = 0.85
+
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
 ## 改这个资源，整片网格实时重建 / editing it rebuilds the whole grid
@@ -145,12 +159,20 @@ func demand(payload: StringName) -> float:
 
 	match payload:
 		&"cardboard":
-			return clampf(float(total - built_count()) / float(total), 0.0, 1.0)
+			var unbuilt: int = total - built_count()
+			if unbuilt == 0:
+				return 0.0  # 全建完才归零，蜂回巢待命——牌桌就是这么来的 / the floor is the point
+			return clampf(BUILD_FLOOR + (1.0 - BUILD_FLOOR) * float(unbuilt) / float(total), 0.0, 1.0)
 		&"food", &"royal_jelly":
-			var worst: float = 1.0
+			var urgent: float = 0.0
 			for cell in hungry_cells():
-				worst = minf(worst, cell.larva_hunger_ratio())
-			return clampf(1.0 - worst, 0.0, 1.0)
+				urgent = maxf(urgent, 1.0 - cell.larva_hunger_ratio())
+			# 只看"已经饿着的"等于让蜂等到濒死才动身，它还要飞过去、采、再搬回来。
+			# 幼虫越多备得越多；送不出去的那只就拿着等，下一只饿了立刻能喂
+			# Waiting for hunger means arriving too late; carried food is stock, not waste.
+			var brood: int = count_content(HexCell.Content.LARVA)
+			var stock: float = 0.0 if brood == 0 else minf(FEED_FLOOR + 0.1 * float(brood - 1), FEED_CAP)
+			return clampf(maxf(stock, urgent), 0.0, 1.0)
 	return 0.0
 
 

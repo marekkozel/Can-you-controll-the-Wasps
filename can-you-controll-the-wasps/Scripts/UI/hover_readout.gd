@@ -46,12 +46,20 @@ const PERK_SLOTS: int = 4
 @export var title_path: NodePath = ^"../Title"
 @export var wasp_title: String = "WASP"
 
+@export_group("Prompts")
+## 光标停在蜂身上时说的话 / shown while merely hovering a wasp
+@export var hover_prompt: String = "LEFT-CLICK TO LIFT"
+## 已经托在手上时说的话。处决的入口只有这一处，玩家不看这里就永远学不会
+## The only place the execution verb is ever spelled out.
+@export var held_prompt: String = "RIGHT-CLICK TO STING"
+
 @onready var _name: Label = $Name
 @onready var _lineage: Label = $Lineage
 @onready var _health_pips: PipTrack = $Health/Pips
 @onready var _health_value: Label = $Health/Value
 @onready var _health_row: Control = $Health
 @onready var _strike: Label = $Strike
+@onready var _action: Label = $Action
 @onready var _hint: Label = $Hint
 @onready var _perks: Control = $Perks
 @onready var _perks_divider: Control = $PerksDivider
@@ -62,11 +70,15 @@ const PERK_SLOTS: int = 4
 @onready var _title: Label = get_node_or_null(title_path)
 
 var _timer: float = 0.0
+## 全场唯一的选中判定。拿不到就退回自己轮询，好让 InfoPanel.tscn 单独打开也能测
+## Falls back to polling so the panel still works opened on its own.
+var _selection: SelectionDirector = null
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_show(null)
+	_selection = SelectionDirector.find(get_tree())
 
 
 func _process(delta: float) -> void:
@@ -78,14 +90,24 @@ func _process(delta: float) -> void:
 	# 拿在手上的优先。**先看手上再看光标底下**：托着一块纸板从蜂群上空飞过时，
 	# 玩家问的是"这块纸板干嘛用"，不是"下面那只蜂是谁"
 	# What is in hand wins: carrying a piece over the swarm should not swap the readout.
-	var subject: Node2D = DraggableComponent.held_body()
-	if subject == null:
-		subject = _nearest_in_group(WASP_GROUP, hover_radius)
-	if subject == null:
-		subject = _nearest_in_group(CARRIABLE_GROUP, item_hover_radius)
+	var subject: Node2D = null
+	var in_hand: bool = false
+	if _selection != null:
+		subject = _selection.subject()
+		in_hand = _selection.is_in_hand()
+	else:
+		subject = DraggableComponent.held_body()
+		in_hand = subject != null
+		if subject == null:
+			subject = _nearest_in_group(WASP_GROUP, hover_radius)
+		if subject == null:
+			subject = _nearest_in_group(CARRIABLE_GROUP, item_hover_radius)
 
 	if subject != null and subject.is_in_group(WASP_GROUP):
 		_show(subject)
+		# 每一只蜂都是这两句，一个字都不差 / identical for every wasp, always
+		_action.text = held_prompt if in_hand else hover_prompt
+		_action.visible = true
 	elif subject != null:
 		_show_item(_info_for(subject))
 	else:
@@ -149,6 +171,7 @@ func _set_wasp_rows(shown: bool) -> void:
 	if not shown:
 		_strike.visible = false
 		_build_note.visible = false
+		_action.visible = false
 
 
 func _show(wasp: Node2D) -> void:

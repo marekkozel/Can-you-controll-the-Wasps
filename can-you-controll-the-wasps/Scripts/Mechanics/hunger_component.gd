@@ -38,6 +38,17 @@ func is_hungry() -> bool:
 	return state == State.HUNGRY
 
 
+# 当前这一段还剩多少，饱腹和饥饿都算。饱腹那 60 秒是预告期，也该有读数
+# Remaining ratio of whichever phase is running - the satiated stretch is the heads-up.
+func phase_ratio() -> float:
+	match state:
+		State.SATIATED:
+			return clampf(time_left / maxf(satiated_duration, 0.01), 0.0, 1.0)
+		State.HUNGRY:
+			return clampf(time_left / maxf(hunger_window, 0.01), 0.0, 1.0)
+	return 0.0
+
+
 # 饥饿窗口剩余比例 0~1，不在饥饿状态返回 0 / remaining ratio, 0 when not hungry
 func hunger_ratio() -> float:
 	if state != State.HUNGRY:

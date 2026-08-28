@@ -107,6 +107,15 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.1608, 1)
 text = "SLACKING"
 horizontal_alignment = 1
 
+[node name="Action" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 0.902, 0.502, 1)
+text = "LEFT-CLICK TO LIFT"
+horizontal_alignment = 1
+autowrap_mode = 2
+
 [node name="Hint" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
 layout_mode = 2
 mouse_filter = 2

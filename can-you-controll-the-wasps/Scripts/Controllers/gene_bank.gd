@@ -19,8 +19,15 @@ signal rank_changed(id: StringName, rank: int)
 const GROUP: StringName = &"gene_bank"
 const HIVE_GROUP: StringName = &"hive"
 
-## 全属性 +1 的节点 id。目前唯一接了效果的一条 / the only wired effect so far
+# 基因的 id。**效果分派在这个文件里，形状在 .tres 里** —— 加一条要动两处：
+# 这里加常量和查询函数，Resources/Genes/ 下加资源
+# Effects dispatch here, shape lives in the resources; a new gene touches both.
 const ALL_PERKS: StringName = &"all_perks"
+const THICK_COMB: StringName = &"thick_comb"
+const RENDERING: StringName = &"rendering"
+const FAT_RESERVES: StringName = &"fat_reserves"
+const QUICK_HATCH: StringName = &"quick_hatch"
+const THICK_HIDE: StringName = &"thick_hide"
 
 @export_group("Income")
 ## 每代保底几点 / floor per generation
@@ -29,6 +36,18 @@ const ALL_PERKS: StringName = &"all_perks"
 ## Extra points scale with the hive you actually built - last generation pays for the next.
 @export_range(1, 40, 1) var cells_per_extra_point: int = 6
 @export_range(0, 8, 1) var max_points_per_generation: int = 3
+
+# 每级给多少。数值放这里而不是散在使用方，调平衡只用看一个文件
+# The magnitudes live here, not scattered across the systems that read them.
+@export_group("Effects")
+## THICK COMB：每级建巢少几块纸板 / cardboard saved per rank
+@export_range(1, 3, 1) var comb_discount: int = 1
+## FAT RESERVES：每级幼虫饱腹期延长几成 / satiation added per rank
+@export_range(0.0, 1.0, 0.05) var fat_reserves_bonus: float = 0.4
+## QUICK HATCH：每级孵化和封盖各快几成 / maturation shaved per rank
+@export_range(0.0, 0.5, 0.05) var quick_hatch_bonus: float = 0.25
+## THICK HIDE：每级新生蜂加几点血 / hit points per rank
+@export_range(1, 3, 1) var hide_bonus: int = 1
 
 var points: int = 0
 ## id -> 已解锁的等级。没有的键就是 0 级（没解锁）/ absent means rank 0
@@ -47,9 +66,46 @@ func is_unlocked(id: StringName) -> bool:
 	return rank_of(id) > 0
 
 
+# ---------------- 效果 / effects ----------------
+#
+# 每一条都是**全体生效**的。基因绝不能只惠及某个血统——那会给玩家一个正当理由
+# 按颜色给蜂群分类，而"颜色 ≠ 立场"整套设计靠的就是玩家没有这个理由
+# Colony-wide without exception; see the note at the top of this file.
+
 # 每只新生蜂的全属性加成 / the flat bonus every newborn carries
 func perk_bonus() -> int:
 	return rank_of(ALL_PERKS)
+
+
+# 建一格巢少要几块纸板 / cardboard knocked off a cell's build cost
+func build_discount() -> int:
+	return rank_of(THICK_COMB) * comb_discount
+
+
+# 幼虫饱腹期的倍率。饱得越久，饥饿警报越稀疏，你的调度余地越大
+# A longer satiation means sparser alarms and more room to schedule.
+func satiation_scale() -> float:
+	return 1.0 + float(rank_of(FAT_RESERVES)) * fat_reserves_bonus
+
+
+# 孵化和封盖的时长倍率。留 25% 的地板，别让整条育儿链塌成零
+# Floored at a quarter: the brood chain still has to be a chain.
+func maturation_scale() -> float:
+	return maxf(1.0 - float(rank_of(QUICK_HATCH)) * quick_hatch_bonus, 0.25)
+
+
+# 新生蜂多几点血 / extra hit points on every newborn
+func health_bonus() -> int:
+	return rank_of(THICK_HIDE) * hide_bonus
+
+
+# 精炼配方 [要几份原料, 出几份成品]。默认 2 换 1，RENDERING 之后 3 换 2——
+# 每份肉更值钱，打退一波入侵才有像样的回报
+# 2:1 by default, 3:2 once rendered - meat is worth more, so clearing a raid pays.
+func refinery_recipe(base_intake: int) -> Vector2i:
+	if not is_unlocked(RENDERING):
+		return Vector2i(base_intake, 1)
+	return Vector2i(base_intake + 1, 2)
 
 
 # 能不能点。三个条件：点数够、还没点满、前置全部已解锁

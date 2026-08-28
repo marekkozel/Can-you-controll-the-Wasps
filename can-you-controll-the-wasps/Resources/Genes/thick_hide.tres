@@ -4,10 +4,11 @@
 
 [resource]
 script = ExtResource("1_gene")
-id = &"carry"
-display_name = "CAR"
-description = "Placeholder - carrying capacity."
-cell = Vector2i(1, 1)
-requires = Array[StringName]([&"all_perks"])
+id = &"thick_hide"
+display_name = "THICK HIDE"
+description = "Every wasp born from now on takes one more hit.
+Stacks twice."
+order = 5
+requires = Array[StringName]([])
 cost = 1
-max_rank = 1
+max_rank = 2

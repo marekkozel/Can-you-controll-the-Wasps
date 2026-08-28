@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_gene")
 id = &"all_perks"
-display_name = "ALL"
+display_name = "ALL PERKS"
 description = "All perks +1 on every wasp born from now on.
 Stacks three times."
-cell = Vector2i(2, 0)
+order = 0
 requires = Array[StringName]([])
 cost = 1
 max_rank = 3

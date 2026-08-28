@@ -4,10 +4,11 @@
 
 [resource]
 script = ExtResource("1_gene")
-id = &"wings"
-display_name = "WIN"
-description = "Placeholder - flight speed."
-cell = Vector2i(4, 2)
-requires = Array[StringName]([&"attack"])
+id = &"quick_hatch"
+display_name = "QUICK HATCH"
+description = "Eggs and capped cells mature 25% faster.
+Stacks twice."
+order = 4
+requires = Array[StringName]([])
 cost = 1
-max_rank = 1
+max_rank = 2

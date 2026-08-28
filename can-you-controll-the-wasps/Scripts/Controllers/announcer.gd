@@ -29,17 +29,26 @@ const LINES: Dictionary = {
 		"text": "A larva starved.", "repeat": "{n} larvae starved.",
 		"priority": 75, "tone": Herald.Tone.LOSS,
 	},
+	# 教学句：新皇是**拖进去**的，不是自动来的。第一次玩看不懂这条就整局都在等
+	# The rite is a verb, not a notification: nobody waits out a winter they can act on.
 	&"throne": {
-		"text": "Winter. The throne is open - carry one in.",
+		"text": "Winter. Drag a worker into the glowing centre cell - she becomes your queen.",
 		"priority": 100, "tone": Herald.Tone.RITE,
 	},
 	&"throne_late": {
-		"text": "They are choosing for themselves.",
+		"text": "Still no heir. Carry one in now, or the comb picks its own.",
 		"priority": 100, "tone": Herald.Tone.RITE,
 	},
 	&"crowned": {
 		"text": "She is crowned.",
 		"priority": 100, "tone": Herald.Tone.RITE,
+	},
+	# 你第一次把一只蜂拿在手上时说一次。挂在**玩家的动作**上，不是挂在她身上——
+	# 挂在伪王后醒来上的话，这句话本身就成了"她在场"的确认
+	# Keyed to the player's own hand: keyed to her, it would confirm she exists.
+	&"first_grab": {
+		"text": "She cannot fly while you hold her. Right-click to sting.",
+		"priority": 70, "tone": Herald.Tone.RITE,
 	},
 	# ---- 以下是传闻 / rumours from here down ----
 	&"awaken": {
@@ -100,6 +109,8 @@ var _season: SeasonDirector = null
 var _hive: Hive = null
 
 var _unrest_said: bool = false
+## 处决那句只说一次 / the sting lesson fires once per run
+var _grab_taught: bool = false
 ## 已经预警过的那个点在整年的位置，掷新时间表时清掉 / cleared when the schedule is rolled
 var _warned_at: float = -1.0
 var _lie_timer: float = 0.0
@@ -140,6 +151,7 @@ func _bind() -> void:
 
 func _process(delta: float) -> void:
 	_check_raid_warning()
+	_check_first_grab()
 
 	_lie_timer -= delta
 	if _lie_timer > 0.0:
@@ -149,6 +161,18 @@ func _process(delta: float) -> void:
 		return
 	if randf() < lie_chance:
 		_rumour(&"awaken" if randf() < 0.5 else &"rebel_egg")
+
+
+# 轮询而不是给每只蜂连 grabbed —— 蜂一直在羽化和被处决，逐只连信号是一堆生命周期
+# Polled: wasps come and go constantly, and is_dragging() is already static.
+func _check_first_grab() -> void:
+	if _grab_taught or not DraggableComponent.is_dragging():
+		return
+	var held: RigidBody2D = DraggableComponent.held_body()
+	if held == null or not held.is_in_group(&"wasps"):
+		return  # 拖纸板不算 / carrying a piece is not the lesson
+	_grab_taught = true
+	_say(&"first_grab")
 
 
 func _roll_lie_timer() -> void:
