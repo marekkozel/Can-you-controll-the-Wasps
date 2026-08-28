@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"build"
+display_name = "BLD"
+description = "Placeholder - build speed."
+cell = Vector2i(0, 2)
+requires = Array[StringName]([&"carry"])
+cost = 1
+max_rank = 1

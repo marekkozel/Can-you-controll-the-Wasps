@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"wings"
+display_name = "WIN"
+description = "Placeholder - flight speed."
+cell = Vector2i(4, 2)
+requires = Array[StringName]([&"attack"])
+cost = 1
+max_rank = 1

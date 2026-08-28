@@ -1,20 +1,23 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=10 format=3]
 
-[ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
-[ext_resource type="Script" path="res://Scripts/UI/hex_frame.gd" id="2_hexframe"]
-[ext_resource type="Script" path="res://Scripts/UI/upgrade_slots.gd" id="3_slots"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
+[ext_resource type="Script" path="res://Scripts/UI/gene_tree.gd" id="1_tree"]
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="2_genenode"]
+[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
+[ext_resource type="Resource" path="res://Resources/Genes/all_perks.tres" id="4_all"]
+[ext_resource type="Resource" path="res://Resources/Genes/carry.tres" id="5_car"]
+[ext_resource type="Resource" path="res://Resources/Genes/attack.tres" id="6_atk"]
+[ext_resource type="Resource" path="res://Resources/Genes/build.tres" id="7_bld"]
+[ext_resource type="Resource" path="res://Resources/Genes/vigour.tres" id="8_hp"]
+[ext_resource type="Resource" path="res://Resources/Genes/wings.tres" id="9_win"]
 
 [node name="UpgradePanel" type="Control"]
+theme = ExtResource("3_theme")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("1_collapsible")
-collapse_side = 1
 
 [node name="Body" type="Control" parent="."]
 layout_mode = 1
@@ -26,24 +29,24 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Panel" type="PanelContainer" parent="Body"]
-theme_override_styles/panel = SubResource("StyleBoxEmpty_bare")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Margin" type="MarginContainer" parent="Body/Panel"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
@@ -56,106 +59,15 @@ layout_mode = 2
 
 [node name="Points" type="Label" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 theme_override_font_sizes/font_size = 12
 text = "GENES  x0"
 horizontal_alignment = 1
 
-[node name="Slots" type="VBoxContainer" parent="Body/Panel/Margin/Content"]
-layout_mode = 2
-theme_override_constants/separation = 14
-script = ExtResource("3_slots")
-
-[node name="Row1" type="HBoxContainer" parent="Body/Panel/Margin/Content/Slots"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Slot1" type="Button" parent="Body/Panel/Margin/Content/Slots/Row1"]
-custom_minimum_size = Vector2(52, 58)
-layout_mode = 2
-flat = true
-
-[node name="Frame" type="Control" parent="Body/Panel/Margin/Content/Slots/Row1/Slot1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("2_hexframe")
-
-[node name="Caption" type="Label" parent="Body/Panel/Margin/Content/Slots/Row1/Slot1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 12
-text = "DEF"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Plus1" type="Label" parent="Body/Panel/Margin/Content/Slots/Row1"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "+"
-vertical_alignment = 1
-
-[node name="Row2" type="HBoxContainer" parent="Body/Panel/Margin/Content/Slots"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Slot2" type="Button" parent="Body/Panel/Margin/Content/Slots/Row2"]
-custom_minimum_size = Vector2(52, 58)
-layout_mode = 2
-flat = true
-
-[node name="Frame" type="Control" parent="Body/Panel/Margin/Content/Slots/Row2/Slot2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("2_hexframe")
-
-[node name="Caption" type="Label" parent="Body/Panel/Margin/Content/Slots/Row2/Slot2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 12
-text = "SPD"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Plus2" type="Label" parent="Body/Panel/Margin/Content/Slots/Row2"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "+"
-vertical_alignment = 1
-
-[node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
+[node name="Tree" type="Control" parent="Body/Panel/Margin/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="ToggleButton" type="Button" parent="Body"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.0
-anchor_right = 0.0
-offset_left = 0.0
-offset_top = 12.0
-offset_right = 30.0
-offset_bottom = 60.0
-grow_horizontal = 1
-theme_override_font_sizes/font_size = 18
-text = ">"
+mouse_filter = 2
+script = ExtResource("1_tree")
+points_label = NodePath("../Points")
+nodes = Array[ExtResource("2_genenode")]([ExtResource("4_all"), ExtResource("5_car"), ExtResource("6_atk"), ExtResource("7_bld"), ExtResource("8_hp"), ExtResource("9_win")])

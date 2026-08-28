@@ -1,20 +1,17 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://Scripts/UI/collapsible_panel.gd" id="1_collapsible"]
 [ext_resource type="Script" path="res://Scripts/UI/hover_readout.gd" id="2_hover"]
 [ext_resource type="Script" path="res://Scripts/UI/pip_track.gd" id="3_pips"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bare"]
+[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="99_theme"]
 
 [node name="InfoPanel" type="Control"]
+theme = ExtResource("99_theme")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("1_collapsible")
-collapse_side = 0
 
 [node name="Body" type="Control" parent="."]
 layout_mode = 1
@@ -26,7 +23,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Panel" type="PanelContainer" parent="Body"]
-theme_override_styles/panel = SubResource("StyleBoxEmpty_bare")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -73,7 +69,7 @@ horizontal_alignment = 1
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 text = "Lineage"
 horizontal_alignment = 1
 
@@ -87,9 +83,9 @@ alignment = 1
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
-shape = 0
+shape = 2
 total = 3
-pip_size = 10.0
+pip_size = 12.0
 
 [node name="Value" type="Label" parent="Body/Panel/Margin/Content/Inspect/Health"]
 layout_mode = 2
@@ -101,7 +97,7 @@ text = "0/0"
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(1, 0.78, 0.25, 1)
+theme_override_colors/font_color = Color(0.7725, 0.4039, 0.1608, 1)
 text = "SLACKING"
 horizontal_alignment = 1
 
@@ -109,7 +105,7 @@ horizontal_alignment = 1
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(1, 1, 1, 0.45)
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 text = "hover a wasp"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -121,7 +117,7 @@ layout_mode = 2
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
-theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 text = "PERKS"
 horizontal_alignment = 1
 
@@ -147,7 +143,7 @@ text = "Attack"
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
-shape = 1
+shape = 3
 total = 4
 pip_size = 10.0
 gap = 5.0
@@ -170,7 +166,7 @@ text = "Speed"
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
-shape = 1
+shape = 3
 total = 4
 pip_size = 10.0
 gap = 5.0
@@ -193,7 +189,7 @@ text = "Carry"
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
-shape = 1
+shape = 3
 total = 4
 pip_size = 10.0
 gap = 5.0
@@ -216,7 +212,7 @@ text = "Build"
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
-shape = 1
+shape = 3
 total = 4
 pip_size = 10.0
 gap = 5.0
@@ -226,7 +222,7 @@ gap = 5.0
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(1, 1, 1, 0.45)
+theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 text = "Build applies to cardboard only"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -236,15 +232,3 @@ layout_mode = 2
 mouse_filter = 2
 size_flags_vertical = 3
 
-[node name="ToggleButton" type="Button" parent="Body"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -30.0
-offset_top = 12.0
-offset_right = 0.0
-offset_bottom = 60.0
-grow_horizontal = 0
-theme_override_font_sizes/font_size = 18
-text = "<"

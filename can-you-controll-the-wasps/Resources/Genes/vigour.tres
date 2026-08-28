@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"vigour"
+display_name = "HP"
+description = "Placeholder - needs both branches above it."
+cell = Vector2i(2, 2)
+requires = Array[StringName]([&"carry", &"attack"])
+cost = 2
+max_rank = 1

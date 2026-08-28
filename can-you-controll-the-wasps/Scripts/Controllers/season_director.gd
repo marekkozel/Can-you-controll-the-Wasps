@@ -45,6 +45,15 @@ const WASP_GROUP: StringName = &"wasps"
 const SOURCE_GROUP: StringName = &"item_source"
 const SEASON_COUNT: int = 4
 
+# 冬天在季节条上那一格里，三拍各自占多少。冬天的长度是仪式跑出来的，
+# 预估不了，所以进度按"走到第几拍"算——条永远在走，走到头正好进春天
+# Winter has no predictable length, so its slice is measured in beats, not seconds.
+const RITE_SPAN: Dictionary = {
+	Rite.THRONE: Vector2(0.0, 0.45),
+	Rite.GATHER: Vector2(0.45, 0.8),
+	Rite.COUNTDOWN: Vector2(0.8, 1.0),
+}
+
 # 春 + 夏 + 秋 = 180 秒。一代的目标是三分半上下：三个生产季三分钟，
 # 加上冬天的仪式（顺利的话二十几秒）。冬天不在这里配，它的长度由仪式跑出来
 # Three minutes of growing seasons; winter's length comes from the rite, not from here.
@@ -105,15 +114,23 @@ const SEASON_COUNT: int = 4
 ## 那一代伪王后来得多快 / how much sooner the next impostor wakes that generation
 @export_range(0.1, 1.0, 0.05) var false_heir_awaken_scale: float = 0.5
 
+# 这四个数跟两件事绑死：**王座格子的尺寸**和**黄蜂的碰撞直径**。
+# 任一个改了都要回来重算，否则要么圈压在巢室上，要么位置物理上挤不下蜂。
+# 当前：王座格 66x60（半宽 33），黄蜂碰撞直径 22
+# Tied to the throne cell's size and the wasp's collision diameter - retune on either.
 @export_group("Attendance ring")
-@export_range(20.0, 200.0, 5.0) var first_ring_radius: float = 72.0
-@export_range(15.0, 120.0, 5.0) var ring_spacing: float = 44.0
-## 同一圈上两只蜂的间距，决定一圈站得下几只。**必须大于黄蜂直径（39）**，
+## 第一圈半径。要落在王座格外沿：33（格半宽）+ 11（蜂半径）+ 余量
+## Just outside the throne cell, or the front row stands on top of the new queen.
+@export_range(20.0, 300.0, 1.0) var first_ring_radius: float = 55.0
+@export_range(15.0, 120.0, 1.0) var ring_spacing: float = 30.0
+## 同一圈上两只蜂的间距，决定一圈站得下几只。**必须大于黄蜂直径（22）**，
 ## 否则排出来的位置物理上挤不下，蜂会互相顶开，到场率永远上不去
 ## Must exceed the wasp diameter or the slots are physically impossible to occupy.
-@export_range(15.0, 120.0, 5.0) var attendant_spacing: float = 48.0
-## 离自己的位置多近算到位 / how close counts as in place
-@export_range(10.0, 120.0, 5.0) var attend_tolerance: float = 40.0
+@export_range(15.0, 120.0, 1.0) var attendant_spacing: float = 28.0
+## 离自己的位置多近算到位。取间距的六成左右：太松会把邻座算成到位，
+## 太紧则永远够不到阈值，集结每次都只能等超时
+## Roughly 0.6 of the spacing - looser counts a neighbour's slot, tighter never converges.
+@export_range(5.0, 120.0, 1.0) var attend_tolerance: float = 17.0
 
 var season: int = Season.SUMMER
 var generation: int = 1
@@ -136,6 +153,10 @@ var _crowned: bool = false
 var _heir = null
 ## 被召集的蜂 -> 它该站的位置 / summoned wasp to its slot
 var _slots: Dictionary = {}
+## 冬天进度的单调锁。_send_heir() 重挑继承人会把王座那一拍的计时重置，
+## 不锁住的话进度条会当着玩家的面倒退
+## The rite can restart a beat; a bar that runs backwards reads as a bug.
+var _winter_high: float = 0.0
 
 
 static func find(tree: SceneTree) -> SeasonDirector:
@@ -191,6 +212,23 @@ func progress() -> float:
 
 func is_winter() -> bool:
 	return season == Season.WINTER
+
+
+# 整年的进度，0 = 春天开始，1 = 冬天走完。季节条画的是这个。
+# 四段在条上**等宽**，各占 1/4——玩家读的是"走到今年哪一段了"，
+# 而不是秒数，所以等宽比按时长分配更好读，图标也能均匀排开
+# Four equal quarters: the bar answers "where in the year", not "how many seconds".
+func year_progress() -> float:
+	var within: float = _winter_progress() if is_winter() else progress()
+	return clampf((float(season) + within) * 0.25, 0.0, 1.0)
+
+
+# 冬天：按走到第几拍算，拍内再按那一拍自己的计时插值
+func _winter_progress() -> float:
+	var span: Vector2 = RITE_SPAN.get(rite, Vector2(0.0, 0.0))
+	var t: float = span.x + (span.y - span.x) * progress()
+	_winter_high = maxf(_winter_high, t)
+	return _winter_high
 
 
 func throne_cell() -> HexCell:
@@ -490,6 +528,7 @@ func _enter(which: int) -> void:
 
 
 func _open_winter() -> void:
+	_winter_high = 0.0
 	_set_raid_paused(true)
 	_set_sources(false)
 	_open_throne()
@@ -564,7 +603,7 @@ func _push() -> void:
 	var ratio: float = progress()
 	if _bar != null:
 		_bar.set_time_left(_time_left)
-		_bar.set_progress(ratio)
+		_bar.set_progress(year_progress())
 	season_tick.emit(season, _time_left, ratio)
 
 
