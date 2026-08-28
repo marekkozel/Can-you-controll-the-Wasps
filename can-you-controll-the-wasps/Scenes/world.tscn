@@ -39,6 +39,9 @@
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
 [ext_resource type="Script" uid="uid://diyfu5agmx1sk" path="res://Scripts/Controllers/selection_director.gd" id="33_selection"]
 [ext_resource type="Resource" path="res://Resources/Variants/enemy_spider.tres" id="33_spider"]
+[ext_resource type="Texture2D" uid="uid://dyxqw1tt2q5cw" path="res://Assets/UI/cardboard_tag.png" id="38_w5giw"]
+[ext_resource type="Texture2D" uid="uid://tccfgek40ki2" path="res://Assets/UI/food_tag.png" id="39_jwdyn"]
+[ext_resource type="Texture2D" uid="uid://d0e7vj7306nx0" path="res://Assets/UI/info_tag.png" id="40_t6yt7"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680, 984, 616, 1240, 616, 1240, 680)
@@ -324,6 +327,33 @@ offset_top = 16.000061
 
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 layout_mode = 3
+
+[node name="Tags" type="Control" parent="UI" unique_id=1260580879]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Cardboard_tag" type="TextureRect" parent="UI/Tags" unique_id=1298065056]
+layout_mode = 0
+offset_left = 26.0
+offset_right = 186.0
+offset_bottom = 40.0
+texture = ExtResource("38_w5giw")
+
+[node name="Food_tag" type="TextureRect" parent="UI/Tags" unique_id=155152510]
+layout_mode = 0
+offset_left = 1066.0
+offset_right = 1226.0
+offset_bottom = 40.0
+texture = ExtResource("39_jwdyn")
+
+[node name="Info_tag" type="TextureRect" parent="UI/Tags" unique_id=589807977]
+layout_mode = 0
+offset_top = 296.0
+offset_right = 96.0
+offset_bottom = 336.0
+texture = ExtResource("40_t6yt7")
 
 [node name="Atmosphere" type="CanvasLayer" parent="." unique_id=549371485]
 layer = 5
