@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://n5c3re0psbty"
-path="res://.godot/imported/Ant_small_enemy.png-8aa77800832a70a43f4ab938bea5ad35.ctex"
+uid="uid://dcltovuoe34gk"
+path="res://.godot/imported/Bird_big_enemy.png-ffcaa5a7be32b62523e3a562fdf98c64.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Ant_small_enemy.png"
-dest_files=["res://.godot/imported/Ant_small_enemy.png-8aa77800832a70a43f4ab938bea5ad35.ctex"]
+source_file="res://Assets/Entities/Enemies/Bird_big_enemy.png"
+dest_files=["res://.godot/imported/Bird_big_enemy.png-ffcaa5a7be32b62523e3a562fdf98c64.ctex"]
 
 [params]
 

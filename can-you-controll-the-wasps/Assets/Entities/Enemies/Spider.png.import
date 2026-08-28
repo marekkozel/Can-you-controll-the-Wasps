@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjdmw6138awnb"
-path="res://.godot/imported/Beetle_enemy.png-0fba7d6e04a5ac56fd09008eda75bc7e.ctex"
+uid="uid://bauqt16otm3s7"
+path="res://.godot/imported/Spider.png-15556d91f941261f969baac6c6360093.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Beetle_enemy.png"
-dest_files=["res://.godot/imported/Beetle_enemy.png-0fba7d6e04a5ac56fd09008eda75bc7e.ctex"]
+source_file="res://Assets/Entities/Enemies/Spider.png"
+dest_files=["res://.godot/imported/Spider.png-15556d91f941261f969baac6c6360093.ctex"]
 
 [params]
 

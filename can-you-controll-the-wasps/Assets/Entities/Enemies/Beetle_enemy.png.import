@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://g7m0j1mkrt1j"
-path="res://.godot/imported/mantis_big_enemy.png-d9449b814084de04b5bf46302b56499f.ctex"
+uid="uid://cjdmw6138awnb"
+path="res://.godot/imported/Beetle_enemy.png-72c934487ce2ee4d555fc49d3905d338.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/mantis_big_enemy.png"
-dest_files=["res://.godot/imported/mantis_big_enemy.png-d9449b814084de04b5bf46302b56499f.ctex"]
+source_file="res://Assets/Entities/Enemies/Beetle_enemy.png"
+dest_files=["res://.godot/imported/Beetle_enemy.png-72c934487ce2ee4d555fc49d3905d338.ctex"]
 
 [params]
 
