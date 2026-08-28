@@ -1,24 +1,25 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://cpwy2vfjit3dd"]
 
-[ext_resource type="Script" path="res://Scripts/UI/hover_readout.gd" id="2_hover"]
-[ext_resource type="Script" path="res://Scripts/UI/pip_track.gd" id="3_pips"]
-[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="99_theme"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/item_info.gd" id="10_iteminfo"]
+[ext_resource type="Script" uid="uid://cmn8hymf42lpt" path="res://Scripts/UI/hover_readout.gd" id="2_hover"]
+[ext_resource type="Script" uid="uid://hm5txkiob52" path="res://Scripts/UI/pip_track.gd" id="3_pips"]
+[ext_resource type="Script" uid="uid://cc2usgfhi0vb7" path="res://Scripts/Mechanics/item_info.gd" id="10_iteminfo"]
 [ext_resource type="Resource" path="res://Resources/Items/cardboard.tres" id="11_card"]
 [ext_resource type="Resource" path="res://Resources/Items/food.tres" id="12_food"]
 [ext_resource type="Resource" path="res://Resources/Items/carrion.tres" id="13_carrion"]
 [ext_resource type="Resource" path="res://Resources/Items/royal_jelly.tres" id="14_jelly"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="99_theme"]
 
-[node name="InfoPanel" type="Control"]
+[node name="InfoPanel" type="Control" unique_id=1717056669]
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 0.808
+offset_bottom = -0.025024414
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 theme = ExtResource("99_theme")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
 
-[node name="Body" type="Control" parent="."]
+[node name="Body" type="Control" parent="." unique_id=979673928]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Body"]
+[node name="Panel" type="PanelContainer" parent="Body" unique_id=1798168329]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,126 +36,118 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="Body/Panel"]
+[node name="Margin" type="MarginContainer" parent="Body/Panel" unique_id=1750981851]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 16
 
-[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin"]
+[node name="Content" type="VBoxContainer" parent="Body/Panel/Margin" unique_id=1008601792]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Body/Panel/Margin/Content"]
+[node name="Title" type="Label" parent="Body/Panel/Margin/Content" unique_id=107436031]
 layout_mode = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 15
 text = "WASP"
 horizontal_alignment = 1
 
-[node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content"]
+[node name="Divider" type="HSeparator" parent="Body/Panel/Margin/Content" unique_id=1414297808]
 layout_mode = 2
 
-[node name="Inspect" type="VBoxContainer" parent="Body/Panel/Margin/Content"]
+[node name="Inspect" type="VBoxContainer" parent="Body/Panel/Margin/Content" unique_id=1050013314]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 script = ExtResource("2_hover")
 items = Array[ExtResource("10_iteminfo")]([ExtResource("11_card"), ExtResource("12_food"), ExtResource("13_carrion"), ExtResource("14_jelly")])
 
-[node name="Name" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Name" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=550451052]
 layout_mode = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 20
 text = "—"
 horizontal_alignment = 1
 
-[node name="Lineage" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Lineage" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=341916872]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 11
 text = "Lineage"
 horizontal_alignment = 1
 
-[node name="Health" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Health" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect" unique_id=57355247]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Health"]
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Health" unique_id=1358681149]
+custom_minimum_size = Vector2(44, 12)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
 shape = 2
-total = 3
 pip_size = 12.0
 
-[node name="Value" type="Label" parent="Body/Panel/Margin/Content/Inspect/Health"]
+[node name="Value" type="Label" parent="Body/Panel/Margin/Content/Inspect/Health" unique_id=1807857139]
 layout_mode = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 14
 text = "0/0"
 
-[node name="Strike" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Strike" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=78050839]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.7725, 0.4039, 0.1608, 1)
+theme_override_font_sizes/font_size = 13
 text = "SLACKING"
 horizontal_alignment = 1
 
-[node name="Action" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Action" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=1589404766]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(1, 0.902, 0.502, 1)
+theme_override_font_sizes/font_size = 11
 text = "LEFT-CLICK TO LIFT"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="Hint" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Hint" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=282922788]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 11
 text = "hover a wasp or a piece"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="PerksDivider" type="HSeparator" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="PerksDivider" type="HSeparator" parent="Body/Panel/Margin/Content/Inspect" unique_id=1165975562]
 layout_mode = 2
 
-[node name="PerksHeading" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="PerksHeading" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=1232725154]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 11
 text = "PERKS"
 horizontal_alignment = 1
 
-[node name="Perks" type="VBoxContainer" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="Perks" type="VBoxContainer" parent="Body/Panel/Margin/Content/Inspect" unique_id=71772223]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Attack" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+[node name="Attack" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks" unique_id=870522898]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack"]
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack" unique_id=1634177930]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 text = "Attack"
 
-[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack"]
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Attack" unique_id=12973225]
+custom_minimum_size = Vector2(55, 10)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
@@ -163,21 +156,20 @@ total = 4
 pip_size = 10.0
 gap = 5.0
 
-
-[node name="Speed" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+[node name="Speed" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks" unique_id=102609093]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed"]
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed" unique_id=1945999317]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 text = "Speed"
 
-[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed"]
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Speed" unique_id=2073300300]
+custom_minimum_size = Vector2(55, 10)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
@@ -186,21 +178,20 @@ total = 4
 pip_size = 10.0
 gap = 5.0
 
-
-[node name="Carry" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+[node name="Carry" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks" unique_id=69855136]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry"]
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry" unique_id=425536675]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 text = "Carry"
 
-[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry"]
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Carry" unique_id=1955373861]
+custom_minimum_size = Vector2(55, 10)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
@@ -209,21 +200,20 @@ total = 4
 pip_size = 10.0
 gap = 5.0
 
-
-[node name="Build" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks"]
+[node name="Build" type="HBoxContainer" parent="Body/Panel/Margin/Content/Inspect/Perks" unique_id=777597318]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Build"]
+[node name="Key" type="Label" parent="Body/Panel/Margin/Content/Inspect/Perks/Build" unique_id=169969422]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
 theme_override_font_sizes/font_size = 12
 text = "Build"
 
-[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Build"]
+[node name="Pips" type="Control" parent="Body/Panel/Margin/Content/Inspect/Perks/Build" unique_id=1797128293]
+custom_minimum_size = Vector2(55, 10)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_pips")
@@ -232,33 +222,29 @@ total = 4
 pip_size = 10.0
 gap = 5.0
 
-
-[node name="BuildNote" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="BuildNote" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=1848223933]
 layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
+theme_override_font_sizes/font_size = 10
 text = "Build applies to cardboard only"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ItemName" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="ItemName" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=2068819987]
 layout_mode = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 15
 text = "ITEM"
 horizontal_alignment = 1
 
-[node name="ItemText" type="Label" parent="Body/Panel/Margin/Content/Inspect"]
+[node name="ItemText" type="Label" parent="Body/Panel/Margin/Content/Inspect" unique_id=1725737147]
 layout_mode = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.302, 0.3765, 0.3804, 1)
 theme_override_font_sizes/font_size = 12
 text = "..."
 horizontal_alignment = 1
 autowrap_mode = 2
-[node name="Spacer" type="Control" parent="Body/Panel/Margin/Content"]
-layout_mode = 2
-mouse_filter = 2
-size_flags_vertical = 3
 
+[node name="Spacer" type="Control" parent="Body/Panel/Margin/Content" unique_id=822199965]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2

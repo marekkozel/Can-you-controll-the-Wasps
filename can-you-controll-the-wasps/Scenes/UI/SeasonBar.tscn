@@ -1,14 +1,15 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://m6nllk6lh3mm"]
 
-[ext_resource type="Script" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
-[ext_resource type="Script" path="res://Scripts/UI/season_progress.gd" id="2_progress"]
-[ext_resource type="Texture2D" path="res://Assets/UI/bar_frame.png" id="3_frame"]
-[ext_resource type="Texture2D" path="res://Assets/UI/icon_spring.png" id="4_spring"]
-[ext_resource type="Texture2D" path="res://Assets/UI/icon_summer.png" id="5_summer"]
-[ext_resource type="Texture2D" path="res://Assets/UI/icon_autumn.png" id="6_autumn"]
-[ext_resource type="Texture2D" path="res://Assets/UI/icon_winter.png" id="7_winter"]
+[ext_resource type="Script" uid="uid://css5jpq0snwyi" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
+[ext_resource type="Script" uid="uid://bfe718cp2jfmg" path="res://Scripts/UI/season_progress.gd" id="2_progress"]
+[ext_resource type="Texture2D" uid="uid://cmhpwy7si8rb6" path="res://Assets/UI/bar_frame.png" id="3_frame"]
+[ext_resource type="Texture2D" uid="uid://cgrosf4e3y1hq" path="res://Assets/UI/spring_icon.png" id="4_axano"]
+[ext_resource type="Texture2D" uid="uid://bpod3jhwvm85b" path="res://Assets/UI/summer_icon.png" id="5_uvrxy"]
+[ext_resource type="Texture2D" uid="uid://cjhg03uvres18" path="res://Assets/UI/autumn_icon.png" id="6_m52yd"]
+[ext_resource type="Texture2D" uid="uid://we0r8t2vx4fu" path="res://Assets/UI/winter_icon.png" id="7_48x8t"]
 
-[node name="SeasonBar" type="Control" groups=["season_bar"]]
+[node name="SeasonBar" type="Control" unique_id=621334405 groups=["season_bar"]]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -17,21 +18,18 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_seasonbar")
 
-[node name="Frame" type="NinePatchRect" parent="."]
+[node name="Frame" type="NinePatchRect" parent="." unique_id=1405032228]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
 texture = ExtResource("3_frame")
 patch_margin_left = 24
-patch_margin_top = 0
 patch_margin_right = 24
-patch_margin_bottom = 0
 
-[node name="Fill" type="Control" parent="."]
+[node name="Fill" type="Control" parent="." unique_id=916003780]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,7 +39,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_progress")
 
-[node name="Segments" type="HBoxContainer" parent="."]
+[node name="Segments" type="HBoxContainer" parent="." unique_id=222378032]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -55,82 +53,78 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Spring" type="HBoxContainer" parent="Segments"]
+[node name="Spring" type="HBoxContainer" parent="Segments" unique_id=1169604748]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Icon" type="TextureRect" parent="Segments/Spring"]
+[node name="Icon" type="TextureRect" parent="Segments/Spring" unique_id=1065868319]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("4_spring")
+texture = ExtResource("4_axano")
 stretch_mode = 3
 
-[node name="Name" type="Label" parent="Segments/Spring"]
+[node name="Name" type="Label" parent="Segments/Spring" unique_id=78310539]
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Spring"
 vertical_alignment = 1
 
-[node name="Summer" type="HBoxContainer" parent="Segments"]
+[node name="Summer" type="HBoxContainer" parent="Segments" unique_id=358843525]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Icon" type="TextureRect" parent="Segments/Summer"]
+[node name="Icon" type="TextureRect" parent="Segments/Summer" unique_id=1760667084]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("5_summer")
+texture = ExtResource("5_uvrxy")
 stretch_mode = 3
 
-[node name="Name" type="Label" parent="Segments/Summer"]
+[node name="Name" type="Label" parent="Segments/Summer" unique_id=472432809]
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Summer"
 vertical_alignment = 1
 
-[node name="Autumn" type="HBoxContainer" parent="Segments"]
+[node name="Autumn" type="HBoxContainer" parent="Segments" unique_id=717815562]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Icon" type="TextureRect" parent="Segments/Autumn"]
+[node name="Icon" type="TextureRect" parent="Segments/Autumn" unique_id=1139352192]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("6_autumn")
+texture = ExtResource("6_m52yd")
 stretch_mode = 3
 
-[node name="Name" type="Label" parent="Segments/Autumn"]
+[node name="Name" type="Label" parent="Segments/Autumn" unique_id=1462979027]
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Autumn"
 vertical_alignment = 1
 
-[node name="Winter" type="HBoxContainer" parent="Segments"]
+[node name="Winter" type="HBoxContainer" parent="Segments" unique_id=491964881]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Icon" type="TextureRect" parent="Segments/Winter"]
+[node name="Icon" type="TextureRect" parent="Segments/Winter" unique_id=1776936499]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("7_winter")
+texture = ExtResource("7_48x8t")
 stretch_mode = 3
 
-[node name="Name" type="Label" parent="Segments/Winter"]
+[node name="Name" type="Label" parent="Segments/Winter" unique_id=1555649558]
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Winter"
 vertical_alignment = 1

@@ -1,10 +1,12 @@
 [gd_scene format=3 uid="uid://biaqfgdgx0ki6"]
 
+[ext_resource type="Texture2D" uid="uid://dsv0kbd81f5da" path="res://Assets/Entities/cardboard_resource.png" id="3_04jkj"]
 [ext_resource type="PackedScene" uid="uid://s3x16rpani8" path="res://Scenes/Entities/Hive.tscn" id="3_hive"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
+[ext_resource type="PackedScene" uid="uid://cpwy2vfjit3dd" path="res://Scenes/UI/InfoPanel.tscn" id="4_info"]
+[ext_resource type="Texture2D" uid="uid://5takgpafxr2n" path="res://Assets/Entities/food_resource.png" id="5_lkcvt"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/UpgradePanel.tscn" id="5_upgrade"]
 [ext_resource type="Script" uid="uid://dukvo1bmycbmp" path="res://Scripts/Mechanics/wasp_variant.gd" id="6_7yui6"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
+[ext_resource type="PackedScene" uid="uid://m6nllk6lh3mm" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" uid="uid://d0smkcjdfwhqt" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
 [ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
@@ -31,6 +33,7 @@
 [ext_resource type="Script" uid="uid://cms3picejnr03" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
 [ext_resource type="Script" uid="uid://bmpj02h5wcn8" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
+[ext_resource type="Texture2D" uid="uid://ba6eqkvjt5d01" path="res://Assets/UI/background.png" id="31_p5wkl"]
 [ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/wasp.png" id="31_wasp"]
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="32_enemyvariant"]
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
@@ -72,22 +75,18 @@ size = Vector2(1360, 49)
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment" unique_id=1075432323]
 navigation_polygon = SubResource("NavPoly_world")
 
-[node name="LowerRightGround" type="ColorRect" parent="Enviroment" unique_id=1076879989]
-offset_left = 1024.0
-offset_top = 288.0
-offset_right = 1280.0
-offset_bottom = 720.0
-mouse_filter = 2
-color = Color(0, 0.105882, 0.266667, 1)
-
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(128, 144)
+position = Vector2(109, 222)
 mode = 1
 piece_scene = ExtResource("8_cardboard")
+
+[node name="Cardboard" type="Sprite2D" parent="Resource_layer/CardboardSource" unique_id=1041903529]
+position = Vector2(-44, 0)
+texture = ExtResource("3_04jkj")
 
 [node name="FoodSource" parent="Resource_layer" unique_id=619379546 groups=["item_source"] instance=ExtResource("7_source")]
 position = Vector2(1152, 144)
@@ -95,8 +94,12 @@ mode = 1
 piece_scene = ExtResource("9_food")
 payload = &"food"
 
+[node name="Food" type="Sprite2D" parent="Resource_layer/FoodSource" unique_id=1708185037]
+position = Vector2(0, 73)
+texture = ExtResource("5_lkcvt")
+
 [node name="Refinery" parent="Resource_layer" unique_id=686601435 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(1152, 628)
+position = Vector2(1217, 664)
 mode = 1
 payload = &"royal_jelly"
 scatter_radius = 32.0
@@ -108,6 +111,7 @@ output_payload = &"royal_jelly"
 position = Vector2(-224, 8)
 
 [node name="Slot" type="NinePatchRect" parent="Resource_layer/Refinery" unique_id=1423772342]
+visible = false
 self_modulate = Color(0.78, 0.76, 0.72, 1)
 offset_left = -64.0
 offset_top = -32.0
@@ -159,6 +163,7 @@ script = ExtResource("29_announcer")
 script = ExtResource("33_selection")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
+position = Vector2(1, 44)
 
 [node name="Hive" parent="Nest_grid" unique_id=1929662079 instance=ExtResource("3_hive")]
 z_index = -100
@@ -196,7 +201,7 @@ position = Vector2(1044, 432)
 shape = SubResource("Shape_nest_side_short")
 
 [node name="WallUpgradeFloor" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972845]
-position = Vector2(1172, 556)
+position = Vector2(1171, 563)
 shape = SubResource("Shape_upgrade_floor")
 
 [node name="WallLowerRight" type="CollisionShape2D" parent="StaticBody2D" unique_id=1533972843]
@@ -215,6 +220,7 @@ shape = SubResource("Shape_nest_bottom")
 layer = -1
 
 [node name="RegionCardboard" type="TextureRect" parent="LayoutGuides" unique_id=1701210206]
+visible = false
 anchors_preset = -1
 anchor_right = 0.2
 anchor_bottom = 0.4
@@ -225,6 +231,7 @@ texture = ExtResource("17_ph_card")
 expand_mode = 1
 
 [node name="RegionEnemySpawn" type="TextureRect" parent="LayoutGuides" unique_id=408282734]
+visible = false
 anchors_preset = -1
 anchor_left = 0.2
 anchor_right = 0.8
@@ -236,6 +243,7 @@ texture = ExtResource("18_ph_enemy")
 expand_mode = 1
 
 [node name="RegionFood" type="TextureRect" parent="LayoutGuides" unique_id=1122613584]
+visible = false
 anchors_preset = -1
 anchor_left = 0.8
 anchor_right = 1.0
@@ -247,6 +255,7 @@ texture = ExtResource("19_ph_food")
 expand_mode = 1
 
 [node name="RegionHud" type="TextureRect" parent="LayoutGuides" unique_id=255581151]
+visible = false
 anchors_preset = -1
 anchor_top = 0.4
 anchor_right = 0.2
@@ -258,6 +267,7 @@ texture = ExtResource("20_ph_info")
 expand_mode = 1
 
 [node name="RegionNest" type="TextureRect" parent="LayoutGuides" unique_id=447284920]
+visible = false
 anchors_preset = -1
 anchor_left = 0.2
 anchor_top = 0.4
@@ -270,6 +280,7 @@ texture = ExtResource("21_ph_nest")
 expand_mode = 1
 
 [node name="RegionUpgrade" type="TextureRect" parent="LayoutGuides" unique_id=473247780]
+visible = false
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
@@ -281,25 +292,35 @@ mouse_filter = 2
 texture = ExtResource("22_ph_upgrade")
 expand_mode = 1
 
+[node name="Background" type="TextureRect" parent="LayoutGuides" unique_id=533945486]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("31_p5wkl")
+
 [node name="UI" type="CanvasLayer" parent="." unique_id=945276951]
 
 [node name="InfoPanel" parent="UI" unique_id=1118697189 instance=ExtResource("4_info")]
-layout_mode = 3
-anchors_preset = -1
 anchor_top = 0.4
 anchor_right = 0.2
+offset_top = 10.0
+offset_right = -9.0
+offset_bottom = 106.23999
 
 [node name="UpgradePanel" parent="UI" unique_id=1282253594 instance=ExtResource("5_upgrade")]
 layout_mode = 3
 anchors_preset = -1
 anchor_left = 0.8
 anchor_top = 0.4
-offset_bottom = -144.0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -3.0
+offset_bottom = -137.0
 
 [node name="SeasonBar" parent="UI" unique_id=1500006694 instance=ExtResource("6_season")]
-layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.9333333
+offset_left = 6.0
+offset_top = 16.000061
 
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 layout_mode = 3

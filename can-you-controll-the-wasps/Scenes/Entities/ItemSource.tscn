@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://c3eitlvpt6vua"]
+[gd_scene format=3 uid="uid://c3eitlvpt6vua"]
 
 [ext_resource type="Script" uid="uid://du51ivy17il51" path="res://Scripts/Entities/item_source.gd" id="1_source"]
 [ext_resource type="Texture2D" uid="uid://c5oun1w4h2bca" path="res://Assets/Entities/item_source.png" id="ph_item_source"]

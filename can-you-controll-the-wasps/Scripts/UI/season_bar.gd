@@ -195,11 +195,11 @@ func _paint_segments() -> void:
 		if on and _warning:
 			tint = warn_color
 
-		# 图标画的是灰度，靠 self_modulate 上色（`modulate` 会连子节点一起染）
-		# The icons are greyscale on purpose; self_modulate, never modulate.
 		var icon: CanvasItem = seg.get_node_or_null(^"Icon") as CanvasItem
 		if icon != null:
-			icon.self_modulate = tint
+      # Keep original colors (RGB = 1.0) but apply the tint's transparency
+			icon.self_modulate = Color(1.0, 1.0, 1.0, tint.a)
+      
 		var label: Label = seg.get_node_or_null(^"Name") as Label
 		if label != null:
 			label.add_theme_color_override("font_color", tint)
