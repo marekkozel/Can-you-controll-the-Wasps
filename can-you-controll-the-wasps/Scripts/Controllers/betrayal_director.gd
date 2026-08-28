@@ -13,6 +13,9 @@ signal false_queen_awakened(wasp: Wasp)
 signal false_queen_gone(wasp: Wasp)
 ## 给氛围表现用：画面色调、以后的嗡嗡声 / for the tint, and for audio later
 signal unrest_changed(unrest: float)
+## 玩家扎死了一只。参数**只给氛围层用**——见 Announcer 里为什么杀对了也可能有话说
+## The flag is for atmosphere only; see Announcer for why a correct kill can still speak.
+signal execution_reported(was_false_queen: bool)
 
 const GROUP: StringName = &"betrayal_director"
 const HIVE_GROUP: StringName = &"hive"
@@ -124,6 +127,7 @@ func add_unrest(amount: float) -> void:
 # 右键扎死一只。杀对人安抚蜂群，杀错人把周围看到的那几只一起得罪了
 # Getting it right calms the colony; getting it wrong is taken personally by every witness.
 func report_execution(victim: Node2D, was_false_queen: bool) -> void:
+	execution_reported.emit(was_false_queen)
 	if was_false_queen:
 		add_unrest(execute_queen)
 		return

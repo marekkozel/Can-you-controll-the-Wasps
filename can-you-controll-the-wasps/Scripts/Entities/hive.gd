@@ -17,6 +17,9 @@ signal cell_sealed(cell: HexCell)
 signal cell_wasp_emerged(cell: HexCell, wasp: Wasp)
 signal cell_cleaned(cell: HexCell)
 signal cell_occupant_destroyed(cell: HexCell)
+## 伪王后下了一颗异色卵。**只给氛围层用**，别拿它标记格子——标了就等于把答案画在巢上
+## For atmosphere only: marking the cell would paint the answer onto the comb.
+signal cell_rebel_egg_laid(cell: HexCell)
 
 const HEX_CELL_SCENE: PackedScene = preload("res://Scenes/Entities/HexCell.tscn")
 
@@ -69,6 +72,7 @@ func rebuild() -> void:
 		cell.wasp_emerged.connect(func(c, w): cell_wasp_emerged.emit(c, w))
 		cell.cleaned.connect(func(c): cell_cleaned.emit(c))
 		cell.occupant_destroyed.connect(func(c): cell_occupant_destroyed.emit(c))
+		cell.rebel_egg_laid.connect(func(c, _v): cell_rebel_egg_laid.emit(c))
 		_cells[coord] = cell
 
 	

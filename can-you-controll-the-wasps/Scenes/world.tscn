@@ -29,6 +29,8 @@
 [ext_resource type="Script" uid="uid://cshrps3hmb0mi" path="res://Scripts/Controllers/season_director.gd" id="26_season_dir"]
 [ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="27_pure"]
 [ext_resource type="Script" uid="uid://cms3picejnr03" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
+[ext_resource type="Script" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680)
@@ -104,6 +106,9 @@ dominant_variant = ExtResource("27_pure")
 
 [node name="GeneBank" type="Node2D" parent="Queen_controller" unique_id=923760956 groups=["gene_bank"]]
 script = ExtResource("28_gene")
+
+[node name="Announcer" type="Node2D" parent="Queen_controller"]
+script = ExtResource("29_announcer")
 
 [node name="Nest_grid" type="Node2D" parent="." unique_id=592770240]
 
@@ -234,6 +239,9 @@ anchor_top = 0.4
 layout_mode = 3
 anchors_preset = -1
 anchor_top = 0.9333333
+
+[node name="Herald" parent="UI" instance=ExtResource("30_herald")]
+layout_mode = 3
 
 [node name="Atmosphere" type="CanvasLayer" parent="." unique_id=549371485]
 layer = 5
