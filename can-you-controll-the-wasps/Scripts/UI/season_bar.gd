@@ -49,7 +49,7 @@ const SEASON_COLORS: PackedColorArray = [
 # All four are solid: a faded icon on this light panel reads as noise, and the whole
 # point of the schedule is that it can be read at a glance.
 ## 还没到的那一波。跟当前季节图标同一个墨色，实心 / same ink as the active season icon
-@export var raid_pending_color: Color = Color(0.263, 0.161, 0.196)
+@export var raid_pending_color: Color = Color(0.263, 0.161, 0.196, 0.5) 
 ## 正在打的那一波 / the one happening right now
 @export var raid_active_color: Color = Color(0.886, 0.227, 0.090)
 ## 打完的。沉下去但仍然看得清——玩家要能数出"今年还剩几波"

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://css5jpq0snwyi" path="res://Scripts/UI/season_bar.gd" id="1_seasonbar"]
 [ext_resource type="Script" uid="uid://bfe718cp2jfmg" path="res://Scripts/UI/season_progress.gd" id="2_progress"]
+[ext_resource type="Texture2D" uid="uid://l6883xjnwbwu" path="res://Assets/UI/enemy_icon.png" id="2_uvrxy"]
 [ext_resource type="Texture2D" uid="uid://cmhpwy7si8rb6" path="res://Assets/UI/bar_frame.png" id="3_frame"]
 [ext_resource type="Texture2D" uid="uid://cgrosf4e3y1hq" path="res://Assets/UI/spring_icon.png" id="4_axano"]
 [ext_resource type="Texture2D" uid="uid://bpod3jhwvm85b" path="res://Assets/UI/summer_icon.png" id="5_uvrxy"]
@@ -17,6 +18,8 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_seasonbar")
+raid_icon = ExtResource("2_uvrxy")
+raid_icon_size = 16.0
 
 [node name="Frame" type="NinePatchRect" parent="." unique_id=1405032228]
 layout_mode = 1

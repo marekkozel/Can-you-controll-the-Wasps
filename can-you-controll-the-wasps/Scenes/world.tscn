@@ -142,6 +142,8 @@ brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtRe
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
 breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), ExtResource("33_spider")])
+raid_duration = 35.0
+disable_timer = true
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
 position = Vector2(340, 72)
