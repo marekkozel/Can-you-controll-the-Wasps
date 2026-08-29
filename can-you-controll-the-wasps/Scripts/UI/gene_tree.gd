@@ -84,7 +84,11 @@ func _build() -> void:
 
 func _on_pressed(node: GeneNode) -> void:
 	if _bank != null:
+		if _bank.can_unlock(node):
+			# --- AUDIO: Upgrade purchased ---
+			AudioManager.create_audio(SoundEffect.SoundEffectType.UPGRADE)
 		_bank.unlock(node)
+
 
 
 func _refresh() -> void:

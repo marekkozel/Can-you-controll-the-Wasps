@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://cggcymfe48si7"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_4n3cw"]
+[ext_resource type="AudioStream" uid="uid://b3xfw21wvw0us" path="res://Assets/Sounds/SFX/pop_wine.mp3" id="2_4n3cw"]
+
+[resource]
+script = ExtResource("1_4n3cw")
+type = 4
+sound_effect = ExtResource("2_4n3cw")
+pitch_randomness = 0.09
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

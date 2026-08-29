@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://c652hxxbspqhs"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_ft0ap"]
+[ext_resource type="AudioStream" uid="uid://bae5esds7f5ma" path="res://Assets/Sounds/SFX/larva_hatched.mp3" id="2_ft0ap"]
+
+[resource]
+script = ExtResource("1_ft0ap")
+limit = 4
+type = 6
+sound_effect = ExtResource("2_ft0ap")
+pitch_randomness = 0.27
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

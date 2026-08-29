@@ -193,6 +193,9 @@ var _wander_home: Vector2 = Vector2.ZERO
 var _wander_target: Vector2 = Vector2.ZERO
 var _wander_timer: float = 0.0
 
+# Audio
+var _fly_player: AudioStreamPlayer2D = null
+
 
 func _ready() -> void:
 	wasp_name = WaspNames.pick(get_tree())
@@ -218,6 +221,17 @@ func _ready() -> void:
 	_visual.scale = Vector2.ZERO
 	_emerging = true
 	_start_emerge_tween()
+
+	_fly_player = AudioStreamPlayer2D.new()
+	add_child(_fly_player)
+	var fly_effect: SoundEffect = AudioManager.sound_effect_dict.get(SoundEffect.SoundEffectType.WASP_FLY) as SoundEffect
+	if fly_effect != null and fly_effect.sound_effect != null:
+		_fly_player.stream = fly_effect.sound_effect
+		_fly_player.volume_db = fly_effect.volume
+		_fly_player.finished.connect(func():
+			if _health.is_alive() and linear_velocity.length() > 15.0 and not _draggable.is_grabbed():
+				_fly_player.play()
+		)
 
 
 # 羽化的目标大小可能在动画途中才定下来：格子是 add_child() 之后才刻印蜂王浆加成的，
@@ -593,6 +607,13 @@ func _on_died(_from: Vector2) -> void:
 	_carry.drop()
 	_juice.burst()
 
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.WASP_DEATH)
+	if _fly_player != null:
+		_fly_player.stop()
+
+	# 只有你摔死的才算处决。被猎手咬死的忠诚工蜂要是也记在你头上，
+	# unrest 白涨 0.2、周围的蜂白记一次仇，而玩家根本没动手
+	# 清叛军不算处决：它们是纯敌人，杀它们既不该推不安，也不该让旁观的蜂记仇
 	if _slain_by_player and not _allegiance.is_rebel():
 		var director: BetrayalDirector = BetrayalDirector.find(get_tree())
 		if director != null:
@@ -769,6 +790,16 @@ func _on_released() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# --- Wasp Fly Loop ---
+	if _fly_player != null and _fly_player.stream != null:
+		var is_moving: bool = _health.is_alive() and linear_velocity.length() > 15.0 and not _draggable.is_grabbed()
+		if is_moving:
+			if not _fly_player.playing:
+				_fly_player.play()
+		else:
+			if _fly_player.playing:
+				_fly_player.stop()
+
 	_last_speed = linear_velocity.length()
 	# 冷却计时得走在提前 return 之前，否则被甩飞的黄蜂冷却会冻住
 	# Must tick before the early returns - a flung wasp would freeze its cooldown otherwise.
@@ -806,6 +837,8 @@ func _physics_process(delta: float) -> void:
 	_btree.active = not is_attending()
 	if rehome_on_landing and not is_attending():
 		set_wander_home(global_position)
+
+		
 
 
 # 摔墙 / thrown into a wall.
@@ -859,6 +892,8 @@ func _take_impact_damage() -> bool:
 	if _draggable.is_grabbed():
 		return false
 	_impact_timer = impact_damage_cooldown
+
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.WASP_HIT)
 
 	# 摔一下面具就掉：她当场变回普通工蜂，停止下卵。伤害照扣，她跟别的蜂一样能被摔死。
 	# 已经孵出来的叛军不跟着解散——那些是你自己惹出来的，自己清
@@ -929,6 +964,8 @@ func take_damage(amount: int, from: Vector2 = Vector2.ZERO) -> bool:
 	if not _health.take_damage(amount, from):
 		return false
 
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.WASP_HIT)
+
 	_juice.burst()
 	var away: Vector2 = (global_position - from).normalized()
 	if away != Vector2.ZERO:
@@ -969,6 +1006,9 @@ func attack_enemy() -> bool:
 	target_enemy.take_damage(attack_damage(), global_position)
 	_attack_timer = attack_cooldown
 	# 一次性段，播完自己回飞行 / one-shot: the animator hands back to the fly loop
+	
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.WASP_ATTACK)
+	
 	if _animator != null:
 		_animator.play(&"attack", true)
 	return true
