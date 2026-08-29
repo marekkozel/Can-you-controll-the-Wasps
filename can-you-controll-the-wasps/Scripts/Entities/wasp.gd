@@ -585,16 +585,14 @@ func _on_hovered() -> void:
 # Bites and slams are separate paths onto one health pool; hooking the signal covers
 # both, and whatever comes third.
 func _on_damaged(_amount: int, _remaining: int, _from: Vector2) -> void:
+	if not _health.is_alive():
+		return
 	_juice.hit_flash(_body_sprite)
-
 
 func _on_died(_from: Vector2) -> void:
 	_carry.drop()
 	_juice.burst()
 
-	# 只有你摔死的才算处决。被猎手咬死的忠诚工蜂要是也记在你头上，
-	# unrest 白涨 0.2、周围的蜂白记一次仇，而玩家根本没动手
-	# 清叛军不算处决：它们是纯敌人，杀它们既不该推不安，也不该让旁观的蜂记仇
 	if _slain_by_player and not _allegiance.is_rebel():
 		var director: BetrayalDirector = BetrayalDirector.find(get_tree())
 		if director != null:
@@ -609,9 +607,6 @@ func _on_died(_from: Vector2) -> void:
 		_draggable.set_deferred("monitorable", false)
 		_draggable.set_deferred("monitoring", false)
 		
-	# Stop custom steering and wandering
-	set_process(false)
-	set_physics_process(false)
 
 	# Stop flying animation, switch to the 1-frame death pose
 	if _animator != null:
@@ -622,24 +617,40 @@ func _on_died(_from: Vector2) -> void:
 	
 	# Remove from collision layer
 	set_deferred("collision_layer", 0)
+	
+	gravity_scale = 1.0
+	
+	# --- DISABLE JUICE ---
+	var dead_scale: Vector2 = _juice.base_scale
+	
+	_juice.target = null
+	
+	# If the component has particles attached, you can safely hide them now
+	if _juice.has_method("hide"):
+		_juice.hide() 
 
+	set_process(false)
+	set_physics_process(false)
 	# Wait 5 seconds while the corpse lies on the ground
 	await get_tree().create_timer(5.0).timeout
+	
+	if not is_instance_valid(self):
+		return
 
 	# Freeze physics completely before the fade
 	set_deferred("freeze", true)
 	set_deferred("collision_mask", 0)
 
-	# Pop and fade out taken from the enemy's juice, but slower
+	# Pop and fade out
 	var pop_scale: float = 1.7
 	var fade_duration: float = 0.6
 	
 	var tween: Tween = create_tween().set_parallel(true)
 	
-	tween.tween_property(_visual, "scale", _juice.base_scale * pop_scale, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# We use 'dead_scale' here instead of _juice.base_scale
+	tween.tween_property(_visual, "scale", dead_scale * pop_scale, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_visual, "modulate:a", 0.0, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(queue_free)
-		
 
 
 # Code for instant death animation as the enemy does

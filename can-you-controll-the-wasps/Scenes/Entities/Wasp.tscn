@@ -18,11 +18,11 @@
 [ext_resource type="Texture2D" uid="uid://c31jsu6cp8d25" path="res://Assets/Entities/good_wasp.png" id="ph_wasp"]
 
 [sub_resource type="PhysicsMaterial" id="Material_wasp"]
-friction = 0.15
-bounce = 0.55
+friction = 0.34
+bounce = 0.43
 
 [sub_resource type="CircleShape2D" id="Shape_wasp_body"]
-radius = 11.0
+radius = 16.0
 
 [sub_resource type="CircleShape2D" id="Shape_wasp_grab"]
 radius = 23.0
@@ -33,8 +33,8 @@ radius = 23.0
 z_index = 20
 mass = 1.2
 physics_material_override = SubResource("Material_wasp")
-lock_rotation = true
 gravity_scale = 0.0
+lock_rotation = true
 continuous_cd = 2
 contact_monitor = true
 max_contacts_reported = 4
@@ -51,6 +51,7 @@ queen_behaviour = ExtResource("12_queenbhv")
 texture = ExtResource("ph_wasp")
 hframes = 8
 vframes = 6
+frame = 40
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1218902991]
 shape = SubResource("Shape_wasp_body")
