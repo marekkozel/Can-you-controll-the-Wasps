@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://cykra52a1uq3b"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_sjvqm"]
+[ext_resource type="AudioStream" uid="uid://th2v02tqbq6x" path="res://Assets/Sounds/SFX/wasp_getting_hit.mp3" id="2_sjvqm"]
+
+[resource]
+script = ExtResource("1_sjvqm")
+type = 14
+sound_effect = ExtResource("2_sjvqm")
+volume = -5.298000000000002
+pitch_randomness = 0.1
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

@@ -186,6 +186,8 @@ func _add_row(text: String, value: int, tint: Color = value_color, size: int = 1
 # 每一段都挂在这一个 tween 上，中途关掉面板它会跟着一起死
 # One tween owns the whole sequence, so closing early kills all of it.
 func _play() -> void:
+	AudioManager.create_audio(SoundEffect.SoundEffectType.END_GAME_SCREEN)
+
 	_dim.modulate.a = 0.0
 	_panel.modulate.a = 0.0
 	_panel.pivot_offset = _panel.size * 0.5

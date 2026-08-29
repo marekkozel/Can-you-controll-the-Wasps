@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://dakn5kdi773ra"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_6a35u"]
+[ext_resource type="AudioStream" uid="uid://c8ekhbgjqqmtk" path="res://Assets/Sounds/SFX/egg_laying_riser.mp3" id="2_6a35u"]
+
+[resource]
+script = ExtResource("1_6a35u")
+limit = 1
+type = 3
+sound_effect = ExtResource("2_6a35u")
+pitch_randomness = 0.06
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

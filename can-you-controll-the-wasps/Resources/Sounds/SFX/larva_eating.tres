@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://dfb6dt33cmev"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_3hn3m"]
+[ext_resource type="AudioStream" uid="uid://cbl80tb0p5fof" path="res://Assets/Sounds/SFX/larva_eating.mp3" id="2_p1xd7"]
+
+[resource]
+script = ExtResource("1_3hn3m")
+limit = 4
+type = 7
+sound_effect = ExtResource("2_p1xd7")
+pitch_randomness = 0.11
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

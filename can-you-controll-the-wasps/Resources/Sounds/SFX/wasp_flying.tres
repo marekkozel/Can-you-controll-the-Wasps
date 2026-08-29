@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://b5u23vivyhgic"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_7arml"]
+[ext_resource type="AudioStream" uid="uid://cn7ha2ditdc0c" path="res://Assets/Sounds/SFX/wasp_flying_buzzing.mp3" id="2_2rf0u"]
+
+[resource]
+script = ExtResource("1_7arml")
+type = 15
+sound_effect = ExtResource("2_2rf0u")
+pitch_randomness = 0.05
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

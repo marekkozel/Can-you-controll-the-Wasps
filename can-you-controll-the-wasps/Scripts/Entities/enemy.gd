@@ -267,6 +267,8 @@ func _on_died(_from: Vector2) -> void:
 		_animator.play(&"death", true)
 		linger = _animator.clip_duration(&"death")
 
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.ENEMY_DEATH)
+
 	# 膨胀一下再消散。有死亡动画的话先让它播完，不然刚死就被淡掉了
 	# The pop waits out the death clip, or the animation would never be seen.
 	var tween: Tween = create_tween().set_parallel(true)

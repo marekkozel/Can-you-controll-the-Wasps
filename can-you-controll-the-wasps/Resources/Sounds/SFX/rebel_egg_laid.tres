@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://c0ye62pciq11k"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_gmxtg"]
+[ext_resource type="AudioStream" uid="uid://brmj25r3b250n" path="res://Assets/Sounds/SFX/rebel_egg_laid.mp3" id="2_gmxtg"]
+
+[resource]
+script = ExtResource("1_gmxtg")
+type = 5
+sound_effect = ExtResource("2_gmxtg")
+pitch_randomness = 0.19
+metadata/_custom_type_script = "uid://df6m72yt6clx7"
