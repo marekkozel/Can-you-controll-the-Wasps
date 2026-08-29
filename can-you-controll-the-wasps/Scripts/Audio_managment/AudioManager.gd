@@ -18,7 +18,7 @@ func _ready() -> void:
 
 
 ## Creates a sound effect at a specific location if the limit has not been reached. Pass [param location] for the global position of the audio effect, and [param type] for the SoundEffect to be queued.
-func create_2d_audio_at_location(location: Vector2, type: SoundEffect.SoundEeffectType) -> void:
+func create_2d_audio_at_location(location: Vector2, type: SoundEffect.SoundEffectType) -> void:
 	if sound_effect_dict.has(type):
 		var sound_effect: SoundEffect = sound_effect_dict[type]
 		if sound_effect.has_open_limit():
@@ -38,7 +38,7 @@ func create_2d_audio_at_location(location: Vector2, type: SoundEffect.SoundEeffe
 
 
 ## Creates a sound effect if the limit has not been reached. Pass [param type] for the SoundEffect to be queued.
-func create_audio(type: SoundEffect.SoundEeffectType) -> void:
+func create_audio(type: SoundEffect.SoundEffectType) -> void:
 	if sound_effect_dict.has(type):
 		var sound_effect: SoundEffect = sound_effect_dict[type]
 		if sound_effect.has_open_limit():

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_17psf")
 limit = 1
-type = 7
+type = 12
 sound_effect = ExtResource("2_83rsm")
 pitch_randomness = 0.2
 metadata/_custom_type_script = "uid://df6m72yt6clx7"

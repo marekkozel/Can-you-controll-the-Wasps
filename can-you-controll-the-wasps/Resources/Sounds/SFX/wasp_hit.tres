@@ -5,7 +5,8 @@
 
 [resource]
 script = ExtResource("1_sjvqm")
-type = 9
+type = 14
 sound_effect = ExtResource("2_sjvqm")
+volume = -5.298000000000002
 pitch_randomness = 0.1
 metadata/_custom_type_script = "uid://df6m72yt6clx7"

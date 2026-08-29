@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://l0w2nmy6poge"]
 
 [ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_vgc7p"]
-[ext_resource type="AudioStream" uid="uid://b6ab2y04y8lr0" path="res://Assets/Sounds/SFX/pop.mp3" id="2_2auj6"]
+[ext_resource type="AudioStream" uid="uid://cjfasyxmf1s3r" path="res://Assets/Sounds/SFX/food_pop.mp3" id="2_2auj6"]
 
 [resource]
 script = ExtResource("1_vgc7p")
-type = 5
+type = 10
 sound_effect = ExtResource("2_2auj6")
 pitch_randomness = 0.25
 metadata/_custom_type_script = "uid://df6m72yt6clx7"

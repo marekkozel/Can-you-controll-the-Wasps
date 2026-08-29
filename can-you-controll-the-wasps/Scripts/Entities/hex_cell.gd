@@ -151,6 +151,8 @@ var _occupant: Node2D = null
 var _royal_tween: Tween = null
 var _royal_focus: bool = false
 
+var _hold_player: AudioStreamPlayer2D = null
+
 
 func _ready() -> void:
 	# 显式接线。Visual 是被缩放/抖动的那层，Area2D 本身不能动 / never animate the Area2D
@@ -159,6 +161,9 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	input_event.connect(_on_input_event)
+
+	_hold_player = AudioStreamPlayer2D.new()
+	add_child(_hold_player)
 
 	_hold.hold_progress.connect(_on_hold_progress)
 	_hold.hold_tick.connect(_on_hold_tick)
@@ -209,10 +214,13 @@ func add_build_progress(amount: int = 1) -> bool:
 	_refresh_visual()
 	progress_changed.emit(self, progress, cost)
 
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_BUILDING)
+
 	if progress >= cost:
 		is_built = true
 		_update_hold()
 		built.emit(self)
+		
 	return true
 
 
@@ -246,6 +254,9 @@ func lay_rebel_egg(variant: WaspVariant, mother: Node2D) -> bool:
 	# to whoever was standing nearby a second ago.
 	_juice.flash(_cell, variant.body_color, _base_tint())
 	_juice.punch(1.18, 0.32)
+
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.REBEL_EGG_LAID)
+
 	rebel_egg_laid.emit(self, variant)
 	return true
 
@@ -263,6 +274,8 @@ func destroy_occupant() -> bool:
 	_juice.punch(0.82, 0.35)
 	_juice.burst()
 	occupant_destroyed.emit(self)
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.LARVA_DEATH)
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_DEATH)
 	return true
 
 
@@ -273,13 +286,11 @@ func destroy_occupant() -> bool:
 # Rebels and raiders both come through here. All the way down, never one step at a time:
 # chipping reads as the comb slowly dimming, and a loss one piece of cardboard undoes
 # is a loss nobody notices.
-func demolish() -> bool:
-	return damage_build(progress)
+func demolish(silent: bool = false) -> bool:
+	return damage_build(progress, silent)
 
 
-# 听掉建造进度。里面有卵/幼虫的格不能拆，否则内容槽会悬空
-# Chews build progress back down. Occupied cells are off limits or the content slot dangles.
-func damage_build(amount: int = 1) -> bool:
+func damage_build(amount: int = 1, silent: bool = false) -> bool:
 	if amount <= 0 or progress <= 0 or content != Content.NONE:
 		return false
 
@@ -293,8 +304,11 @@ func damage_build(amount: int = 1) -> bool:
 	_juice.punch(0.88, 0.22)
 	progress_changed.emit(self, progress, cost)
 	build_damaged.emit(self, progress, cost)
+	
+	if not silent:
+		AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_DEATH)
+	
 	return true
-
 
 # 第一次真正要用的时候才加载，而且拿到空壳会重新加载一次
 # Loaded on first real use, and re-loaded if what we hold turns out to be the empty shell.
@@ -427,7 +441,13 @@ func lay_egg() -> bool:
 func _feed_occupant(amount: int) -> bool:
 	if content != Content.LARVA or _occupant == null:
 		return false
-	return (_occupant as Larva).feed(amount)
+
+	var fed: bool = (_occupant as Larva).feed(amount)
+	
+	if fed:
+		AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.LARVA_EATING)
+		
+	return fed
 
 
 # 蜂王浆走普通食物那条路：它**占用**幼虫的饭份，不是额外附加。所以一只幼虫最多
@@ -505,6 +525,9 @@ func _lay_egg() -> void:
 	_set_occupant(egg, Content.EGG)
 	egg.hatched.connect(_on_egg_hatched)
 	egg.progress_changed.connect(_on_brood_progress)
+
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.EGG_LAID)
+
 	egg_laid.emit(self)
 
 
@@ -518,6 +541,9 @@ func _on_egg_hatched(_egg: Egg) -> void:
 	larva.starved.connect(_on_larva_starved)
 	_juice.punch(1.15, 0.35)
 	_juice.burst()
+
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.LARVA_BIRTH)
+
 	larva_hatched.emit(self)
 
 
@@ -532,7 +558,10 @@ func _on_larva_timer(t: float, critical: bool) -> void:
 
 
 func _on_larva_hungry(_larva: Larva) -> void:
+	# --- AUDIO: Larva became hungry ---
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.LARVA_HUNGRY)
 	larva_hungry.emit(self)
+
 # 喂饱一次就封起来，10 秒后出黄蜂 / one full feed seals it, wasp emerges after the timer
 func _on_larva_satisfied(_larva: Larva) -> void:
 	_set_occupant(null, Content.SEALED, true)
@@ -583,8 +612,11 @@ func _clean() -> void:
 	# 清出来的是**空地**，不是一个随时能再产卵的完好巢室。
 	# 死在里面的那一窝把这格也带走了：想再用得重新搬三块纸板建起来
 	# What you clear is bare ground: the brood that died in here took the cell with it.
-	demolish()
+	demolish(true)
 	_refresh_visual()
+
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_CLEAN)
+
 	cleaned.emit(self)
 
 
@@ -639,7 +671,6 @@ func _can_hold() -> bool:
 
 
 # ---------------- 输入 / input ----------------
-
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if not (event is InputEventMouseButton) or event.button_index != MOUSE_BUTTON_LEFT:
 		return
@@ -650,6 +681,21 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	if _can_hold():
 		_hold.press()
 		_juice.punch(0.96, 0.14)
+		
+		# --- AUDIO: Start holding sound ---
+		var effect_type: int = -1
+		if can_lay_egg():
+			effect_type = SoundEffect.SoundEffectType.EGG_LAYING
+		elif is_rotten():
+			effect_type = SoundEffect.SoundEffectType.CELL_CLEAN
+			
+		if effect_type != -1:
+			var effect: SoundEffect = AudioManager.sound_effect_dict.get(effect_type) as SoundEffect
+			if effect != null and effect.sound_effect != null:
+				_hold_player.stream = effect.sound_effect
+				_hold_player.volume_db = effect.volume
+				_hold_player.pitch_scale = effect.pitch_scale + randf_range(-effect.pitch_randomness, effect.pitch_randomness)
+				_hold_player.play()
 
 
 # 松手可能发生在格子外面，所以在这里收 / release can happen outside the area
@@ -682,6 +728,10 @@ func _on_hold_progress(t: float) -> void:
 	# 松手回退和完成都会发 0，这里就是收掉读数的地方 / both decay and completion land on 0
 	if t <= 0.0:
 		_brood.clear()
+		
+		# --- AUDIO: Stop holding sound if cancelled ---
+		if _hold_player != null and _hold_player.playing:
+			_hold_player.stop()
 	else:
 		_brood.show_progress(t, HOLD_COLOR)
 	_juice.shake_amount = max_shake * _shake_ratio(t)
@@ -700,6 +750,10 @@ func _on_hold_tick(_index: int) -> void:
 
 
 func _on_hold_completed() -> void:
+	# --- AUDIO: Stop holding sound on success ---
+	if _hold_player != null and _hold_player.playing:
+		_hold_player.stop()
+		
 	_juice.shake_amount = 0.0
 	_juice.punch(1.22, 0.45)
 	_juice.flash(_cell, flash_color, _base_tint())

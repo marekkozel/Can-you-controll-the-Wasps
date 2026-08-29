@@ -139,6 +139,8 @@ func take_at(at: Vector2) -> Node2D:
 	piece.global_position = at
 	piece.rotation = randf_range(-PI, PI)
 
+	_play_item_sound(payload, at)
+
 	# 会游荡的东西要知道自己在哪一带活动 / tell wanderers where their patch is
 	if piece.has_method("set_wander_home"):
 		piece.set_wander_home(at)
@@ -197,8 +199,11 @@ func deposit(payload: StringName, amount: int = 1) -> bool:
 		return false
 
 	var mix: Vector2i = recipe()
-	_intake += amount
+	_intake += amount  # <-- THIS IS THE COUNT of how much meat she has eaten!
 	intake_changed.emit(_intake, mix.x)
+
+	# --- AUDIO: Queen eating meat ---
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.QUEEN_EAT)
 
 	while _intake >= mix.x:
 		_intake -= mix.x
@@ -222,6 +227,9 @@ func _produce_output() -> void:
 	var at: Vector2 = drop.global_position if drop != null else global_position + output_at
 	piece.global_position = at + _random_offset()
 	piece.rotation = randf_range(-PI, PI)
+	
+	_play_item_sound(output_payload, piece.global_position)
+	
 	if piece.has_method("set_wander_home"):
 		piece.set_wander_home(piece.global_position)
 
@@ -374,3 +382,13 @@ func _draw_drop_marker() -> void:
 	draw_arc(at, 10.0, 0.0, TAU, 24, GIZMO_DROP, 2.0)
 	draw_string(ThemeDB.fallback_font, at + Vector2(14, 4), String(output_payload),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GIZMO_DROP)
+
+# ---------------- Audio ----------------
+func _play_item_sound(item_payload: StringName, pos: Vector2) -> void:
+	match item_payload:
+		&"cardboard":
+			AudioManager.create_2d_audio_at_location(pos, SoundEffect.SoundEffectType.CARDBOARD_POP)
+		&"food":
+			AudioManager.create_2d_audio_at_location(pos, SoundEffect.SoundEffectType.FOOD_POP)
+		&"royal_jelly": 
+			AudioManager.create_2d_audio_at_location(pos, SoundEffect.SoundEffectType.QUEEN_POP)

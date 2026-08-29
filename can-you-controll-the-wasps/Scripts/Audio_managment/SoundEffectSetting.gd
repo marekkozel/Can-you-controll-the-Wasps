@@ -3,9 +3,14 @@ extends Resource
 ## Sound effect resource, used to configure unique sound effects for use with the AudioManager. Passed to [method AudioManager.create_2d_audio_at_location()] and [method AudioManager.create_audio()] to play sound effects.
 
 ## Stores the different types of sounds effects available to be played to distinguish them from another. Each new SoundEffect resource created should add to this enum, to allow them to be easily instantiated via [method AudioManager.create_2d_audio_at_location()] and [method AudioManager.create_audio()].
-enum SoundEeffectType {
+enum SoundEffectType {
 	CELL_BUILDING,
 	CELL_DEATH,
+	CELL_CLEAN,
+	EGG_LAYING,
+	EGG_LAID,
+	REBEL_EGG_LAID,
+	LARVA_BIRTH,
 	LARVA_EATING,
 	LARVA_HUNGRY,
 	LARVA_DEATH,
@@ -20,11 +25,13 @@ enum SoundEeffectType {
 	UPGRADE,
 	END_GAME_SCREEN,
 	POP,
-	HIT
+	HIT,
+	ENEMY_DEATH,
+	QUEEN_EAT
 }
 
 @export_range(0, 10) var limit: int = 5 ## Maximum number of this SoundEffect to play simultaneously before culled.
-@export var type: SoundEeffectType ## The unique sound effect in the [enum SoundEeffectType] to associate with this effect. Each SoundEffect resource should have it's own unique [enum SoundEeffectType] setting.
+@export var type: SoundEffectType ## The unique sound effect in the [enum SoundEffectType] to associate with this effect. Each SoundEffect resource should have it's own unique [enum SoundEffectType] setting.
 @export var sound_effect: AudioStreamMP3 ## The [AudioStreamMP3] audio resource to play.
 @export_range(-40, 20) var volume: float = 0 ## The volume of the [member sound_effect].
 @export_range(0.0, 4.0,.01) var pitch_scale: float = 1.0 ## The pitch scale of the [member sound_effect].
