@@ -14,6 +14,7 @@ bounce = 0.23
 radius = 12.0
 
 [node name="Carrion" type="RigidBody2D" unique_id=1275447941 groups=["carriable"]]
+z_index = 30
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_onxnw")
 continuous_cd = 2

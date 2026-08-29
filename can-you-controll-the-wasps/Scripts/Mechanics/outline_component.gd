@@ -32,6 +32,11 @@ var state: int = State.NONE
 var _source: Sprite2D = null
 var _sprite: Sprite2D = null
 var _material: ShaderMaterial = null
+## 上一次画的是图集第几帧，-1 = 还没画过 / last traced atlas frame
+var _frame: int = -1
+## 上一次看到的切图行列。SpriteAnimator 的 _ready 可能比这里晚，切图是后写上去的，
+## 只盯 frame 的话会一直停在"整张图"那个 region / the grid can arrive after our _ready
+var _grid: Vector2i = Vector2i.ZERO
 
 
 func _ready() -> void:
@@ -39,11 +44,6 @@ func _ready() -> void:
 	_source = get_node_or_null(source_path) as Sprite2D
 	if _source == null:
 		push_warning("OutlineComponent found no sprite at %s" % source_path)
-		return
-	if _source.hframes > 1 or _source.vframes > 1:
-		# 图集会让八向采样串到隔壁帧 / atlas sampling bleeds into the next frame
-		push_warning("OutlineComponent cannot trace an atlas sprite (%s)" % _source.name)
-		_source = null
 		return
 	_build()
 
@@ -64,7 +64,8 @@ func _build() -> void:
 	_sprite.scale = _source.scale
 	_sprite.flip_h = _source.flip_h
 	_sprite.flip_v = _source.flip_v
-	_expand(_sprite)
+	# 描边这张**不切图集**：它每帧自己算 region，把当前帧连同外扩的一圈框出来，
+	# 界外由 shader 的 frame_min/max 判成空气 / it frames the current cel itself
 	# 排在本体后面。描边只画轮廓外，压在上面会盖住本体的边缘像素
 	# Behind the body: the ring sits outside the silhouette and must not cover its rim.
 	_sprite.z_index = -1
@@ -76,18 +77,18 @@ func _build() -> void:
 	_material.shader = OUTLINE_SHADER
 	_material.set_shader_parameter(&"outline_color", color)
 	_sprite.material = _material
+	_expand(_sprite)
 
 	var host: Node = _source.get_parent()
 	host.add_child(_sprite)
 	host.move_child(_sprite, _source.get_index())
 
 
-# Sprite2D 只画贴图那么大的四边形，往外扩的描边像素会被裁掉。
-# wasp.png 左右透明边距就是 0（上 4 下 8、左右 0），蜂本体顶到贴图边，
-# 不撑开的话左右两侧的描边根本没地方画。用 region 把绘制矩形各边扩出去，
-# shader 那边把 UV 界外判成透明，所以扩出来的部分是干净的空气。
-# The sprite only draws the texture's own rect; wasp.png has zero margin left and
-# right, so without this the ring is simply missing on those two sides.
+# Sprite2D 只画一帧那么大的四边形，往外扩的描边像素会被裁掉。
+# good_wasp.png 每一格的美术都顶到格子边（飞行那几帧左边缘就是 x=0，攻击那几帧顶到右边），
+# 不撑开的话那两侧的描边根本没地方画。用 region 把绘制矩形各边扩出去，
+# 扩出来的一圈会盖到隔壁帧上，所以 shader 拿 frame_min/max 把它判成空气。
+# The sprite only draws its own cel; the art touches the cel edge, so the ring needs room.
 func _expand(sprite: Sprite2D) -> void:
 	if _source.region_enabled:
 		# 源图本来就用 region 的话得跟它复合，现在没有这种用法，先喊一声
@@ -95,11 +96,43 @@ func _expand(sprite: Sprite2D) -> void:
 		return
 	if _source.texture == null:
 		return
-	var pad: float = ceilf(maxf(hover_width, held_width)) + 1.0
-	var size: Vector2 = _source.texture.get_size()
 	sprite.region_enabled = true
+	_frame = -1
+	_sync_frame()
+
+
+func _pad() -> float:
+	return ceilf(maxf(hover_width, held_width)) + 1.0
+
+
+# 把绘制矩形从当前帧往外扩一圈，并告诉 shader 这一帧的 UV 界在哪。
+# 整张图的情况就是"只有一帧"，走的是同一条路 / a whole texture is just the one-frame case
+func _sync_frame() -> void:
+	if _sprite == null or _source.texture == null:
+		return
+	var cols: int = maxi(_source.hframes, 1)
+	var rows: int = maxi(_source.vframes, 1)
+	var grid: Vector2i = Vector2i(cols, rows)
+	var frame: int = _source.frame if _is_atlas() else 0
+	if frame == _frame and grid == _grid:
+		return
+	_frame = frame
+	_grid = grid
+
+	var sheet: Vector2 = _source.texture.get_size()
+	var cel: Vector2 = Vector2(sheet.x / float(cols), sheet.y / float(rows))
+	var origin: Vector2 = Vector2(float(frame % cols), float(frame / cols)) * cel
+
+	var pad: float = _pad()
 	# 四边等量外扩，中心不动，所以 centered / offset 都不用补 / symmetric, so the pivot holds
-	sprite.region_rect = Rect2(-pad, -pad, size.x + pad * 2.0, size.y + pad * 2.0)
+	_sprite.region_rect = Rect2(origin - Vector2(pad, pad), cel + Vector2(pad, pad) * 2.0)
+	if _material != null:
+		_material.set_shader_parameter(&"frame_min", origin / sheet)
+		_material.set_shader_parameter(&"frame_max", (origin + cel) / sheet)
+
+
+func _is_atlas() -> bool:
+	return _source.hframes > 1 or _source.vframes > 1
 
 
 func _apply() -> void:
@@ -110,6 +143,7 @@ func _apply() -> void:
 	set_process(on)
 	if not on:
 		return
+	_sync_frame()
 	_material.set_shader_parameter(&"outline_width", held_width if state == State.HELD else hover_width)
 	_material.set_shader_parameter(&"fade", held_alpha if state == State.HELD else hover_alpha)
 
@@ -122,3 +156,4 @@ func _process(_delta: float) -> void:
 	_sprite.flip_h = _source.flip_h
 	_sprite.flip_v = _source.flip_v
 	_sprite.scale = _source.scale
+	_sync_frame()

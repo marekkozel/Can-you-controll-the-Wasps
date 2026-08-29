@@ -30,4 +30,6 @@ extends Resource
 @export_group("Extras")
 ## 拖拽时的 linear_damp，负数 = 不覆盖 / negative = keep body's own
 @export var drag_linear_damp: float = -1.0
-@export_range(0, 100, 1) var grab_z_offset: int = 10
+## 抓在手上时 z_index 往上抬多少。必须大于实体之间的分层差（敌人 10 / 蜂 20 / 物品 30），
+## 否则拖着的蜂还是会被地上的纸板盖住 / must clear the entity layers or the held thing hides
+@export_range(0, 200, 1) var grab_z_offset: int = 100

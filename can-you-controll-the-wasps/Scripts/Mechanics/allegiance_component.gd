@@ -11,6 +11,11 @@ signal submitted
 enum State { LOYAL, FALSE_QUEEN, REBEL, SUBDUED }
 
 var state: State = State.LOYAL
+## 她当过伪王后。摔一次面具就掉，但账要记着——不然玩家做对了事之后把她打死，
+## 反而按"处决忠诚工蜂"吃一次 unrest
+## The mask comes off on the first slam; this remembers, or finishing her would be
+## filed as executing an innocent.
+var was_false_queen: bool = false
 ## 叛军指向生它的伪王后。不加类型：她随时可能被处决，类型化变量拒绝存已释放的实例
 ## Rebels point at the queen that laid them - untyped, she can be executed at any moment.
 var mother = null
@@ -73,10 +78,6 @@ func _process(delta: float) -> void:
 		decoy_cell = null
 	betrayal = maxf(betrayal - betrayal_decay * delta, 0.0)
 
-	# 母亲没了就自己屈服，不用谁来通知 / self-subdue, no director needed
-	if state == State.REBEL and not is_instance_valid(mother):
-		submit()
-
 
 func is_loyal() -> bool:
 	return state == State.LOYAL
@@ -103,7 +104,25 @@ func works() -> bool:
 
 func make_false_queen() -> void:
 	rally_bias = randf_range(QUEEN_RALLY.x, QUEEN_RALLY.y)
+	was_false_queen = true
 	_change(State.FALSE_QUEEN)
+
+
+# 摔到墙上，面具掉了 / slammed into a wall and the mask comes off.
+# 她不死也不变色，变的只是她不再偷偷下卵，以及她重新变回一只普通工蜂。
+# 已经孵出来的叛军**不受影响**——那些只能玩家自己清
+# She keeps her colour and her life; what she loses is the laying. Her existing rebels
+# are unaffected: those are the player's to clean up.
+func unmask() -> void:
+	if state != State.FALSE_QUEEN:
+		return
+	# SecretLay 靠 brood_variant 为空停手 / SecretLay stops on a null brood_variant
+	brood_variant = null
+	lay_cooldown = 0.0
+	decoy_cell = null
+	decoy_until = 0.0
+	rally_bias = randf_range(LOYAL_RALLY.x, LOYAL_RALLY.y)
+	_change(State.LOYAL)
 
 
 # 老练的她集结得跟普通工蜂一样积极 / cunning pulls her back into the normal band
@@ -132,7 +151,9 @@ func enthrone() -> void:
 	_change(State.SUBDUED)
 
 
-# 母亲没了就不闹了，颜色和专长都留着 / gives in, keeps its colour and its perk
+# 屈服。**只有加冕那条路会走到这里**——母亲死了叛军不再自动屈服，
+# 异色就是敌人，清场是玩家的事
+# Only the coronation path reaches this now: a dead mother no longer pacifies her brood.
 func submit() -> void:
 	if state != State.REBEL:
 		return

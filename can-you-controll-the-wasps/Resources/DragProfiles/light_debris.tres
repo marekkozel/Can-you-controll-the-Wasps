@@ -15,4 +15,4 @@ max_wobble_angle = 1.0
 rotation_stiffness = 6.0
 spin_retention = 0.8
 drag_linear_damp = -1.0
-grab_z_offset = 10
+grab_z_offset = 100

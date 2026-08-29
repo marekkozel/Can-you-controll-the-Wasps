@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://m6nllk6lh3mm" path="res://Scenes/UI/SeasonBar.tscn" id="6_season"]
 [ext_resource type="PackedScene" uid="uid://c3eitlvpt6vua" path="res://Scenes/Entities/ItemSource.tscn" id="7_source"]
 [ext_resource type="PackedScene" uid="uid://d0smkcjdfwhqt" path="res://Scenes/Entities/Cardboard.tscn" id="8_cardboard"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/YearReport.tscn" id="42_yearreport"]
 [ext_resource type="Texture2D" uid="uid://hvevkl3rbua7" path="res://Assets/Entities/wasp_queen_small.png" id="8_jwdyn"]
 [ext_resource type="PackedScene" uid="uid://ckd6qc65b04mi" path="res://Scenes/Entities/Food.tscn" id="9_food"]
 [ext_resource type="PackedScene" uid="uid://cj3llyr0y41xx" path="res://Scenes/Entities/RoyalJelly.tscn" id="9_jelly"]
@@ -25,7 +26,6 @@
 [ext_resource type="Texture2D" uid="uid://cjdmw6138awnb" path="res://Assets/Entities/Enemies/Beetle_enemy.png" id="19_t6yt7"]
 [ext_resource type="Texture2D" uid="uid://c8w6w205ql85p" path="res://Assets/UI/region_info.png" id="20_ph_info"]
 [ext_resource type="Texture2D" uid="uid://dc5b6tp668gkf" path="res://Assets/UI/region_nest.png" id="21_ph_nest"]
-[ext_resource type="Texture2D" uid="uid://g7m0j1mkrt1j" path="res://Assets/Entities/Enemies/mantis_big_enemy.png" id="22_6mm6r"]
 [ext_resource type="Texture2D" uid="uid://daaaman4bfiu1" path="res://Assets/UI/region_upgrades.png" id="22_ph_upgrade"]
 [ext_resource type="Script" uid="uid://bhfyfc82xueyc" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
 [ext_resource type="Texture2D" uid="uid://dcltovuoe34gk" path="res://Assets/Entities/Enemies/Bird_big_enemy.png" id="23_xcb5n"]
@@ -42,14 +42,20 @@
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
 [ext_resource type="Script" uid="uid://diyfu5agmx1sk" path="res://Scripts/Controllers/selection_director.gd" id="33_selection"]
 [ext_resource type="Resource" uid="uid://bux21np6objl4" path="res://Resources/Variants/enemy_spider.tres" id="33_spider"]
+[ext_resource type="Resource" path="res://Resources/Variants/enemy_mantis.tres" id="34_mantis"]
 [ext_resource type="Texture2D" uid="uid://dyxqw1tt2q5cw" path="res://Assets/UI/cardboard_tag.png" id="38_w5giw"]
 [ext_resource type="Texture2D" uid="uid://tccfgek40ki2" path="res://Assets/UI/food_tag.png" id="39_jwdyn"]
 [ext_resource type="Texture2D" uid="uid://d0e7vj7306nx0" path="res://Assets/UI/info_tag.png" id="40_t6yt7"]
 [ext_resource type="Texture2D" uid="uid://bf5d1qtxhern3" path="res://Assets/UI/upgrades_tagt.png" id="41_jwdyn"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
-vertices = PackedVector2Array(40, 40, 296, 40, 984, 40, 1240, 40, 40, 248, 296, 248, 984, 248, 1240, 248, 296, 680, 984, 680, 984, 616, 1240, 616, 1240, 680)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(5, 6, 10, 9, 8), PackedInt32Array(10, 11, 12, 9)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)])
+vertices = PackedVector2Array(1256, 24, 1256, 264, 1000, 264, 24, 24, 1000, 519, 999, 519, 282, 264, 999, 607, 1255.5, 607, 1255.5, 665, 282, 665, 24, 264)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(2, 4, 5, 6, 3), PackedInt32Array(7, 8, 9, 10), PackedInt32Array(7, 10, 6, 5), PackedInt32Array(3, 6, 11)])
+parsed_geometry_type = 1
+source_geometry_mode = 1
+source_geometry_group_name = &"navigation_source"
+agent_radius = 24.0
 
 [sub_resource type="Resource" id="Resource_4t8d5"]
 script = ExtResource("32_enemyvariant")
@@ -59,20 +65,6 @@ loot_count = 5
 texture = ExtResource("19_t6yt7")
 show_health_bar = true
 spawn_cost = 4
-metadata/_custom_type_script = "uid://plfkdm57opi8"
-
-[sub_resource type="Resource" id="Resource_te07t"]
-script = ExtResource("32_enemyvariant")
-display_name = "Mantis"
-behavior = 1
-max_health = 15
-loot_count = 6
-texture = ExtResource("22_6mm6r")
-collision_radius = 43.0
-move_speed = 85.0
-body_mass = 1.9
-show_health_bar = true
-spawn_cost = 7
 metadata/_custom_type_script = "uid://plfkdm57opi8"
 
 [sub_resource type="Resource" id="Resource_6mm6r"]
@@ -120,7 +112,6 @@ size = Vector2(49, 426.5)
 [node name="Enviroment" type="Node2D" parent="." unique_id=294373440]
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="Enviroment" unique_id=1075432323]
-position = Vector2(1, 0)
 navigation_polygon = SubResource("NavPoly_world")
 
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
@@ -186,7 +177,7 @@ brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtRe
 [node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
-breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), SubResource("Resource_4t8d5"), ExtResource("33_spider"), SubResource("Resource_te07t"), SubResource("Resource_6mm6r")])
+breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), SubResource("Resource_4t8d5"), ExtResource("33_spider"), ExtResource("34_mantis"), SubResource("Resource_6mm6r")])
 raids_per_year = Vector2i(5, 7)
 min_gap = 0.02
 raid_duration = 40.0
@@ -221,7 +212,7 @@ z_index = -100
 position = Vector2(640, 464)
 scale = Vector2(1.5, 1.5)
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580]
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2145368580 groups=["navigation_source"]]
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=1743521047]
 position = Vector2(640, -20)
@@ -430,3 +421,5 @@ color = Color(0.72, 0.09, 0.12, 0)
 script = ExtResource("16_unrest")
 
 [node name="DebugPanel" parent="." unique_id=1410055688 instance=ExtResource("10_debug")]
+
+[node name="YearReport" parent="UI" instance=ExtResource("42_yearreport")]

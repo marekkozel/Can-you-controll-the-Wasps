@@ -26,9 +26,9 @@ enum Phase {
 @export_range(0.05, 1.0, 0.01) var steering: float = 0.10
 
 @export_group("Chewing")
-## 两次啃建造进度之间的间隔 / seconds between bites on build progress
-@export_range(0.2, 10.0, 0.1) var bite_cooldown: float = 1.6
-@export_range(1, 5, 1) var bite_damage: int = 1
+## 两次拆巢之间的间隔。跟叛军同一条规矩：**一口拆掉一整格**，间隔顶下原来三口的总时长
+## Same rule as the rebels: one bite takes the whole cell, so the gap covers three.
+@export_range(0.2, 20.0, 0.1) var bite_cooldown: float = 5.0
 
 const HIVE_GROUP: StringName = &"hive"
 
@@ -129,7 +129,7 @@ func _do_raid(delta: float) -> void:
 		_cell = null
 		return
 
-	if cell.damage_build(bite_damage):
+	if cell.demolish():
 		raided.emit(cell, false)
 		_cooldown = bite_cooldown
 	_cell = null

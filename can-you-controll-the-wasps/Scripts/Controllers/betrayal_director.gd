@@ -11,6 +11,8 @@ extends Node2D
 
 signal false_queen_awakened(wasp: Wasp)
 signal false_queen_gone(wasp: Wasp)
+## 玩家把她摔回普通工蜂了。她没死，只是不再下卵 / unmasked by a throw, not killed
+signal false_queen_unmasked(wasp: Wasp)
 ## 给氛围表现用：画面色调、以后的嗡嗡声 / for the tint, and for audio later
 signal unrest_changed(unrest: float)
 ## 玩家扎死了一只。参数**只给氛围层用**——见 Announcer 里为什么杀对了也可能有话说
@@ -228,6 +230,18 @@ func _on_wasp_emerged(_cell: HexCell, _wasp: Wasp) -> void:
 	var needed: int = int(roundf(lerpf(float(awaken_after), float(awaken_after_unrest), unrest) * awaken_scale))
 	if _emerged_since >= maxi(needed, 1):
 		awaken_now()
+
+
+# 摔墙那一下由 Wasp 上报。她还活着，所以不能等 tree_exited——位子当场就得空出来，
+# 不然 has_false_queen() 一直为真，下一只永远醒不过来
+# Reported by the wasp itself: she is still alive, so nothing else would free the seat
+# and has_false_queen() would block every future awakening.
+func report_unmasked(wasp: Wasp) -> void:
+	if _queen != wasp:
+		return
+	_queen = null
+	_emerged_since = 0
+	false_queen_unmasked.emit(wasp)
 
 
 func _on_queen_gone(wasp: Wasp) -> void:

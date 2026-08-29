@@ -39,6 +39,14 @@ const LINES: Dictionary = {
 		"text": "Still no heir. Carry one in now, or the comb picks its own.",
 		"priority": 100, "tone": Herald.Tone.RITE,
 	},
+	# 你摔对人了。**这是全局唯一一条确认性的播报**——她不变色、不倒下，
+	# 没有这句话玩家永远不知道自己刚才做对了没有
+	# The one confirming line in the game: she neither changes colour nor falls, so
+	# without it the player never learns whether the throw landed on the right wasp.
+	&"unmasked": {
+		"text": "She hits the wall and something goes out of her. That one will lay no more.",
+		"priority": 95, "tone": Herald.Tone.RITE,
+	},
 	&"crowned": {
 		"text": "She is crowned.",
 		"priority": 100, "tone": Herald.Tone.RITE,
@@ -47,7 +55,7 @@ const LINES: Dictionary = {
 	# 挂在伪王后醒来上的话，这句话本身就成了"她在场"的确认
 	# Keyed to the player's own hand: keyed to her, it would confirm she exists.
 	&"first_grab": {
-		"text": "She cannot fly while you hold her. Right-click to sting.",
+		"text": "She cannot fly while you hold her. Fling her at a wall and she will feel it.",
 		"priority": 70, "tone": Herald.Tone.RITE,
 	},
 	# ---- 以下是传闻 / rumours from here down ----
@@ -109,7 +117,7 @@ var _season: SeasonDirector = null
 var _hive: Hive = null
 
 var _unrest_said: bool = false
-## 处决那句只说一次 / the sting lesson fires once per run
+## 教你怎么下手那句只说一次 / the lesson on hurting them fires once per run
 var _grab_taught: bool = false
 ## 已经预警过的那个点在整年的位置，掷新时间表时清掉 / cleared when the schedule is rolled
 var _warned_at: float = -1.0
@@ -137,6 +145,9 @@ func _bind() -> void:
 
 	if _betrayal != null:
 		_betrayal.false_queen_awakened.connect(func(_w): _rumour(&"awaken"))
+		# 事实，不是传闻：不延迟、不掺假，玩家的手刚做完这件事
+		# A fact, not a rumour - no delay and never a lie; the player just did it.
+		_betrayal.false_queen_unmasked.connect(func(_w): _say(&"unmasked"))
 		_betrayal.unrest_changed.connect(_on_unrest_changed)
 		_betrayal.execution_reported.connect(_on_execution)
 	if _raid != null:

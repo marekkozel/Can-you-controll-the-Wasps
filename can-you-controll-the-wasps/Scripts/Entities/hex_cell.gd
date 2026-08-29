@@ -79,6 +79,16 @@ const HOLD_COLOR: Color = Color(1.0, 0.902, 0.502)
 ## 冬天王座的底色。判定在 SeasonDirector 那边，这里只管认领和上色
 ## The throne's tint - the rules live on SeasonDirector, this only wears the badge.
 @export var royal_color: Color = Color(1.0, 0.86, 0.45)
+## 王座**呼吸**到的亮色。静止的暖色摆在一片同样是暖色的巢室里根本认不出来，
+## 会动的才认得出来——这一格是整个冬天玩家唯一需要看的地方
+## A still amber cell is invisible in an amber comb; motion is what makes it readable.
+@export var royal_pulse_color: Color = Color(1.0, 0.98, 0.72)
+## 手上正拿着一只能上位的蜂时，王座亮成这个色并且呼吸得更快。
+## 反馈挂在**玩家的手**上：拿起蜂的那一刻，"往哪放"自己就答了
+## Keyed to the player's hand: the moment a wasp is picked up, the target answers itself.
+@export var royal_focus_color: Color = Color(0.75, 1.0, 0.72)
+@export_range(0.1, 4.0, 0.05) var royal_pulse_period: float = 1.2
+@export_range(0.1, 4.0, 0.05) var royal_focus_period: float = 0.45
 
 @export_group("Idle")
 @export var fill_color: Color = Color(0.95, 0.75, 0.25, 0.1)
@@ -137,6 +147,9 @@ var _bank_checked: bool = false
 
 var _is_hovered: bool = false
 var _occupant: Node2D = null
+## 王座在呼吸。tween 存着是为了换节奏和熄灯时能杀掉 / kept so it can be retimed and killed
+var _royal_tween: Tween = null
+var _royal_focus: bool = false
 
 
 func _ready() -> void:
@@ -253,6 +266,17 @@ func destroy_occupant() -> bool:
 	return true
 
 
+# 一口拆掉整格 / take the whole cell down in one bite.
+# 叛军和入侵者都走这条。**一次拆到底而不是一级一级啃**：三级一级一级掉的话，
+# 玩家看到的是巢室在缓慢变暗，看不出"刚刚少了一格"——补一块纸板就能撤销的损失
+# 根本读不出来。破坏要么看得见，要么不如不做
+# Rebels and raiders both come through here. All the way down, never one step at a time:
+# chipping reads as the comb slowly dimming, and a loss one piece of cardboard undoes
+# is a loss nobody notices.
+func demolish() -> bool:
+	return damage_build(progress)
+
+
 # 听掉建造进度。里面有卵/幼虫的格不能拆，否则内容槽会悬空
 # Chews build progress back down. Occupied cells are off limits or the content slot dangles.
 func damage_build(amount: int = 1) -> bool:
@@ -313,11 +337,55 @@ func set_royal(on: bool) -> void:
 	if is_royal == on:
 		return
 	is_royal = on
+	if not on:
+		_royal_focus = false
 	if _cell != null:
 		_cell.self_modulate = _base_tint()
 	_update_hold()
 	if _juice != null and not Engine.is_editor_hint():
 		_juice.punch(1.16, 0.3)
+	_royal_pulse()
+
+
+# 手上有没有一只放得进去的蜂。由 SeasonDirector 每帧喂进来
+# Whether the player is holding a valid heir right now; fed by the director each frame.
+func set_royal_focus(on: bool) -> void:
+	if _royal_focus == on or not is_royal:
+		return
+	_royal_focus = on
+	_royal_pulse()
+
+
+# 王座那一拍还剩多久。借用巢室顶上那条读数——冬天这一格里没有育儿，它是空着的
+# Reuses the brood readout: in winter this cell holds no brood, so the bar is free.
+func show_rite_time(t: float) -> void:
+	if _brood != null:
+		_brood.show_progress(t, royal_focus_color if _royal_focus else royal_color, true)
+
+
+func hide_rite_time() -> void:
+	if _brood != null:
+		_brood.clear()
+
+
+# 呼吸走的是 self_modulate 而不是缩放：JuiceComponent 的 punch 也在写 scale，
+# 两个 tween 会互相打断，弹一下之后王座就停在半路上
+# Tint, not scale - punch already owns scale and the two tweens would cut each other off.
+func _royal_pulse() -> void:
+	if _royal_tween != null and _royal_tween.is_valid():
+		_royal_tween.kill()
+	_royal_tween = null
+	if _cell == null or Engine.is_editor_hint():
+		return
+	if not is_royal:
+		_cell.self_modulate = _base_tint()
+		return
+
+	var bright: Color = royal_focus_color if _royal_focus else royal_pulse_color
+	var half: float = (royal_focus_period if _royal_focus else royal_pulse_period) * 0.5
+	_royal_tween = create_tween().set_loops()
+	_royal_tween.tween_property(_cell, "self_modulate", bright, half) 		.set_trans(Tween.TRANS_SINE)
+	_royal_tween.tween_property(_cell, "self_modulate", royal_color, half) 		.set_trans(Tween.TRANS_SINE)
 
 
 # 登基那一下 / the moment somebody takes it
@@ -326,6 +394,7 @@ func celebrate() -> void:
 		return
 	_juice.punch(1.32, 0.5)
 	_juice.burst()
+	_juice.flash(_cell, royal_focus_color, _base_tint())
 
 
 # flash 结束后恢复到哪个底色。硬编码回白色会把王座的高亮擦掉
@@ -511,6 +580,10 @@ func _on_larva_starved(_larva: Larva) -> void:
 func _clean() -> void:
 	_set_occupant(null, Content.NONE)
 	_gifts = 0
+	# 清出来的是**空地**，不是一个随时能再产卵的完好巢室。
+	# 死在里面的那一窝把这格也带走了：想再用得重新搬三块纸板建起来
+	# What you clear is bare ground: the brood that died in here took the cell with it.
+	demolish()
 	_refresh_visual()
 	cleaned.emit(self)
 
@@ -524,6 +597,13 @@ func _set_occupant(node: Node2D, new_content: Content, keep_brood: bool = false)
 	if _occupant != null:
 		_occupant.queue_free()
 	_occupant = node
+	# 封盖计时必须跟着内容一起停，除非这次换的就是封盖。
+	# 漏掉它的后果是：冬天拆掉一个蛹格之后计时还在跑，格子顶上的读数条永远不消失，
+	# 时间到了还会从一个空的（甚至已经被拆没的）格子里羽化出一只蜂
+	# Stop it with the content or a cleared pupa keeps its readout - and eventually
+	# emerges a wasp out of a cell that was demolished a minute ago.
+	if new_content != Content.SEALED and _seal_timer != null:
+		_seal_timer.stop()
 	if _brood != null:
 		_brood.clear()
 	if node != null:
@@ -553,7 +633,9 @@ func _update_hold() -> void:
 
 
 func _can_hold() -> bool:
-	return not is_royal and (is_rotten() or can_lay_egg())
+	if is_royal or DraggableComponent.is_dragging():
+		return false  # 手上拿着东西就不能按住 / a full hand can't hold a cell
+	return is_rotten() or can_lay_egg()
 
 
 # ---------------- 输入 / input ----------------

@@ -42,6 +42,10 @@ enum Behavior {
 @export_group("Build")
 ## 换掉 Enemy.tscn 上那张图 / replaces the texture authored on the scene
 @export var texture: Texture2D
+## 上面那张图的动画表。不给就是一张静态图，SpriteAnimator 整个不跑——
+## 三种敌人的行走/攻击帧数各不相同，所以这张表必须跟着品种走，不能挂在场景上
+## Frame counts differ per breed, so the sheet's table belongs to the breed, not the scene.
+@export var animation: SpriteAnimation
 ## 图的内容不居中就用它补。蚂蚁那张内容全在下半部分 / Ant art sits in the lower half
 @export var sprite_offset: Vector2 = Vector2.ZERO
 ## 按贴图**内容**的实际尺寸给，不是按图幅 / measured from the content, not the sheet

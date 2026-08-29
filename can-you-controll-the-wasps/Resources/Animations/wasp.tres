@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpriteAnimation" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animation.gd" id="1_sheet"]
+[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_clip.gd" id="2_clip"]
+
+[sub_resource type="Resource" id="Clip_fly"]
+script = ExtResource("2_clip")
+name = &"fly"
+row = 0
+start_column = 0
+frames = 8
+fps = 12.0
+loop = true
+
+[sub_resource type="Resource" id="Clip_attack"]
+script = ExtResource("2_clip")
+name = &"attack"
+row = 3
+start_column = 0
+frames = 8
+fps = 16.0
+loop = false
+
+[resource]
+script = ExtResource("1_sheet")
+hframes = 8
+vframes = 6
+default_clip = &"fly"
+clips = Array[ExtResource("2_clip")]([SubResource("Clip_fly"), SubResource("Clip_attack")])

@@ -50,7 +50,10 @@ func _tick(delta: float) -> Status:
 	# 里头有记恨的忠诚蜂，也可能有她——这层重叠是白送的，不用另造机制
 	# Strikers and rebels don't answer. The player just sees a few wasps sitting it out,
 	# and the reason is ambiguous by construction.
-	if raiding and not agent.allegiance().works():
+	#
+	# 警报期间和平时一视同仁：叛军是纯敌人，任何时候都不该站到防线这一边
+	# Raid or not: a rebel must never end up defending the comb it is there to wreck.
+	if not agent.allegiance().works():
 		return FAILURE
 
 	# 每帧重选最近目标：敌人会新生成，黄蜂也可能被玩家扔到别处

@@ -13,6 +13,7 @@ signal released
 static var _active_component: Node = null
 
 const MOUSE_VELOCITY_SMOOTHING: float = 0.4
+const ENEMY_GROUP: StringName = &"Enemy"
 
 var _body: RigidBody2D = null
 var _is_grabbed: bool = false
@@ -80,9 +81,33 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		return
 	if event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
 		return
+	if _enemy_under_cursor():
+		return
 
 	_grab()
 	get_viewport().set_input_as_handled()  # 别让下面重叠的 Area2D 也收到 / stop the click reaching areas underneath
+
+
+# 光标压在敌人身上时点击算打它，不算抓东西。2D 拾取的先后不看 z_index，
+# 谁先收到 input_event 谁 set_input_as_handled 就赢——大体型敌人身后的蜂经常抢先，
+# 于是点蜘蛛变成了拖蜂。所以这里自己查一次光标，不去赌那个顺序
+# Picking order is not z_index-driven: whoever gets the event first consumes it, and a
+# wasp behind a big raider often wins. Query the cursor instead of betting on that order.
+func _enemy_under_cursor() -> bool:
+	var space: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
+	if space == null:
+		return false
+	var params: PhysicsPointQueryParameters2D = PhysicsPointQueryParameters2D.new()
+	params.position = get_global_mouse_position()
+	params.collide_with_bodies = true
+	params.collide_with_areas = false
+	# 死掉的敌人在 _on_died 里已经关了碰撞体，查不到，尸体不会挡住点击
+	# A corpse disables its shape in _on_died, so it never blocks a grab.
+	for hit in space.intersect_point(params, 8):
+		var collider: Node = hit.get("collider") as Node
+		if collider != null and collider.is_in_group(ENEMY_GROUP):
+			return true
+	return false
 
 
 func _input(event: InputEvent) -> void:

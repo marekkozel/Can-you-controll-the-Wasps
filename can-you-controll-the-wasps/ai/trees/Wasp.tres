@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://bvh1l4dvi0yhc" path="res://ai/tasks/Gather.gd" id="9_gather"]
 [ext_resource type="Script" uid="uid://dfybr028ucijl" path="res://ai/tasks/Fidget.gd" id="10_fidget"]
 [ext_resource type="Script" uid="uid://mqfqoxa3sb0o" path="res://ai/tasks/Idle.gd" id="11_idle"]
+[ext_resource type="Script" uid="uid://58rxg14atbc7" path="res://ai/tasks/Harass.gd" id="12_harass"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_wasp"]
 
@@ -47,9 +48,19 @@ script = ExtResource("6_isrebel")
 [sub_resource type="BTAction" id="BTAction_sabotage"]
 script = ExtResource("7_sabotage")
 
+[sub_resource type="BTAction" id="BTAction_harass"]
+script = ExtResource("12_harass")
+
+[sub_resource type="BTAction" id="BTAction_rebelidle"]
+script = ExtResource("11_idle")
+
+[sub_resource type="BTSelector" id="BTSelector_rebel"]
+custom_name = "Sel - Rebel"
+children = [SubResource("BTAction_sabotage"), SubResource("BTAction_harass"), SubResource("BTAction_rebelidle")]
+
 [sub_resource type="BTSequence" id="BTSequence_sabotage"]
-custom_name = "Seq - Sabotage"
-children = [SubResource("BTCondition_isrebel"), SubResource("BTAction_sabotage")]
+custom_name = "Seq - Rebel"
+children = [SubResource("BTCondition_isrebel"), SubResource("BTSelector_rebel")]
 
 [sub_resource type="BTCondition" id="BTCondition_isgathering"]
 script = ExtResource("8_isgathering")

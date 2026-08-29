@@ -44,19 +44,17 @@ const SEASON_COLORS: PackedColorArray = [
 ## The source is 24px; 24 is pixel-exact, 48 is a clean 2x but fills the bar's height.
 @export_range(8.0, 48.0, 1.0) var raid_icon_size: float = 28.0
 
-# 四个状态**全部不透明**，靠色相和明度分，不靠 alpha 压淡。
-# 压淡的图标在纸板底上会糊成一团看不清，而入侵预告是要玩家一眼扫到的东西
-# All four are solid: a faded icon on this light panel reads as noise, and the whole
+# 两个状态都**不透明**，靠色相分，不靠 alpha 压淡。压淡的图标在纸板底上会糊成
+# 一团看不清，而入侵预告是要玩家一眼扫到的东西
+# Both are solid: a faded icon on this light panel reads as noise, and the whole
 # point of the schedule is that it can be read at a glance.
 ## 还没到的那一波。跟当前季节图标同一个墨色，实心 / same ink as the active season icon
 @export var raid_pending_color: Color = Color(0.263, 0.161, 0.196, 0.5) 
 ## 正在打的那一波 / the one happening right now
 @export var raid_active_color: Color = Color(0.886, 0.227, 0.090)
-## 打完的。沉下去但仍然看得清——玩家要能数出"今年还剩几波"
-## Sunk, not hidden: the player still needs to count what is left this year.
-@export var raid_done_color: Color = Color(0.42, 0.39, 0.38)
-## 到点了但巢里没东西可抢。冷灰跟 done 的暖灰分开，读作"没发生"而不是"发生过"
-## Cool grey, so it reads as "never happened" rather than "already over".
+## 到点了但巢里没东西可抢，这一波作废。**它没打，所以不消失**——
+## 消失的只有真的打完的那些。冷灰跟别的颜色分开，读作"没发生"
+## A misfire never happened, so it stays on the bar; only a raid that ran leaves it.
 @export var raid_misfire_color: Color = Color(0.53, 0.58, 0.61)
 
 @export_group("Countdown")
@@ -110,7 +108,13 @@ func set_raid_marks(marks: Array) -> void:
 func _rebuild_raids() -> void:
 	if _raids == null:
 		return
+	# 先摘再 free。queue_free 要到帧末才生效，在那之前旧图标还挂在树上：
+	# 紧接着的 _layout_raids() 是按下标跟 _marks 配对的，于是**位置全喂给了正在等死的旧图标**，
+	# 新图标一个都没摆，全堆在 (0,0)——看起来就是整排图标消失
+	# Detach first: queue_free lands at end of frame, so _layout_raids would hand every
+	# position to the dying icons and leave the new row stacked at the origin.
 	for child in _raids.get_children():
+		_raids.remove_child(child)
 		child.queue_free()
 
 	for mark in _marks:
@@ -122,6 +126,11 @@ func _rebuild_raids() -> void:
 		icon.custom_minimum_size = Vector2(raid_icon_size, raid_icon_size)
 		icon.size = Vector2(raid_icon_size, raid_icon_size)
 		icon.self_modulate = _raid_tint(int(mark[&"state"]))
+		# 打完的那一波直接从条上撤掉，只留还没发生的和哑火的
+		# A wave that actually ran leaves the bar; everything else stays on it.
+		# 隐藏而不是不建，_layout_raids 是按下标跟 _marks 对齐的
+		# Hidden rather than skipped - _layout_raids pairs children with _marks by index.
+		icon.visible = not _is_spent(int(mark[&"state"]))
 		_raids.add_child(icon)
 
 	_layout_raids()
@@ -154,11 +163,18 @@ func _raid_tint(state: int) -> Color:
 	match state:
 		RaidDirector.MarkState.ACTIVE:
 			return raid_active_color
-		RaidDirector.MarkState.DONE:
-			return raid_done_color
 		RaidDirector.MarkState.MISFIRE:
 			return raid_misfire_color
 	return raid_pending_color
+
+
+# 真的打完了才算过去。**哑火的不算**：RaidDirector 检查时间表时会把所有
+# "时间已过且巢里没东西可抢"的点一次性判成哑火，把它们也藏掉的话，
+# 玩家会看到一整排图标凭空消失，而场上一波入侵都没发生过
+# A misfire is not a raid: the director can write several of them off in a single pass,
+# and hiding those makes a whole row of icons vanish with nothing having happened.
+func _is_spent(state: int) -> bool:
+	return state == RaidDirector.MarkState.DONE
 
 
 # SeasonDirector 每帧调这两个 / called every frame by the director

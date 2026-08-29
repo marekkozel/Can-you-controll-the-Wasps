@@ -14,6 +14,7 @@ absorbent = true
 size = Vector2(44, 32)
 
 [node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
+z_index = 30
 mass = 0.6
 physics_material_override = SubResource("PhysicsMaterial_4t8d5")
 continuous_cd = 2

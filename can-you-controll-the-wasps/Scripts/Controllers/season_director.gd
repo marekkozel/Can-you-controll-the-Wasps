@@ -43,6 +43,7 @@ const BAR_GROUP: StringName = &"season_bar"
 const HIVE_GROUP: StringName = &"hive"
 const WASP_GROUP: StringName = &"wasps"
 const SOURCE_GROUP: StringName = &"item_source"
+const REPORT_GROUP: StringName = &"year_report"
 const SEASON_COUNT: int = 4
 
 # 冬天在季节条上那一格里，三拍各自占多少。冬天的长度是仪式跑出来的，
@@ -81,9 +82,24 @@ const RITE_SPAN: Dictionary = {
 ## 有卵/幼虫的格子直接腐烂，而腐烂的格子产不了卵：拆得越狠，新皇能下的蛋越少
 ## Share of built cells hit. Occupied ones rot, and a rotten cell cannot be laid in -
 ## the harder winter bites, the smaller the next brood. No extra code needed for that.
-@export_range(0.0, 1.0, 0.05) var damage_share: float = 0.35
-## 空格子一次掉几级建造进度 / build levels knocked off an empty cell
-@export_range(1, 5, 1) var damage_depth: int = 1
+@export_range(0.0, 1.0, 0.05) var damage_share: float = 0.80
+## 冬天过后最多还剩几格建成的巢室，**含王座**。比例是给小巢兜底的下限，
+## 这个数是上限——巢建得越大，冬天拆得越狠，开春看到的永远是差不多一片空地
+## The cap, where the share is the floor: however big the comb got, spring opens on
+## roughly the same clearing.
+@export_range(1, 30, 1) var cells_left: int = 4
+## 被选中的格子掉几级建造进度。**要大于等于 build_cost（3）才是"毁掉"**——
+## 给 1 的话一格只从"建成"退到"差一块"，补一块纸板就回来了，玩家看不出巢被拆过
+## Must clear build_cost or winter merely dents the comb: at 1 a cell goes back one
+## step and a single piece of cardboard undoes it.
+@export_range(1, 10, 1) var damage_depth: int = 3
+
+@export_group("Winter cull")
+## 冬天带走整个蜂群。**只有加冕的那一只活到春天**——她就是你这一年攒下的全部东西。
+## 这个数是给她之外额外留几只的余量，默认 0（想调平衡就动它，不用改代码）
+## Winter takes the whole colony; only the crowned wasp sees spring. This is the spare
+## allowance on top of her - the balance knob, left at zero by design.
+@export_range(0, 20, 1) var winter_survivors: int = 0
 
 @export_group("Rite")
 ## 玩家自己挑继承人的窗口。到点蜂群就自己推举一只——**这条分支必须够短**，
@@ -107,6 +123,10 @@ const RITE_SPAN: Dictionary = {
 @export_range(1, 6, 1) var max_brood: int = 3
 ## 每多少个可用空格多下一颗 / empty cells per extra egg
 @export_range(1, 12, 1) var cells_per_egg: int = 4
+## 加冕那一下的卡顿时长（真实秒，不吃 time_scale）。整局最重要的一次点击，
+## 值得让画面停半拍 / the one decision of the year deserves a beat of silence
+@export_range(0.0, 0.5, 0.01) var crown_hit_stop: float = 0.12
+@export_range(0.01, 1.0, 0.01) var crown_hit_stop_scale: float = 0.15
 
 @export_group("False heir")
 ## 伪王后登基那一代，新生蜂带的背叛底噪。玩家看不到数值，只会觉得
@@ -159,6 +179,14 @@ var _slots: Dictionary = {}
 ## 不锁住的话进度条会当着玩家的面倒退
 ## The rite can restart a beat; a bar that runs backwards reads as a bug.
 var _winter_high: float = 0.0
+## 加冕的那一只。清场时要放过她，结算面板上也要写她的名字
+## Spared by the cull and named on the report.
+var _queen_wasp: Wasp = null
+## 这一年的账。每次进春天清零 / the year's tally, cleared each spring
+var _ledger: Dictionary = {}
+var _points_awarded: int = 0
+## 结算面板已经接手了，别再自己往下走 / the report has the wheel, do not advance twice
+var _awaiting_report: bool = false
 
 
 static func find(tree: SceneTree) -> SeasonDirector:
@@ -175,7 +203,41 @@ func _ready() -> void:
 
 	dominant = dominant_variant
 	_delay = start_delay
+	_clear_ledger()
+	# 延后一帧：另外两个 director 不保证比这里先 _ready
+	# Deferred - the other directors are not guaranteed to be ready before us.
+	_bind_ledger.call_deferred()
 	_enter(start_season)
+
+
+# ---------------- 这一年的账 / the year's tally ----------------
+
+# 只数数，不改任何玩法。数出来的东西只有一个去处：冬天那张结算面板
+# Counting only - the numbers exist for the winter report and nowhere else.
+func _bind_ledger() -> void:
+	if _hive != null:
+		_hive.cell_wasp_emerged.connect(func(_c, _w): _tally(&"born"))
+		_hive.cell_larva_starved.connect(func(_c): _tally(&"starved"))
+		_hive.cell_built.connect(func(_c): _tally(&"built"))
+
+	var betrayal: BetrayalDirector = BetrayalDirector.find(get_tree())
+	if betrayal != null:
+		betrayal.false_queen_unmasked.connect(func(_w): _tally(&"caught"))
+		betrayal.execution_reported.connect(func(_q): _tally(&"executed"))
+
+	var raid: RaidDirector = RaidDirector.find(get_tree())
+	if raid != null:
+		raid.raid_ended.connect(func(cleared): _tally(&"repelled" if cleared else &"raided"))
+
+
+func _tally(key: StringName, amount: int = 1) -> void:
+	_ledger[key] = int(_ledger.get(key, 0)) + amount
+
+
+func _clear_ledger() -> void:
+	_ledger = {&"born": 0, &"starved": 0, &"built": 0,
+		&"caught": 0, &"executed": 0, &"repelled": 0, &"raided": 0}
+	_points_awarded = 0
 
 
 func season_name() -> String:
@@ -286,6 +348,7 @@ func crown(wasp: Wasp) -> bool:
 
 	_crowned = true
 	_heir = null
+	_queen_wasp = wasp   # 清场时唯一被放过的那只 / the one the cull spares
 
 	var was_queen: bool = wasp.allegiance().is_false_queen()
 	heir_was_false_queen = was_queen
@@ -302,14 +365,17 @@ func crown(wasp: Wasp) -> bool:
 		betrayal.awaken_scale = false_heir_awaken_scale if was_queen else 1.0
 
 	if _throne != null:
+		_throne.hide_rite_time()
 		_throne.set_royal(false)
 		_throne.celebrate()
+	wasp.hail()
+	_crown_hit_stop()
 
 	_lay_brood()
 
 	var bank: GeneBank = GeneBank.find(get_tree())
 	if bank != null:
-		bank.award()
+		_points_awarded = bank.award()
 
 	# 继位就恢复生产，但整个冬天都不来 raid。两个开关各自只有一个意思：
 	# 冬天 = 不挨打，继位 = 重新开工
@@ -320,6 +386,18 @@ func crown(wasp: Wasp) -> bool:
 	_summon()
 	_set_rite(Rite.GATHER, gather_timeout)
 	return true
+
+
+# 加冕那一下把画面停半拍。Enemy 的命中卡顿是同一套做法，计时器要用不吃
+# time_scale 的那种，否则 time_scale 越小它自己也越慢，永远回不来
+# Same trick the hit stop uses; the timer must ignore time_scale or it never fires back.
+func _crown_hit_stop() -> void:
+	if crown_hit_stop <= 0.0:
+		return
+	var previous: float = Engine.time_scale
+	Engine.time_scale = crown_hit_stop_scale
+	await get_tree().create_timer(crown_hit_stop, true, false, true).timeout
+	Engine.time_scale = previous
 
 
 # 新皇随即下的一窝。走的是普通卵那条链（要喂、要封盖），
@@ -475,13 +553,25 @@ func _ravage() -> void:
 		return
 
 	built.shuffle()
-	var hits: int = int(round(float(built.size()) * damage_share))
+	# 两条规则取更狠的那一个：至少拆掉 damage_share 那么多，而且最多只准留下
+	# cells_left 格（王座本来就不在候选里，所以这里减 1）
+	# The harsher of the two: at least the share, and never more survivors than the cap.
+	var hits: int = maxi(
+		int(round(float(built.size()) * damage_share)),
+		built.size() - maxi(cells_left - 1, 0))
 	for i in mini(hits, built.size()):
 		var cell: HexCell = built[i]
-		# 有卵/幼虫的直接烂掉，空的掉建造进度。腐烂的格子产不了卵，
-		# 所以这一下同时削掉了新皇的产房 / rot also costs the new queen her nursery
-		if not cell.destroy_occupant():
-			cell.damage_build(damage_depth)
+		# 先腾空再拆结构，顺序不能反：damage_build 拒绝有内容的格子，
+		# 反过来写的话这一格里但凡有颗卵，整格结构就毫发无伤
+		# Empty it first - damage_build refuses an occupied cell, so the other order
+		# leaves every cell holding an egg completely untouched.
+		#
+		# 蛹和腐烂的格子也一起清掉。冬天带走整个蜂群，蛹不该是唯一的例外，
+		# 而"选中的格子里有几个恰好是烂的"更不该变成一次白打的判定
+		# Pupae and rot go too: winter takes the colony, and a rotten cell must not
+		# quietly absorb one of the hits.
+		cell.clear_content()
+		cell.damage_build(damage_depth)
 
 
 func _open_throne() -> void:
@@ -507,6 +597,78 @@ func _open_throne() -> void:
 	throne_opened.emit(_throne)
 
 
+# ---------------- 结算 / the settlement ----------------
+
+# 冬天的最后一拍。顺序是有讲究的：**先让蜂群把加冕仪式走完，再清场**——
+# 你最后看到的是它们围着新皇站成一圈，然后冬天把它们全带走
+# The procession first, the cull second: the last thing you see is the swarm around her.
+func _settle() -> void:
+	if _awaiting_report:
+		return
+	_cull()
+
+	var panel: Node = get_tree().get_first_node_in_group(REPORT_GROUP)
+	# 没有面板（headless、或者面板被删了）就直接进春天。
+	# **仪式绝不允许卡住**，一张缺席的 UI 不能变成一局卡死的游戏
+	# A missing panel must never hang the rite - straight to spring instead.
+	if panel == null or not panel.has_method("present"):
+		advance()
+		return
+
+	_awaiting_report = true
+	panel.present(year_report())
+
+
+# 面板按完"继续"回调这里 / called back when the player dismisses the report
+func resume_after_report() -> void:
+	if not _awaiting_report:
+		return
+	_awaiting_report = false
+	advance()
+
+
+# 冬天带走整个蜂群，只留加冕的那一只。
+# 没能加冕的那一年（一只可用的蜂都没有）至少留一只，否则春天开局是个空场
+# Nobody crowned means we still spare one, or spring opens on an empty map.
+func _cull() -> void:
+	var doomed: Array = []
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Wasp = node as Wasp
+		if wasp != null and wasp != _queen_wasp:
+			doomed.append(wasp)
+
+	var spared: int = winter_survivors if is_instance_valid(_queen_wasp) else maxi(winter_survivors, 1)
+	doomed.shuffle()
+	for i in range(spared, doomed.size()):
+		var wasp: Wasp = doomed[i]
+		if is_instance_valid(wasp):
+			wasp.perish()
+
+
+# 摊开这一年的账。纯读数，面板怎么画是它自己的事
+# Numbers only; how they are drawn is the panel's business.
+func year_report() -> Dictionary:
+	var bank: GeneBank = GeneBank.find(get_tree())
+	var queen_name: String = ""
+	if is_instance_valid(_queen_wasp):
+		queen_name = _queen_wasp.wasp_name
+	return {
+		&"generation": generation,
+		&"queen": queen_name,
+		&"points": _points_awarded,
+		&"points_total": bank.points if bank != null else 0,
+		&"rows": [
+			{&"label": "Wasps born", &"value": int(_ledger.get(&"born", 0))},
+			{&"label": "Cells finished", &"value": int(_ledger.get(&"built", 0))},
+			{&"label": "Larvae starved", &"value": int(_ledger.get(&"starved", 0))},
+			{&"label": "Raids repelled", &"value": int(_ledger.get(&"repelled", 0))},
+			{&"label": "Raids that took something", &"value": int(_ledger.get(&"raided", 0))},
+			{&"label": "Impostors unmasked", &"value": int(_ledger.get(&"caught", 0))},
+			{&"label": "Wasps you put down", &"value": int(_ledger.get(&"executed", 0))},
+		],
+	}
+
+
 # ---------------- 季节轮 / the wheel ----------------
 
 # 到点和调试跳过共用 / shared by the timer and by the debug skip
@@ -518,6 +680,7 @@ func advance() -> void:
 	# generation, counted from her reign rather than from the coronation itself.
 	if next == Season.SPRING:
 		generation += 1
+		_clear_ledger()
 		generation_advanced.emit(generation)
 	_enter(next)
 
@@ -549,6 +712,7 @@ func _open_winter() -> void:
 func _close_winter() -> void:
 	_dismiss()
 	if _throne != null:
+		_throne.hide_rite_time()
 		_throne.set_royal(false)
 	_throne = null
 	_set_raid_paused(false)
@@ -566,6 +730,7 @@ func _set_rite(next: int, seconds: float) -> void:
 func _tick_rite(_delta: float) -> void:
 	match rite:
 		Rite.THRONE:
+			_feed_throne()
 			# 被推举的那只到位了就登基 / the colony's pick takes it on arrival
 			if is_instance_valid(_heir) and _throne != null:
 				if _heir.global_position.distance_to(_throne.global_position) <= attend_tolerance:
@@ -587,7 +752,24 @@ func _tick_rite(_delta: float) -> void:
 
 		Rite.COUNTDOWN:
 			if _time_left <= 0.0:
-				advance()
+				_settle()
+
+
+# 王座每帧要知道两件事：这一拍还剩多久，以及玩家手上有没有一只放得进去的蜂。
+# 后者是这段反馈的关键——拿起蜂的那一刻王座就变色，"往哪放"不用文字解释
+# The second one is the point: the throne answers "where do I put this" by itself.
+func _feed_throne() -> void:
+	if _throne == null:
+		return
+	_throne.set_royal_focus(_heir_in_hand())
+	_throne.show_rite_time(clampf(_time_left / maxf(_duration, 0.01), 0.0, 1.0))
+
+
+func _heir_in_hand() -> bool:
+	var wasp: Wasp = DraggableComponent.held_body() as Wasp
+	# 查的是 works()，不是 state——后者会把立场泄露给一个纯表现的判断
+	# works(), never state: a cosmetic check must not leak allegiance.
+	return wasp != null and wasp.allegiance().works()
 
 
 func _process(delta: float) -> void:

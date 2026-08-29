@@ -17,8 +17,9 @@ shader_type canvas_item;
 // UV is texture-space once the sprite has a region, so out-of-range is detectable:
 // clamping would otherwise smear the edge row of art that touches the texture border.
 //
-// 图集（hframes > 1）不能用这个：UV 跑的是子区间，采样会串到隔壁帧。
-// Never on an atlas: the sampling bleeds into the neighbouring frame.
+// 图集也能用，但**必须**把当前帧的 UV 界喂进 frame_min / frame_max：UV 跑的是贴图空间，
+// 界外采样会串到隔壁帧，蜂身上会多出半只邻居的轮廓。OutlineComponent 负责每帧推这两个值。
+// Atlas sheets need frame_min/frame_max or the sampling bleeds into the next frame.
 
 // 中性色，不跟血统走 / neutral on purpose - lineage colour already lives on the body
 uniform vec4 outline_color : source_color = vec4(1.0, 0.902, 0.502, 1.0);
@@ -28,13 +29,16 @@ uniform float outline_width : hint_range(0.0, 8.0) = 1.0;
 uniform float alpha_cutoff : hint_range(0.0, 1.0) = 0.15;
 // 整体不透明度，悬停和拿在手上靠它分级 / hover vs held ride on this
 uniform float fade : hint_range(0.0, 1.0) = 1.0;
+// 当前帧在贴图里的 UV 界。整张图就是 (0,0)~(1,1) / the current frame's bounds in texture UV
+uniform vec2 frame_min = vec2(0.0, 0.0);
+uniform vec2 frame_max = vec2(1.0, 1.0);
 
 const float DIAG = 0.70710678;
 
 float alpha_at(sampler2D tex, vec2 uv) {
-	// 界外 = 贴图外面 = 空气。不写这一句，顶到贴图边缘的美术会把边缘像素抹一圈
-	// Outside the texture is empty, not a smear of whatever the border pixel holds.
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+	// 界外 = 这一帧外面 = 空气。不写这一句，顶到边缘的美术会把边缘像素抹一圈，
+	// 图集上还会直接采到隔壁帧 / outside the frame is empty, never a smear or a neighbour
+	if (uv.x < frame_min.x || uv.x > frame_max.x || uv.y < frame_min.y || uv.y > frame_max.y) {
 		return 0.0;
 	}
 	return texture(tex, uv).a;

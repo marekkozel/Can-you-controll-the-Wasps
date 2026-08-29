@@ -4,10 +4,10 @@ extends RigidBody2D
 signal slammed(speed: float)
 ## 死了。尸体系统以后接这里 —— 一只蜂是"建格子→产卵→孵化→喂满→封盖→羽化"整条链换来的，
 ## 它消失得无声无息是不对的。at 是倒下的位置，尸体就该出现在那儿。
-## 想区分死因看**信号顺序**：处决时 StingComponent.killed 先发（还带 was_false_queen），
-## 这一条后发；只收到这一条就是战死或其他。
-## The corpse system hooks here. To tell an execution apart, watch the order: on a sting
-## StingComponent.killed fires first and carries was_false_queen; this one always follows.
+## 处决不再是一个独立事件：玩家把她摔死和敌人咬死她走的是同一条血量路径，
+## 区别只在 _slain_by_player —— 上报 BetrayalDirector 的判断在 _on_died 里
+## No separate execution event any more: a wall slam and a hunter's bite share this path,
+## and _slain_by_player is what tells them apart.
 signal died(wasp: Wasp, at: Vector2)
 ## 岗位变了 / the wasp switched posts
 signal job_changed(job: Job)
@@ -61,6 +61,13 @@ const SWITCH_MARGIN: float = 0.09
 @export_range(0.5, 20.0, 0.5) var max_fling_time: float = 6.0
 @export var rehome_on_landing: bool = true
 @export_range(20.0, 2000.0, 10.0) var impact_speed: float = 260.0
+## 撞一次墙掉几点血。**固定值，不随速度加成**——按速度分档等于把一击必杀放回来，
+## 而这套机制的全部意义就是处决得摔好几下
+## Flat and never speed-scaled: tiering it by speed puts the one-shot execution back.
+@export_range(0, 10, 1) var impact_damage: int = 1
+## 两次撞墙伤害之间的间隔。一次碰撞会连着好几帧发接触事件，没有这道闸"一下"就是三下
+## One collision fires contact events over several frames; without this a single hit kills.
+@export_range(0.0, 2.0, 0.05) var impact_damage_cooldown: float = 0.15
 
 # 线索全是区间，而且区间必须重叠。不重叠就不是推理了，是探测器：
 # 玩家挖到一只就知道答案，唯一的策略变成挨个抓一遍。
@@ -149,6 +156,7 @@ var target_build_cell: Node2D = null
 ## base_scale（蜂王浆体型）占着，拿 scale.x = -1 去翻会跟它们打架
 ## Flip the sprite, never Visual.scale - the emerge tween and the jelly size own that.
 @onready var _body_sprite: Sprite2D = $Visual/Body
+@onready var _animator: SpriteAnimator = get_node_or_null(^"SpriteAnimator") as SpriteAnimator
 @onready var _draggable: Area2D = $DraggableComponent
 @onready var _juice: JuiceComponent = $JuiceComponent
 @onready var _btree: BTPlayer = $BTPlayer
@@ -163,6 +171,9 @@ var _is_flung: bool = false
 var _fling_time: float = 0.0
 var _last_speed: float = 0.0
 var _attack_timer: float = 0.0
+var _impact_timer: float = 0.0
+## 这一下是不是玩家造成的。敌人咬死的不能记成处决 / a hunter's kill is not your execution
+var _slain_by_player: bool = false
 var _nav_goal: Vector2 = Vector2.INF
 var _steer_weight: float = 0.08
 ## 加冕时该站的位置。INF = 没在集结 / the coronation slot, INF when not attending
@@ -567,6 +578,21 @@ func _on_hovered() -> void:
 func _on_died(_from: Vector2) -> void:
 	_carry.drop()
 	_juice.burst()
+
+	# 只有你摔死的才算处决。被猎手咬死的忠诚工蜂要是也记在你头上，
+	# unrest 白涨 0.2、周围的蜂白记一次仇，而玩家根本没动手
+	# Only a death you caused counts - a hunter's kill filed as your execution would
+	# charge you 0.2 unrest and a round of grudges for something you never did.
+	# 清叛军不算处决：它们是纯敌人，杀它们既不该推不安，也不该让旁观的蜂记仇
+	# Culling a rebel is not an execution - it must not raise unrest or earn a grudge.
+	if _slain_by_player and not _allegiance.is_rebel():
+		var director: BetrayalDirector = BetrayalDirector.find(get_tree())
+		if director != null:
+			# 用 was_false_queen 而不是当前立场：摔第一下她就变回工蜂了，
+			# 按当前立场算的话玩家抓对了人反而吃一次误杀惩罚
+			# The mask is already off by the first slam; current state would punish
+			# the player for getting it right.
+			director.report_execution(self, _allegiance.was_false_queen)
 	# queue_free 之前发。接收方要留住尸体的话得自己 instantiate 一个，
 	# 别指望在这只蜂身上做文章 / emit before freeing; listeners must spawn their own corpse
 	died.emit(self, global_position)
@@ -634,6 +660,8 @@ func _physics_process(delta: float) -> void:
 	# Must tick before the early returns - a flung wasp would freeze its cooldown otherwise.
 	if _attack_timer > 0.0:
 		_attack_timer = maxf(_attack_timer - delta, 0.0)
+	if _impact_timer > 0.0:
+		_impact_timer = maxf(_impact_timer - delta, 0.0)
 
 	# 拿在手上、飞在空中、站在加冕队列里的时候不重新掂量：那几段行为树本来就不在跑，
 	# 换了岗位也没人执行，落地时 set_wander_home 会重算一次
@@ -666,8 +694,13 @@ func _physics_process(delta: float) -> void:
 		set_wander_home(global_position)
 
 
-func _on_body_entered(_body: Node) -> void:
-	if _last_speed < impact_speed:
+# 摔墙 / thrown into a wall.
+# **只认静态墙体**：蜂撞蜂、蜂撞纸板都会走到这里，不过滤的话巢里挤着的十几只
+# 会互相把对方撞死，减员跟玩家的手一点关系都没有
+# Static bodies only - wasps jostle constantly, and counting that would quietly
+# kill off the hive with nobody's hand on it.
+func _on_body_entered(body: Node) -> void:
+	if _last_speed < impact_speed or not (body is StaticBody2D):
 		return
 
 	# 被摔的黄蜂会记住。玩家拿它们当保龄球是有代价的
@@ -679,6 +712,44 @@ func _on_body_entered(_body: Node) -> void:
 	if _last_speed > impact_speed * 2.0:
 		_juice.burst()
 	slammed.emit(_last_speed)
+	_take_impact_damage()
+
+
+# 甩出去撞墙掉血。一次投掷弹好几面墙就是好几下，这是故意留的——
+# 它自己会收敛，每次反弹速度大约减半，两三跳之后就低于 impact_speed 不再计数
+# A single throw that ricochets lands several hits on purpose; it converges on its own,
+# since each bounce roughly halves the speed until it drops under the threshold.
+#
+# 不走 take_damage()：那条是挨咬的路，会再记一次 report_wound，
+# 而这一下已经由上面的 report_slam 记过账了
+# Not take_damage(): that is the bite path and would file a second grudge for one hit.
+func _take_impact_damage() -> void:
+	if impact_damage <= 0 or _impact_timer > 0.0 or not _health.is_alive():
+		return
+	# 还攥在手里的不算。不挡这一条的话按住她贴着墙磨 0.45 秒就能弄死，
+	# 投掷机制当场退化回一击必杀的另一种按法
+	# Not while she is still in your hand: grinding her along a wall would kill in 0.45s
+	# and turn the throw back into a one-button execution.
+	if _draggable.is_grabbed():
+		return
+	_impact_timer = impact_damage_cooldown
+
+	# 摔一下面具就掉：她当场变回普通工蜂，停止下卵。伤害照扣，她跟别的蜂一样能被摔死。
+	# 已经孵出来的叛军不跟着解散——那些是你自己惹出来的，自己清
+	# One slam unmasks her: she reverts to an ordinary worker and stops laying. The hit
+	# still lands, and her existing rebels stay rebels.
+	if _allegiance.is_false_queen():
+		_allegiance.unmask()
+		var unmask_director: BetrayalDirector = BetrayalDirector.find(get_tree())
+		if unmask_director != null:
+			unmask_director.report_unmasked(self)
+
+	# 死因必须在扣血**之前**定下来：_health.died 是同步发的，_on_died 当场就要读它
+	# Set before the hit lands - died fires synchronously and _on_died reads this.
+	_slain_by_player = true
+	_health.take_damage(impact_damage, global_position)
+	if _health.is_alive():
+		_slain_by_player = false
 
 
 func _process(delta: float) -> void:
@@ -705,8 +776,8 @@ func _face_travel() -> void:
 
 # 真的打出去了才返回 true，冷却中返回 false
 # Returns true only when the sting actually landed; false while on cooldown.
-# 挨咬 / bitten. 猎手走这条；处决走 StingComponent，那边直接打满血量
-# Hunters come through here; executions go via StingComponent and bypass it.
+# 挨咬 / bitten. 猎手走这条；玩家摔墙走 _take_impact_damage()，两条最后都落在同一份血量上
+# Hunters come through here; a player's throw goes through _take_impact_damage().
 func take_damage(amount: int, from: Vector2 = Vector2.ZERO) -> bool:
 	if not _health.is_alive():
 		return false
@@ -726,6 +797,22 @@ func take_damage(amount: int, from: Vector2 = Vector2.ZERO) -> bool:
 	return true
 
 
+# 她被扶上了王座 / crowned. 纯表现，一个状态都不改
+func hail() -> void:
+	_juice.punch(1.45, 0.55)
+	_juice.burst()
+
+
+# 冬天带走的 / taken by winter.
+# 不算处决、不记任何人的账，走的还是同一条死亡链（掉货、迸一下、发 died）
+# Not an execution and nobody's grudge, but the same death chain all the same.
+func perish() -> void:
+	if not _health.is_alive():
+		return
+	_slain_by_player = false
+	_health.take_damage(_health.health, global_position)
+
+
 func attack_enemy() -> bool:
 	if target_enemy == null or not is_instance_valid(target_enemy):
 		return false
@@ -736,6 +823,9 @@ func attack_enemy() -> bool:
 
 	target_enemy.take_damage(attack_damage(), global_position)
 	_attack_timer = attack_cooldown
+	# 一次性段，播完自己回飞行 / one-shot: the animator hands back to the fly loop
+	if _animator != null:
+		_animator.play(&"attack", true)
 	return true
 
 

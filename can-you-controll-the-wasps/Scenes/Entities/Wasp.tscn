@@ -8,13 +8,14 @@
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="5_juice"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/VariantComponent.tscn" id="6_variant"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/AllegianceComponent.tscn" id="7_allegiance"]
-[ext_resource type="PackedScene" path="res://Scenes/Mechanics/StingComponent.tscn" id="8_sting"]
 [ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="9_pure"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/SuccessionComponent.tscn" id="10_succession"]
 [ext_resource type="Resource" uid="uid://duqit4ccm47rt" path="res://Resources/Behaviours/worker.tres" id="11_behaviour"]
 [ext_resource type="Resource" uid="uid://c73kqwhaw3f1m" path="res://Resources/Behaviours/false_queen.tres" id="12_queenbhv"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/OutlineComponent.tscn" id="13_outline"]
-[ext_resource type="Texture2D" uid="uid://ovsqjnk4e726" path="res://Assets/Entities/wasp.png" id="ph_wasp"]
+[ext_resource type="Texture2D" uid="uid://c31jsu6cp8d25" path="res://Assets/Entities/good_wasp.png" id="ph_wasp"]
+[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animator.gd" id="14_animator"]
+[ext_resource type="Resource" path="res://Resources/Animations/wasp.tres" id="15_waspanim"]
 
 [sub_resource type="PhysicsMaterial" id="Material_wasp"]
 friction = 0.15
@@ -29,6 +30,7 @@ radius = 23.0
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_jh0a1"]
 
 [node name="Wasp" type="RigidBody2D" unique_id=322438317 groups=["wasps"]]
+z_index = 20
 mass = 1.2
 physics_material_override = SubResource("Material_wasp")
 lock_rotation = true
@@ -45,6 +47,8 @@ queen_behaviour = ExtResource("12_queenbhv")
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=193282509]
 texture = ExtResource("ph_wasp")
+hframes = 8
+vframes = 6
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1218902991]
 shape = SubResource("Shape_wasp_body")
@@ -64,8 +68,6 @@ variant = ExtResource("9_pure")
 
 [node name="AllegianceComponent" parent="." unique_id=517835167 instance=ExtResource("7_allegiance")]
 
-[node name="StingComponent" parent="." unique_id=1471745951 instance=ExtResource("8_sting")]
-
 [node name="SuccessionComponent" parent="." unique_id=819560363 instance=ExtResource("10_succession")]
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=119256865]
@@ -82,6 +84,10 @@ max_speed = 220.0
 [node name="JuiceComponent" parent="." unique_id=1935085118 instance=ExtResource("5_juice")]
 
 [node name="OutlineComponent" parent="." unique_id=148787988 instance=ExtResource("13_outline")]
+
+[node name="SpriteAnimator" type="Node" parent="." unique_id=771204853]
+script = ExtResource("14_animator")
+animation = ExtResource("15_waspanim")
 
 [node name="BTPlayer" type="BTPlayer" parent="." unique_id=2041878627]
 behavior_tree = ExtResource("5_7c3bo")

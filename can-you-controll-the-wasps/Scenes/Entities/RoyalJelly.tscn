@@ -14,6 +14,7 @@ bounce = 0.23
 radius = 17.0
 
 [node name="RoyalJelly" type="RigidBody2D" unique_id=1160007476 groups=["carriable"]]
+z_index = 30
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_onxnw")
 continuous_cd = 2

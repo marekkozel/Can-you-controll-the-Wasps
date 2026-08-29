@@ -10,7 +10,7 @@
 [ext_resource type="Resource" path="res://Resources/Genes/thick_comb.tres" id="thick_comb"]
 [ext_resource type="Resource" path="res://Resources/Genes/thick_hide.tres" id="thick_hide"]
 
-[node name="UpgradePanel" type="Control" unique_id=1543963970]
+[node name="UpgradePanel" type="Control" unique_id=1543963970 groups=["upgrade_panel"]]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

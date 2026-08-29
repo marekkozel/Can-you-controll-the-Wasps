@@ -13,6 +13,7 @@ bounce = 0.26
 radius = 12.0
 
 [node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
+z_index = 30
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_aqjq3")
 continuous_cd = 2

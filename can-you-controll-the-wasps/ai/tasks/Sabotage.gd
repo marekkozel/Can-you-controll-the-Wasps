@@ -1,5 +1,14 @@
 # 破坏 / sabotage: 幼虫 > 卵 > 建造进度，按这个优先级找事干。
-# 母亲一死它们就不是 REBEL 了，这条分支自然失效 / dies with the mother.
+#
+# 树里的位置：`Seq - Rebel` = IsRebel -> Selector(Sabotage, Harass, Idle)。
+# 以前那格只有 IsRebel -> Sabotage，冷却一到整条序列就失败，叛军会掉到下面的
+# Gather/Fidget 去**帮着干活**——它们是纯敌人，不该有那条出口。最后一格必须是
+# 不会失败的（Idle），否则冷却期间照样漏下去。
+# The rebel branch must never fall through to the worker branches, so the last slot
+# in its selector is one that cannot fail.
+#
+# 母亲死了叛军**不再**自动屈服：异色就是敌人，清场是玩家的事
+# A dead mother no longer pacifies them - culling is the player's job.
 class_name Sabotage
 extends BTAction
 
@@ -7,9 +16,11 @@ extends BTAction
 @export var fly_speed: float = 95.0
 
 @export_group("Chewing")
-## 两次听咬建造进度之间的间隔 / seconds between bites on build progress
-@export var bite_cooldown: float = 2.5
-@export_range(1, 5, 1) var bite_damage: int = 1
+## 两次拆巢之间的间隔。**一口拆掉一整格**，所以这个数要顶下原来三口的总时长——
+## 拆的速率没变，变的是它看得见了：一格一格地没，而不是整片巢室慢慢变暗
+## One bite takes a whole cell, so this covers what used to be three of them: the rate
+## is unchanged, the readability is not.
+@export var bite_cooldown: float = 7.5
 
 @export_group("Killing")
 ## 弄死一只幼虫后要缓很久。这是重击，不该是持续碾压，
@@ -55,7 +66,7 @@ func _tick(delta: float) -> Status:
 		allegiance.sabotage_cooldown = kill_cooldown
 		return SUCCESS
 
-	if not cell.damage_build(bite_damage):
+	if not cell.demolish():
 		return FAILURE
 	allegiance.sabotage_cooldown = bite_cooldown
 	return SUCCESS

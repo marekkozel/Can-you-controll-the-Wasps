@@ -38,6 +38,7 @@ signal killed(enemy: Enemy)
 @onready var _raid: RaidComponent = $RaidComponent
 @onready var _hunt: HuntComponent = $HuntComponent
 @onready var _loot: LootComponent = $LootComponent
+@onready var _animator: SpriteAnimator = get_node_or_null(^"SpriteAnimator") as SpriteAnimator
 
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
@@ -60,6 +61,11 @@ func _ready() -> void:
 
 	_health.damaged.connect(_on_damaged)
 	_health.died.connect(_on_died)
+
+	# 咬蜂和啃巢室是两个组件各自的事，这里只借它们已有的信号播动画，
+	# 不往组件里塞"通知父级"那种反向依赖 / animation rides existing signals, no back-reference
+	_hunt.bit.connect(func(_victim): _play(&"attack", true))
+	_raid.raided.connect(func(_cell, _took): _play(&"attack", true))
 
 	_visual.scale = Vector2.ZERO
 	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT) \
@@ -137,6 +143,13 @@ func _apply_build() -> void:
 		body.texture = variant.texture
 		body.offset = variant.sprite_offset  # 图的中心 = 实体原点 / art centre is the origin
 
+	# 图集切几列几行由动画表说了算，所以必须在贴图换完之后 / the table owns the grid
+	if _animator != null:
+		_animator.set_animation(variant.animation)
+		if variant.animation == null and body != null:
+			body.hframes = 1  # 静态图别留着上一张图集的切法 / a still is one cel
+			body.vframes = 1
+
 	# CircleShape2D 是场景里的 SubResource，实例之间**共享**——直接改半径会改全场，
 	# 最后一只生成的敌人的体型会套到所有敌人身上。跟 DragProfile 一个坑
 	# Shapes authored in a scene are shared between instances; duplicate before touching.
@@ -167,6 +180,13 @@ func _apply_build() -> void:
 	var bar: Node2D = get_node_or_null(^"HealthBarComponent") as Node2D
 	if bar != null:
 		bar.visible = variant.show_health_bar
+
+
+# 没接动画表的品种（还是静态图）就什么都不做，不刷警告
+# A breed with no table is a still image, not a mistake.
+func _play(clip_name: StringName, restart: bool = false) -> void:
+	if _animator != null and _animator.has_clip(clip_name):
+		_animator.play(clip_name, restart)
 
 
 func _tint(node: Node, color: Color) -> void:
@@ -235,8 +255,18 @@ func _on_died(_from: Vector2) -> void:
 	set_deferred("freeze", true)
 	$CollisionShape2D.set_deferred("disabled", true)
 
-	# 膨胀一下再消散 / swell, then fade out
+	# 死亡段停在最后一帧，尸体保持死的样子 / the corpse holds its last frame
+	var linger: float = 0.0
+	if _animator != null and _animator.has_clip(&"death"):
+		_animator.play(&"death", true)
+		linger = _animator.clip_duration(&"death")
+
+	# 膨胀一下再消散。有死亡动画的话先让它播完，不然刚死就被淡掉了
+	# The pop waits out the death clip, or the animation would never be seen.
 	var tween: Tween = create_tween().set_parallel(true)
+	if linger > 0.0:
+		tween.tween_interval(linger)
+		tween = tween.chain().set_parallel(true)
 	tween.tween_property(_visual, "scale", Vector2.ONE * death_pop_scale, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_visual, "modulate:a", 0.0, death_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(queue_free)
