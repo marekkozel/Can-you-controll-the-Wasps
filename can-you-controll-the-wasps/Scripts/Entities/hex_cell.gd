@@ -615,8 +615,6 @@ func _clean() -> void:
 	demolish(true)
 	_refresh_visual()
 
-	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_CLEAN)
-
 	cleaned.emit(self)
 
 
