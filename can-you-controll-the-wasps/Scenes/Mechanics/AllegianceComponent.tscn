@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://cq137338al1ux"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/allegiance_component.gd" id="1_allegiance_component"]
+[ext_resource type="Script" uid="uid://brjiascy554qy" path="res://Scripts/Mechanics/allegiance_component.gd" id="1_allegiance_component"]
 
-[node name="AllegianceComponent" type="Node"]
+[node name="AllegianceComponent" type="Node" unique_id=32878147]
 script = ExtResource("1_allegiance_component")
