@@ -190,6 +190,7 @@ breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtReso
 raids_per_year = Vector2i(5, 7)
 min_gap = 0.02
 raid_duration = 40.0
+disable_timer = null
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
 position = Vector2(340, 72)

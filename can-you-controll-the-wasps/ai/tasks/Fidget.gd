@@ -15,7 +15,7 @@ extends BTAction
 ## 飞过去的速度 / cruise speed while going somewhere to fidget
 @export var fly_speed: float = 70.0
 ## 多近算到位 / arrival tolerance
-@export var reach: float = 22.0
+@export var reach: float = 35.0
 ## 触角接触要多近。要大于两只蜂的碰撞半径之和（19.5 x 2 = 39）
 ## Must clear both collision radii, or they hover just short of each other forever.
 @export var contact_reach: float = 44.0
@@ -31,6 +31,7 @@ var _target = null
 var _point: Vector2 = Vector2.INF
 var _timer: float = 0.0
 var _cooldown: float = 0.0
+var _travel_timeout: float = 0.0
 
 
 func _tick(delta: float) -> Status:
@@ -61,8 +62,8 @@ func _exit() -> void:
 func _begin() -> bool:
 	_act = agent.pick_idle_act()
 	_timer = agent.linger_time * randf_range(0.8, 1.25)
+	_travel_timeout = 4.0 # NEW: Give up if it takes longer than 4s to arrive
 	_target = null
-	_point = Vector2.INF
 
 	match _act:
 		Wasp.IdleAct.INSPECT:
@@ -102,6 +103,10 @@ func _tick_travel(delta: float) -> Status:
 		return _finish()
 
 	if agent.global_position.distance_to(goal) > reach:
+		_travel_timeout -= delta
+		if _travel_timeout <= 0.0:
+			return _finish() # NEW: Abort if stuck in traffic
+			
 		agent.steer_towards(goal, delta, fly_speed)
 		return RUNNING
 	return _tick_linger(delta)
@@ -116,13 +121,15 @@ func _tick_contact(delta: float) -> Status:
 
 	var goal: Vector2 = (_target as Node2D).global_position
 	if agent.global_position.distance_to(goal) > contact_reach:
+		_travel_timeout -= delta
+		if _travel_timeout <= 0.0:
+			return _finish() # NEW: Abort if the target wasp flies away
+			
 		agent.steer_towards(goal, delta, fly_speed)
 		return RUNNING
 
-	# 碰上了只停很短一下，接触是个动作不是个姿势 / a contact is a beat, not a pose
 	_timer -= delta * 2.5
 	return RUNNING if _timer > 0.0 else _finish()
-
 
 func _finish() -> Status:
 	_busy = false

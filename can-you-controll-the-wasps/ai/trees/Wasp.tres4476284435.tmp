@@ -63,6 +63,9 @@ children = [SubResource("BTCondition_isgathering"), SubResource("BTAction_gather
 
 [sub_resource type="BTAction" id="BTAction_fidget"]
 script = ExtResource("10_fidget")
+fly_speed = null
+reach = null
+contact_reach = null
 
 [sub_resource type="BTSequence" id="BTSequence_fidget"]
 custom_name = "Seq - Fidget"
@@ -75,12 +78,9 @@ script = ExtResource("11_idle")
 custom_name = "Seq - Idle"
 children = [SubResource("BTAction_idle")]
 
-[sub_resource type="BTSelector" id="BTSelector_onxnw"]
-children = [SubResource("BTSequence_deliver"), SubResource("BTSequence_secretlay"), SubResource("BTSequence_sabotage"), SubResource("BTSequence_gather"), SubResource("BTSequence_fidget"), SubResource("BTSequence_idle")]
-
-[sub_resource type="BTDynamicSelector" id="BTDynamicSelector_4t8d5"]
-children = [SubResource("BTSequence_defend"), SubResource("BTSelector_onxnw")]
+[sub_resource type="BTSelector" id="BTSelector_root"]
+children = [SubResource("BTSequence_defend"), SubResource("BTSequence_deliver"), SubResource("BTSequence_secretlay"), SubResource("BTSequence_sabotage"), SubResource("BTSequence_gather"), SubResource("BTSequence_fidget"), SubResource("BTSequence_idle")]
 
 [resource]
 blackboard_plan = SubResource("BlackboardPlan_wasp")
-root_task = SubResource("BTDynamicSelector_4t8d5")
+root_task = SubResource("BTSelector_root")

@@ -344,6 +344,10 @@ func _choose_job() -> void:
 			if source != null and source.is_refinery():
 				need = maxf(need, source.intake_demand())
 			var score: float = need - float(work_threshold.get(payload, 0.35))
+
+			#if (payload == &"food" or payload == &"royal_jelly") and need > 0.1:
+			#	score += 0.5 
+
 			if post == _posted_post:
 				score += posting_bias
 			if post == job_post:
