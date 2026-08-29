@@ -17,3 +17,17 @@ export_credentials.cfg
 data_*/
 mono_crash.*.json
 
+
+# Godot 存盘时的中间文件。world.tscn 每存一次就掉一个，已经误传过 5 个
+# Editor save churn - world.tscn drops one of these every save.
+*.tmp
+*.TMP
+
+# limboai 每跑一次就重新生成一份 ~ 开头的临时二进制（4.9MB 一个）。
+# **只忽略 ~ 开头的**：同目录下 liblimboai.windows.editor.x86_64.dll 是要提交的真二进制，
+# 用通配符会把它一起吃掉
+# Only the tilde-prefixed copies: the real binaries live in the same folder.
+can-you-controll-the-wasps/addons/limboai/bin/~*
+
+# Windows/MSYS 崩溃留下的 / crash dumps
+*.stackdump
