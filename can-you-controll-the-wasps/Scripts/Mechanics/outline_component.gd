@@ -101,6 +101,17 @@ func _expand(sprite: Sprite2D) -> void:
 	_sync_frame()
 
 
+# 换一张贴图。_build() 只在 _ready 时抄过一次，之后没人管——本体翻面换图时
+# 不跟着换的话，描边会继续描旧那张的剪影（good_wasp 那顶帽子尤其显眼）
+# The sheet is copied once at build time; a later swap has to reach this one too.
+func retexture(tex: Texture2D) -> void:
+	if _sprite == null or tex == null or _sprite.texture == tex:
+		return
+	_sprite.texture = tex
+	_frame = -1  # 强制重算 region / force the cel rect to be recomputed
+	_sync_frame()
+
+
 func _pad() -> float:
 	return ceilf(maxf(hover_width, held_width)) + 1.0
 

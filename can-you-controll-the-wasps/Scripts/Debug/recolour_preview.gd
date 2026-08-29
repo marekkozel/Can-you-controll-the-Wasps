@@ -19,10 +19,26 @@ const SHADER: Shader = preload("res://Assets/Shaders/recolour.gdshader")
 # 能把卵和巢室分开，玩家看不到这个青）。egg.png 不在这儿——它 visible = false，
 # 从来没上过屏，游戏里的卵是 Cells.png 的 frame 4。
 # The egg row is a frame of the cell sheet; egg.png itself never reaches the screen.
+#
+# 两张蜂图规格一致（512x384，8x6），都取 fly 的第一帧，所以同一列上下就是
+# 「同一个血统下正邪两张脸」。evil 多的那对红色（H 10~16）落在色相窗口里，
+# 会跟着血统走——这是想要的，红眼不做保护。
+# Both sheets share the layout, so a column reads as one lineage on two faces.
 const ROWS: Array[Dictionary] = [
 	{
-		&"path": "res://Assets/Entities/wasp.png",
+		&"path": "res://Assets/Entities/good_wasp.png",
+		&"label": "good_wasp (fly)",
+		&"hframes": 8,
+		&"vframes": 6,
 		&"reference": Color(0.996, 0.812, 0.459),  # #fecf75
+		&"window": 30.0,
+	},
+	{
+		&"path": "res://Assets/Entities/evil_wasp.png",
+		&"label": "evil_wasp (fly)",
+		&"hframes": 8,
+		&"vframes": 6,
+		&"reference": Color(0.996, 0.812, 0.459),  # 图里是 #ffd075，同一族 / same family
 		&"window": 30.0,
 	},
 	{
@@ -150,6 +166,7 @@ func _add_sprite(tex: Texture2D, row: Dictionary, mat: ShaderMaterial, at: Vecto
 	var s := Sprite2D.new()
 	s.texture = tex
 	s.hframes = row.get(&"hframes", 1)
+	s.vframes = row.get(&"vframes", 1)
 	s.frame = row.get(&"frame", 0)
 	s.material = mat
 	s.position = at

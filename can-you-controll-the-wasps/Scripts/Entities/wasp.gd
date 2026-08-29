@@ -519,6 +519,23 @@ func is_attending() -> bool:
 	return _attend_target != Vector2.INF
 
 
+# 按当代王朝重挑一张贴图。**哪张图算"我们"由 SeasonDirector.skin_for() 说了算**，
+# 这里只负责穿上：策略在王座那边，蜂不该知道自己是好人还是坏人。
+# 两张图 8x6 布局一样，换 texture 之后所有 clip 的帧号原样有效。
+# The throne decides which face is ours; a wasp only puts it on.
+func refresh_skin() -> void:
+	var season: SeasonDirector = SeasonDirector.find(get_tree())
+	if season == null:
+		return
+	var sheet: Texture2D = season.skin_for(_allegiance.is_rebel())
+	if sheet == null or _body_sprite.texture == sheet:
+		return
+	_body_sprite.texture = sheet
+	var outline: OutlineComponent = get_node_or_null(^"OutlineComponent") as OutlineComponent
+	if outline != null:
+		outline.retexture(sheet)
+
+
 # 异色卵孵出来的那一只 / hatched straight out of a rebel egg
 func become_rebel(from_variant: WaspVariant, mother) -> void:
 	_variant.apply(from_variant)
@@ -527,6 +544,10 @@ func become_rebel(from_variant: WaspVariant, mother) -> void:
 
 func _on_allegiance_changed(state: AllegianceComponent.State) -> void:
 	_apply_drag_feel()
+	# 立场变了脸可能也跟着变。伪王后走到这里是个空操作——她不是叛军，
+	# 拿到的还是自己人那张皮，**她的伪装从来不在这一层破**
+	# A no-op for the false queen: she is not a rebel, so she keeps our face.
+	refresh_skin()
 
 	# 她被叫醒的那一刻换画像，重抽一次。**外观不变**——换的是她闲下来时干什么，
 	# 以及她多容易脱岗。这跟"她不改颜色"是同一条原则：伪装的破绽只能出在行为上
@@ -600,6 +621,12 @@ func _on_died(_from: Vector2) -> void:
 
 	died.emit(self, global_position)
 	
+	# 退出 wasps 组。尸体要在地上躺 5 秒才消失，留在组里的话所有扫这个组的地方
+	# 都还把它当一只活蜂：叛军咬着尸体不换人、猎手追尸体、蜂群能把尸体推上王座、
+	# 入侵强度按尸体算。它已经不是一只蜂了，接下来那几秒只是场景里的一具尸体
+	# The corpse lingers five seconds; anything scanning the group would still count it.
+	remove_from_group(&"wasps")
+
 	# Turn off AI and interactions
 	_btree.active = false
 	if _draggable != null:

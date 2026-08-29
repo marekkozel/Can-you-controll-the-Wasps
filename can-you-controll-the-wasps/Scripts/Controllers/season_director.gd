@@ -45,6 +45,10 @@ const WASP_GROUP: StringName = &"wasps"
 const SOURCE_GROUP: StringName = &"item_source"
 const REPORT_GROUP: StringName = &"year_report"
 const CARRIABLE_GROUP: StringName = &"carriable"
+## 两张蜂图规格一致（512x384，8x6），所以换 texture 不影响任何一条 clip 的帧号
+## Identical layout, so swapping the sheet leaves every clip's frame index valid.
+const GOOD_SHEET: Texture2D = preload("res://Assets/Entities/good_wasp.png")
+const EVIL_SHEET: Texture2D = preload("res://Assets/Entities/evil_wasp.png")
 const SEASON_COUNT: int = 4
 
 # 冬天在季节条上那一格里，三拍各自占多少。冬天的长度是仪式跑出来的，
@@ -172,6 +176,10 @@ var heir_was_false_queen: bool = false
 var _time_left: float = 0.0
 var _duration: float = 1.0
 var _delay: float = 0.0
+## 冻住季节钟。**冻的是时间，不是模拟**——蜂照常干活、幼虫照常长，只是这一年不会走。
+## 教程期间由 TutorialDirector 打开，它自己负责放开
+## Freezes the clock, not the colony: everything still runs, the year just does not turn.
+var held: bool = false
 var _bar: SeasonBar = null
 var _hive: Hive = null
 var _throne: HexCell = null
@@ -317,6 +325,8 @@ func dress_newborn(wasp: Wasp) -> void:
 	if dominant != null:
 		wasp.variant().apply(dominant)
 
+	wasp.refresh_skin()
+
 	var bank: GeneBank = GeneBank.find(get_tree())
 	if bank != null:
 		wasp.perk_bonus = bank.perk_bonus()
@@ -334,6 +344,13 @@ func dress_newborn(wasp: Wasp) -> void:
 	# Changes numbers, never rules: there is nothing for the player to point at.
 	if heir_was_false_queen:
 		wasp.allegiance().betrayal = randf_range(false_heir_betrayal.x, false_heir_betrayal.y)
+
+
+# 哪张图算「我们」。扶忠诚工蜂上位，你的蜂戴帽子、叛军红眼；扶伪王后上位，
+# 整套关系对调——反抗你的人从此长着你去年熟悉的那张脸，而你的蜂全是红眼。
+# 「邪恶」不是本质，是相对于王座的 / "evil" is a position, not a property.
+func skin_for(is_rebel: bool) -> Texture2D:
+	return EVIL_SHEET if is_rebel != heir_was_false_queen else GOOD_SHEET
 
 
 # ---------------- 继位 / succession ----------------
@@ -369,6 +386,15 @@ func crown(wasp: Wasp) -> bool:
 		if was_queen:
 			betrayal.crown_false_queen(wasp)
 		betrayal.awaken_scale = false_heir_awaken_scale if was_queen else 1.0
+
+	# 王朝翻面。**加冕的那一只自己也翻**——你把她拖进王座，画面停半拍，
+	# 她在那半拍里换了张脸。选择已经不可逆了才揭晓，代价还在后头
+	# 得放在 crown_false_queen() 之后：她的叛军到那时才屈服，立场定了脸才对
+	# The swap lands on the crowned wasp too, after the choice can no longer be taken back.
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var subject: Wasp = node as Wasp
+		if subject != null:
+			subject.refresh_skin()
 
 	if _throne != null:
 		_throne.hide_rite_time()
@@ -799,6 +825,8 @@ func _heir_in_hand() -> bool:
 
 
 func _process(delta: float) -> void:
+	if held:
+		return
 	if _delay > 0.0:
 		_delay = maxf(_delay - delta, 0.0)
 		return

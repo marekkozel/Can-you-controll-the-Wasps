@@ -42,11 +42,21 @@ func _exit() -> void:
 # 只咬看得见的。全知的叛军会为了一只在地图另一头的蜂横穿整张图
 # Local sight only, or a rebel crosses the whole map for a wasp it could not possibly see.
 func _closest_victim() -> Wasp:
+	# 生它的那只不咬。不加类型：她随时可能被玩家处决，类型化变量拒绝存已释放的实例
+	# Untyped - she can be stung at any moment and a typed slot would throw on the corpse.
+	var mother = agent.allegiance().mother
+	if not is_instance_valid(mother):
+		mother = null
+
 	var best: Wasp = null
 	var best_dist: float = INF
 	for node in agent.get_tree().get_nodes_in_group(WASP_GROUP):
 		var wasp: Wasp = node as Wasp
 		if wasp == null or wasp == agent or wasp.allegiance().is_rebel():
+			continue
+		# 叛军是从她下的卵里孵出来的，扑上去咬自己的妈说不通
+		# It hatched from her egg; hunting her down makes no sense.
+		if wasp == mother:
 			continue
 		if not agent.can_see(wasp.global_position):
 			continue
