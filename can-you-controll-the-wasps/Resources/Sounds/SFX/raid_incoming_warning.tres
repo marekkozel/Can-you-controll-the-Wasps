@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://c1wlt6sjrvbxe"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_guuhy"]
+[ext_resource type="AudioStream" uid="uid://duu276351yq2i" path="res://Assets/Sounds/SFX/raid_incoming_warning.mp3" id="2_3hktu"]
+
+[resource]
+script = ExtResource("1_guuhy")
+limit = 1
+type = 12
+sound_effect = ExtResource("2_3hktu")
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

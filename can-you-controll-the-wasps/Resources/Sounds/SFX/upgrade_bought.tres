@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://b5coxmy3eygtx"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_0juu8"]
+[ext_resource type="AudioStream" uid="uid://boltty7w87675" path="res://Assets/Sounds/SFX/upgrades_bought.mp3" id="2_glb0p"]
+
+[resource]
+script = ExtResource("1_0juu8")
+type = 13
+sound_effect = ExtResource("2_glb0p")
+pitch_randomness = 0.15
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

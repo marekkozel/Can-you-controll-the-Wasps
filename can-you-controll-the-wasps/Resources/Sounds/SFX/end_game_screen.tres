@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://cvmitx0jnnjvg"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_yf23k"]
+[ext_resource type="AudioStream" uid="uid://g35js3r0eobh" path="res://Assets/Sounds/SFX/end_game_final_screen_pop.mp3" id="2_kd48l"]
+
+[resource]
+script = ExtResource("1_yf23k")
+limit = 1
+type = 14
+sound_effect = ExtResource("2_kd48l")
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

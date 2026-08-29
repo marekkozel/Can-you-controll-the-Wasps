@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://bvoas7d87dxrr"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_mxa4w"]
+[ext_resource type="AudioStream" uid="uid://c78gjetkjtoal" path="res://Assets/Sounds/SFX/wasp_attack.mp3" id="2_wxiyx"]
+
+[resource]
+script = ExtResource("1_mxa4w")
+type = 11
+sound_effect = ExtResource("2_wxiyx")
+pitch_randomness = 0.25
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

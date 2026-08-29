@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://br1htjyhtolye"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_flqn0"]
+[ext_resource type="AudioStream" uid="uid://d2i3auchn4rhr" path="res://Assets/Sounds/SFX/cell_destroyed.mp3" id="2_48gld"]
+
+[resource]
+script = ExtResource("1_flqn0")
+limit = 3
+type = 1
+sound_effect = ExtResource("2_48gld")
+pitch_randomness = 0.32
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

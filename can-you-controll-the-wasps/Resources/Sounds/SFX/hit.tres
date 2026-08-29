@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://c1xkat5kq3d7u"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_wgfru"]
+[ext_resource type="AudioStream" uid="uid://dxv3yx5x1qrgd" path="res://Assets/Sounds/SFX/hit.mp3" id="2_a6so4"]
+
+[resource]
+script = ExtResource("1_wgfru")
+type = 16
+sound_effect = ExtResource("2_a6so4")
+pitch_randomness = 0.15
+metadata/_custom_type_script = "uid://df6m72yt6clx7"
