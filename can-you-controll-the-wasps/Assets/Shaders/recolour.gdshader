@@ -28,6 +28,14 @@ uniform float value_follow : hint_range(0.0, 1.0) = 1.0;
 // 0 = 原图，1 = 完全换色 / blend back toward the original
 uniform float strength : hint_range(0.0, 1.0) = 1.0;
 
+// 受伤闪白 / hit flash. 盖在血统色**之上**，也不吃色相遮罩：所有血统闪出来一样白，
+// 翅膀和头也一起闪。「挨打了」要读成挨打，不该顺带读出这是哪一支
+// Sits on top of the lineage colour and ignores the hue mask - a hit must read as a hit,
+// identically on every lineage, or the flash quietly becomes a lineage tell.
+uniform vec3 flash_colour : source_color = vec3(1.0, 1.0, 1.0);
+// 由 JuiceComponent.hit_flash() 补间回 0 / tweened back to 0 by JuiceComponent
+uniform float flash_amount : hint_range(0.0, 1.0) = 0.0;
+
 vec3 rgb_to_hsv(vec3 c) {
 	vec4 k = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
 	vec4 p = mix(vec4(c.bg, k.wz), vec4(c.gb, k.xy), step(c.b, c.g));
@@ -75,5 +83,8 @@ void fragment() {
 	shifted.y = clamp(px.y * (dst_hsv.y / max(ref_hsv.y, 1e-4)), 0.0, 1.0);
 	shifted.z = clamp(px.z * mix(1.0, dst_hsv.z / max(ref_hsv.z, 1e-4), value_follow), 0.0, 1.0);
 
-	COLOR = vec4(mix(src.rgb, hsv_to_rgb(shifted), mask), src.a);
+	vec3 painted = mix(src.rgb, hsv_to_rgb(shifted), mask);
+	// 只动 rgb，alpha 原样留着——剪影不能变，闪白是「同一只蜂亮了一下」
+	// rgb only: the silhouette must not change, the wasp just goes bright for a beat.
+	COLOR = vec4(mix(painted, flash_colour, flash_amount), src.a);
 }

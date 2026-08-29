@@ -50,7 +50,13 @@ enum Behavior {
 @export var sprite_offset: Vector2 = Vector2.ZERO
 ## 按贴图**内容**的实际尺寸给，不是按图幅 / measured from the content, not the sheet
 @export_range(4.0, 80.0, 1.0) var collision_radius: float = 22.0
+## 闲逛速度，不是追击速度 / idle drift, not the chase
 @export_range(10.0, 200.0, 5.0) var move_speed: float = 40.0
+## 追蜂的速度。跟 move_speed 分开是因为蜂的巡航是 `任务速度 x speed_units`，
+## 点过 SPEED 的蜂能跑到 200——猎手拿闲逛的 26~85 去追，永远差一截
+## Separate from move_speed: a SPEED-gifted wasp cruises at 200 and a drifting
+## hunter can never close that gap.
+@export_range(20.0, 400.0, 5.0) var chase_speed: float = 150.0
 ## 质量。三种体型共用一个 mass 的话，同样一拳推蚂蚁和推蜘蛛滑得一样远，
 ## 一只 12 血的大家伙就没有分量了 / a spider shoved like an ant has no weight to it
 @export_range(0.1, 10.0, 0.1) var body_mass: float = 0.9

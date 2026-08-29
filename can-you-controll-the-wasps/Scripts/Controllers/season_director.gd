@@ -44,6 +44,7 @@ const HIVE_GROUP: StringName = &"hive"
 const WASP_GROUP: StringName = &"wasps"
 const SOURCE_GROUP: StringName = &"item_source"
 const REPORT_GROUP: StringName = &"year_report"
+const CARRIABLE_GROUP: StringName = &"carriable"
 const SEASON_COUNT: int = 4
 
 # 冬天在季节条上那一格里，三拍各自占多少。冬天的长度是仪式跑出来的，
@@ -83,7 +84,8 @@ const RITE_SPAN: Dictionary = {
 ## Share of built cells hit. Occupied ones rot, and a rotten cell cannot be laid in -
 ## the harder winter bites, the smaller the next brood. No extra code needed for that.
 @export_range(0.0, 1.0, 0.05) var damage_share: float = 0.80
-## 冬天过后最多还剩几格建成的巢室，**含王座**。比例是给小巢兜底的下限，
+## 冬天过后最多还剩几格**有建造进度**的巢室，含王座——半成品也算一格，
+## 否则「留一堆 2/3」就绕过了这个上限。比例是给小巢兜底的下限，
 ## 这个数是上限——巢建得越大，冬天拆得越狠，开春看到的永远是差不多一片空地
 ## The cap, where the share is the floor: however big the comb got, spring opens on
 ## roughly the same clearing.
@@ -100,6 +102,10 @@ const RITE_SPAN: Dictionary = {
 ## Winter takes the whole colony; only the crowned wasp sees spring. This is the spare
 ## allowance on top of her - the balance knob, left at zero by design.
 @export_range(0, 20, 1) var winter_survivors: int = 0
+## 冬天也把地上散着的货一起收走：纸板、食物、蜂王浆、战利品。
+## 关掉的话上一年没搬完的东西会攒到下一代，几年下来满地都是
+## Off means last year's leftovers pile up across generations.
+@export var clear_ground: bool = true
 
 @export_group("Rite")
 ## 玩家自己挑继承人的窗口。到点蜂群就自己推举一只——**这条分支必须够短**，
@@ -545,22 +551,27 @@ func _ravage() -> void:
 	if _hive == null:
 		return
 
-	var built: Array = []
+	# 只要有建造进度就算数，**不能只挑 is_built**。半成品被跳过的话，一格 2/3 的
+	# 巢室原样过冬、开春补一块纸板就成，而老实建完的那格被推平要补三块——
+	# 于是最优解变成入冬前故意别建完，玩家因为不完成建造而占便宜
+	# Anything with progress counts. Skipping part-built cells rewards leaving the comb
+	# unfinished: a 2/3 cell survives winter needing one piece, a finished one needs three.
+	var standing: Array = []
 	for cell in _hive.all_cells():
-		if cell.is_built and cell != _throne:
-			built.append(cell)
-	if built.is_empty():
+		if cell.progress > 0 and cell != _throne:
+			standing.append(cell)
+	if standing.is_empty():
 		return
 
-	built.shuffle()
+	standing.shuffle()
 	# 两条规则取更狠的那一个：至少拆掉 damage_share 那么多，而且最多只准留下
 	# cells_left 格（王座本来就不在候选里，所以这里减 1）
 	# The harsher of the two: at least the share, and never more survivors than the cap.
 	var hits: int = maxi(
-		int(round(float(built.size()) * damage_share)),
-		built.size() - maxi(cells_left - 1, 0))
-	for i in mini(hits, built.size()):
-		var cell: HexCell = built[i]
+		int(round(float(standing.size()) * damage_share)),
+		standing.size() - maxi(cells_left - 1, 0))
+	for i in mini(hits, standing.size()):
+		var cell: HexCell = standing[i]
 		# 先腾空再拆结构，顺序不能反：damage_build 拒绝有内容的格子，
 		# 反过来写的话这一格里但凡有颗卵，整格结构就毫发无伤
 		# Empty it first - damage_build refuses an occupied cell, so the other order
@@ -606,6 +617,9 @@ func _settle() -> void:
 	if _awaiting_report:
 		return
 	_cull()
+	# 顺序不能反：蜂死的时候 _on_died 会把叼着的货丢在地上，先清就漏了那一批
+	# After the cull - dying wasps drop their cargo, and that lot needs sweeping too.
+	_clear_ground()
 
 	var panel: Node = get_tree().get_first_node_in_group(REPORT_GROUP)
 	# 没有面板（headless、或者面板被删了）就直接进春天。
@@ -643,6 +657,18 @@ func _cull() -> void:
 		var wasp: Wasp = doomed[i]
 		if is_instance_valid(wasp):
 			wasp.perish()
+
+
+# 地上剩的货跟着蜂群一起过冬，也就是不过。产出点这会儿还停着产，
+# 扫掉的库存要等 _close_winter() 放开才补——开春是干净的一片地，不是上一年的残局
+# Sources are still shut down here, so the restock lands in spring: the new queen
+# inherits a clearing, not last year's mess.
+func _clear_ground() -> void:
+	if not clear_ground:
+		return
+	for node in get_tree().get_nodes_in_group(CARRIABLE_GROUP):
+		if is_instance_valid(node):
+			node.queue_free()
 
 
 # 摊开这一年的账。纯读数，面板怎么画是它自己的事

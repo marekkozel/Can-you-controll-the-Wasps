@@ -23,6 +23,10 @@ enum Trait { SPEED, ATTACK, CARRY, BUILD }
 ## The five idle acts; index order must match BehaviourProfile.roll().
 enum IdleAct { INSPECT, ATTEND, ANTENNATE, PATROL, GROOM }
 
+## 揭穿她那一下喷的那团 / the puff a slammed false queen leaves behind
+const REVEAL_BURST: PackedScene = preload("res://Scenes/Mechanics/RevealBurst.tscn")
+## 她还没来得及挑血统就被摔了 / she lost the mask before a brood colour was rolled
+const DISGUISE_SPILL_FALLBACK: Color = Color(0.88, 0.92, 1.0)
 const ITEM_SOURCE_GROUP: StringName = &"item_source"
 const HIVE_GROUP: StringName = &"hive"
 ## 专长轨道画到 7 格就读不出个数了（血统 4 + 基因 3），加成一律截在这里
@@ -204,6 +208,7 @@ func _ready() -> void:
 	_nav.velocity_computed.connect(_on_avoidance_velocity)
 	_allegiance.changed.connect(_on_allegiance_changed)
 	_health.died.connect(_on_died)
+	_health.damaged.connect(_on_damaged)
 	_draggable.mouse_entered.connect(_on_hovered)
 
 	_draggable.grabbed.connect(_on_grabbed)
@@ -575,6 +580,14 @@ func _on_hovered() -> void:
 	linear_velocity += away * dodge_impulse * randf_range(0.7, 1.3)
 
 
+# 挨打闪一下白。挨咬和摔墙是两条独立的伤害路径，但都落在同一份血量上，
+# 接 damaged 就不用在两边各写一遍——以后再加第三条也自动有
+# Bites and slams are separate paths onto one health pool; hooking the signal covers
+# both, and whatever comes third.
+func _on_damaged(_amount: int, _remaining: int, _from: Vector2) -> void:
+	_juice.hit_flash(_body_sprite)
+
+
 func _on_died(_from: Vector2) -> void:
 	_carry.drop()
 	_juice.burst()
@@ -799,10 +812,20 @@ func _on_body_entered(body: Node) -> void:
 	if director != null:
 		director.report_slam(self)
 	_juice.punch(0.78, 0.28)
-	if _last_speed > impact_speed * 2.0:
+
+	# 先结算伤害，再决定放不放通用迸射。揭穿她的那一下要**独占**这一帧：两团粒子叠在
+	# 一起，玩家看到的就是平时打谁都有的那个暖黄爆点，星芒埋在里面根本读不出来
+	# Damage first, so the burst knows whether this hit was the unmasking one - stacked
+	# in one frame the familiar amber pop buries the stars and the effect is wasted.
+	#
+	# 判断必须用「**真的**揭穿了吗」，不能用「她是不是伪王后」：攥在手里贴着墙磨的那条
+	# 路径根本走不到 unmask，用后者的话「迸射消失了」本身就成了一个零成本的探测器
+	# Must ask whether the mask actually came off: a wasp held against a wall never
+	# unmasks, and a missing burst would be a free detector.
+	var unmasked: bool = _take_impact_damage()
+	if _last_speed > impact_speed * 2.0 and not unmasked:
 		_juice.burst()
 	slammed.emit(_last_speed)
-	_take_impact_damage()
 
 
 # 甩出去撞墙掉血。一次投掷弹好几面墙就是好几下，这是故意留的——
@@ -813,23 +836,30 @@ func _on_body_entered(body: Node) -> void:
 # 不走 take_damage()：那条是挨咬的路，会再记一次 report_wound，
 # 而这一下已经由上面的 report_slam 记过账了
 # Not take_damage(): that is the bite path and would file a second grudge for one hit.
-func _take_impact_damage() -> void:
+# 返回「面具是不是这一下掉的」，调用方拿它决定放不放通用迸射
+# Returns whether this hit is the one that took the mask off.
+func _take_impact_damage() -> bool:
 	if impact_damage <= 0 or _impact_timer > 0.0 or not _health.is_alive():
-		return
+		return false
 	# 还攥在手里的不算。不挡这一条的话按住她贴着墙磨 0.45 秒就能弄死，
 	# 投掷机制当场退化回一击必杀的另一种按法
 	# Not while she is still in your hand: grinding her along a wall would kill in 0.45s
 	# and turn the throw back into a one-button execution.
 	if _draggable.is_grabbed():
-		return
+		return false
 	_impact_timer = impact_damage_cooldown
 
 	# 摔一下面具就掉：她当场变回普通工蜂，停止下卵。伤害照扣，她跟别的蜂一样能被摔死。
 	# 已经孵出来的叛军不跟着解散——那些是你自己惹出来的，自己清
 	# One slam unmasks her: she reverts to an ordinary worker and stops laying. The hit
 	# still lands, and her existing rebels stay rebels.
-	if _allegiance.is_false_queen():
+	var unmasked: bool = _allegiance.is_false_queen()
+	if unmasked:
+		# 颜色要在 unmask() **之前**读：那个函数第一句就把 brood_variant 清空了
+		# Read the colour first - unmask() nulls brood_variant on its opening line.
+		var brood: WaspVariant = _allegiance.brood_variant
 		_allegiance.unmask()
+		_spill_disguise(brood)
 		var unmask_director: BetrayalDirector = BetrayalDirector.find(get_tree())
 		if unmask_director != null:
 			unmask_director.report_unmasked(self)
@@ -840,6 +870,20 @@ func _take_impact_damage() -> void:
 	_health.take_damage(impact_damage, global_position)
 	if _health.is_alive():
 		_slain_by_player = false
+	return unmasked
+
+
+# 面具掉了那一下。挂到**世界层**而不是她身上：她被这一下撞飞了，这团还留在原地
+# 慢慢飘散，读起来才是"从她身上掉下来的东西"，而不是她自带的光效
+# Parented to the world on purpose - it should stay where it fell, not ride along with her.
+func _spill_disguise(brood: WaspVariant) -> void:
+	var host: Node = get_parent()
+	if host == null:
+		return
+	var puff: RevealBurst = REVEAL_BURST.instantiate()
+	host.add_child(puff)
+	puff.global_position = global_position
+	puff.play(brood.body_color if brood != null else DISGUISE_SPILL_FALLBACK)
 
 
 func _process(delta: float) -> void:

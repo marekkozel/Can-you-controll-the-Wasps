@@ -166,6 +166,12 @@ func _apply_build() -> void:
 	if _wander != null:
 		_wander.speed = variant.move_speed
 
+	# 追击速度也得跟着品种走。以前这里只写了 wander，三种猎手全在用组件默认的 125，
+	# .tres 里那些速度对追击完全没影响
+	# Chase speed used to stay at the component default for every breed.
+	if _hunt != null:
+		_hunt.fly_speed = variant.chase_speed
+
 	# **判定距离必须大于两者碰撞半径之和，否则永远走不到。**
 	# 场景里的 reach 是照中型（半径 22）调的：蜘蛛半径 48，加上黄蜂 grab 的 23，
 	# 不放大的话它会贴着蜂原地转圈，一口也咬不着

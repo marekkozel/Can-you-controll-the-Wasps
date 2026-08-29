@@ -83,6 +83,23 @@ var _intake: int = 0
 
 # 生成到父节点下而不是自己的子节点 / spawn into the parent, not as our own child;
 # 刚体挂在带位移的父节点下算全局坐标很绕 / a translated parent makes global maths awkward
+## 收料/出货时点头的那一层，一般指到皇后贴图。没挂 JuiceComponent 就整套不生效
+## The sprite that reacts, usually the Queen; without a JuiceComponent child nothing runs.
+@export_group("Feedback")
+@export var reaction_path: NodePath
+## 取货时迸的那点粒子的颜色，按资源配：纸板土黄、食物绿。
+## 加一种资源只要在场景里改这个，不用回来加一条 payload -> 颜色的映射
+## Authored per source so a new resource needs no payload-to-colour table here.
+@export var puff_color: Color = Color(0.85, 0.72, 0.45)
+
+# 肉进去和成品出来是两拍，颜色必须分开：白色只说「有事发生」，
+# 肉色说「肉进去了」、金色说「东西做出来了」
+# One generic puff for both beats and the 2-for-1 recipe stays invisible.
+const MEAT_PUFF: Color = Color(0.72, 0.24, 0.22)
+const JELLY_PUFF: Color = Color(1.0, 0.86, 0.35)
+
+var _juice: JuiceComponent = null
+
 @onready var _spawn_parent: Node = get_parent()
 
 
@@ -99,6 +116,22 @@ func _ready() -> void:
 		# 环画的是"东西会从这儿冒出来"。矩形散布画不出来，只收料不发货的点则根本没东西冒
 		# The ring means "things appear here" - untrue for a band, and for a pure refinery.
 		ring.visible = scatter_size == Vector2.ZERO and piece_scene != null
+
+	# 要排在 ON_DEMAND 那条 return 前面——加工厂正好是 ON_DEMAND，写在后面等于没接
+	# Must precede the early return: the refinery is ON_DEMAND and would never get wired.
+	_juice = get_node_or_null(^"JuiceComponent") as JuiceComponent
+	if _juice != null:
+		var reactor: Node2D = get_node_or_null(reaction_path) as Node2D
+		_juice.target = reactor
+		# punch 是乘基准再弹回基准，基准默认 1。皇后在场景里是放大的，
+		# 不把她当前的缩放交上去的话，弹一下就被永久打回标准大小
+		# punch springs back to base_scale, which defaults to 1 - hand it the authored
+		# scale or the first punch shrinks a scaled-up sprite for good.
+		if reactor != null:
+			_juice.base_scale = reactor.scale
+		intake_changed.connect(_on_intake)
+		refined.connect(_on_refined)
+		piece_taken.connect(_on_taken)
 
 	if mode == Mode.ON_DEMAND:
 		_build_grab_area()
@@ -226,6 +259,57 @@ func _produce_output() -> void:
 		piece.set_wander_home(piece.global_position)
 
 	refined.emit(piece)
+
+
+# 领走一块 / a piece was taken - by the player's drag or by a wasp, same path.
+#
+# ON_DEMAND 的货是在**光标位置**凭空生成的，地上平时什么都没有。源头不给反应的话
+# 读起来是「传送到手里」，不是「从堆上扯下来一块」——这才是这里 juice 要修的东西。
+# 幅度必须小：工蜂整局都在领货，给大爆发就是满屏噪音
+# ON_DEMAND mints at the cursor, so without a reaction at the post the piece reads as
+# teleported rather than pulled off the pile. Kept small - wasps take pieces all game.
+func _on_taken(piece: Node2D) -> void:
+	if _juice != null:
+		_juice.punch(0.88, 0.22)   # 压扁再弹回 = 被扯掉一块 / squash, not pop
+		_juice.burst(puff_color, 4)
+	_pop_in(piece)
+
+
+# 收下一份原料 / one unit taken in.
+# 凑满的那一份沉得更深、迸得更多：不看任何 UI 也知道还差几份
+# The unit that completes the recipe dips deeper - the count reads without a number.
+func _on_intake(current: int, required: int) -> void:
+	if _juice == null:
+		return
+	# current 是**已经加过**的份数，所以判等就是「这一份凑满了」，不用减一
+	# current is already incremented, so equality means this unit completed the recipe.
+	var last: bool = current >= required
+	_juice.bob(7.0 if last else 4.0)
+	_juice.burst(MEAT_PUFF, 8 if last else 5)
+
+
+# 出货 / a refined piece popped out.
+func _on_refined(piece: Node2D) -> void:
+	if _juice != null:
+		_juice.punch(1.26, 0.35)
+		_juice.burst(JELLY_PUFF, 16)
+	_pop_in(piece)
+
+
+# 成品掉在两百多像素外，只在皇后身上迸一下的话玩家连不起因果——落点那头也要动一下。
+# 缩的是贴图不是刚体本身：给 RigidBody2D 写 scale 会连碰撞体一起歪
+# The output lands far away, so both ends must move. Scale the sprite, never the body -
+# a scaled RigidBody2D drags its collision shape with it.
+func _pop_in(piece: Node2D) -> void:
+	if piece == null:
+		return
+	var fill: Node2D = piece.get_node_or_null(^"Fill") as Node2D
+	if fill == null:
+		return
+	var home: Vector2 = fill.scale
+	fill.scale = home * 0.25
+	var tween: Tween = fill.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(fill, "scale", home, 0.32)
 
 
 # ON_DEMAND 的点击区：形状跟着散布参数走，改了散布不用再回来对一遍

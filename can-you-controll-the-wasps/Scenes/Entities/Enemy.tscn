@@ -24,6 +24,7 @@ z_index = 10
 mass = 0.9
 physics_material_override = SubResource("Material_enemy")
 lock_rotation = true
+gravity_scale = 0.0
 continuous_cd = 2
 linear_damp = 0.6
 angular_damp = 2.0

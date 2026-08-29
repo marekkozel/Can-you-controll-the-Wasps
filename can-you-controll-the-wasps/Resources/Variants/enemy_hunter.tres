@@ -7,6 +7,7 @@
 [resource]
 script = ExtResource("1_enemy_variant")
 display_name = "Fly"
+chase_speed = 195.0
 behavior = 1
 loot_count = 2
 body_color = Color(0.42, 0.11, 0.12, 1)

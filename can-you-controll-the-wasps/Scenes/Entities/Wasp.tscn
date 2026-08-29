@@ -34,6 +34,7 @@ z_index = 20
 mass = 1.2
 physics_material_override = SubResource("Material_wasp")
 lock_rotation = true
+gravity_scale = 0.0
 continuous_cd = 2
 contact_monitor = true
 max_contacts_reported = 4

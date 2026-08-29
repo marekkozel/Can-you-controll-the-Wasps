@@ -40,6 +40,25 @@ const QUEUE_LIMIT: int = 3
 @export_range(0.05, 0.6, 0.01) var swap_time: float = 0.12
 @export_range(0.0, 1.0, 0.05) var swap_dip: float = 0.35
 
+@export_group("Juice")
+# 手感一律按语气缩放（见 _tone_heat）。四个语气用同一份动作的话，「有传闻」和
+# 「巢被抢了」砸下来的力度一样重，这条 UI 就没有轻重之分了——它大部分时候只是在陈述
+# Everything here scales with tone: one motion for all four would make a rumour land as
+# hard as a raid, and this bar is a remark far more often than it is an alarm.
+## 入场先缩到多小再弹回来 / how far it squashes before springing back
+@export_range(0.0, 0.4, 0.01) var pop_depth: float = 0.12
+## 从顶上多高砸下来 / how far above its seat it drops from
+@export_range(0.0, 48.0, 1.0) var drop_height: float = 18.0
+## 逐字显示速度（字/秒），0 关掉。字一个一个出来，眼睛会跟着它走
+## Chars per second; the text writing itself is what pulls the eye up there.
+@export_range(0.0, 300.0, 5.0) var type_speed: float = 110.0
+## 落地那一下框刷亮多少倍 / how hard the frame flares on arrival
+@export_range(1.0, 2.0, 0.05) var flare: float = 1.35
+## 只有威胁句会横向抖，幅度（像素）/ threat lines rattle sideways, in px
+@export_range(0.0, 12.0, 0.5) var threat_shake: float = 3.5
+## 抖动衰减速度 / how fast the rattle dies
+@export_range(1.0, 40.0, 1.0) var shake_decay: float = 14.0
+
 @export_group("Tones")
 # 四个都是**同一块纸板的不同色温**，不是四个招牌色。整块变色已经够响了，
 # 再上饱和色就会把横幅变成一个警告灯，而这条 UI 大部分时候只是在陈述
@@ -63,6 +82,12 @@ var _time_left: float = 0.0
 var _tween: Tween = null
 var _laying_out: bool = false
 var _relayout_again: bool = false
+## 抖动叠在这个基准 x 上。直接读 position.x 的话，抖动会把自己的偏移当成新基准，
+## 一路飘出屏幕 / the rattle rides on this, or it integrates its own offset away
+var _center_x: float = 0.0
+var _shake: float = 0.0
+var _shake_time: float = 0.0
+var _type_tween: Tween = null
 
 
 static func find(tree: SceneTree) -> Herald:
@@ -132,7 +157,21 @@ func clear() -> void:
 	_queue.clear()
 	_current = {}
 	_time_left = 0.0
-	_fade(0.0, fade_out)
+	_leave()
+
+
+# 退场：一边淡一边往上收一点。原地淡掉像是被关掉了，收一下才像说完了
+# Fading in place reads as switched off; drifting up reads as finished.
+func _leave() -> void:
+	_shake = 0.0
+	_panel.position.x = _center_x
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = create_tween().set_parallel(true)
+	_tween.tween_property(_panel, "modulate:a", 0.0, fade_out)
+	_tween.tween_property(_panel, "position:y", top_margin - 5.0, fade_out) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_tween.tween_property(_panel, "scale", Vector2.ONE * 0.97, fade_out)
 
 
 func _trim() -> void:
@@ -141,6 +180,7 @@ func _trim() -> void:
 
 
 func _process(delta: float) -> void:
+	_tick_shake(delta)
 	if _current.is_empty():
 		return
 	_time_left -= delta
@@ -148,7 +188,7 @@ func _process(delta: float) -> void:
 		return
 	if _queue.is_empty():
 		_current = {}
-		_fade(0.0, fade_out)
+		_leave()
 	else:
 		_show(_queue.pop_front(), false)
 
@@ -165,13 +205,15 @@ func _show(item: Dictionary, from_hidden: bool) -> void:
 
 func _apply(item: Dictionary, from_hidden: bool) -> void:
 	var tone: Color = _tone_color(int(item[&"tone"]))
+	var heat: float = _tone_heat(int(item[&"tone"]))
 	_label.text = String(item[&"text"])
-	_relayout()
+	# 等布局落定再动。缩放绕 pivot 转，pivot 要拿最终宽度算——不等的话入场第一帧
+	# 是按上一句的宽度缩的，横幅会横着跳一下
+	# The pop pivots on the final width; entering a frame early makes the pill jump.
+	await _relayout()
 
 	if from_hidden:
-		_panel.self_modulate = tone
-		_panel.position.y = top_margin - 6.0
-		_fade(1.0, fade_in, true)
+		_enter(tone, heat, int(item[&"tone"]))
 	else:
 		# 换句：压一下再回来，宽度靠 _relayout 自己补 / dip and return
 		_fade(swap_dip, swap_time * 0.5)
@@ -180,17 +222,81 @@ func _apply(item: Dictionary, from_hidden: bool) -> void:
 		# Swapped at the bottom of the dip, where a hard cut cannot be seen.
 		_panel.self_modulate = tone
 		_fade(1.0, swap_time * 0.5)
+		# 接上来的那句只弹一半：整条已经在屏幕上了，再砸一次就是两次入场
+		# Half a pop for a follow-up line - it is already on screen.
+		_bounce(heat * 0.5)
+		_type_out()
 
 
-func _fade(to: float, seconds: float, slide: bool = false) -> void:
+# 入场。砸下来 + 弹一下 + 框亮一下 + 字自己写出来，四件事同时发生
+# The arrival: a drop, a spring, a flare and the text writing itself, all at once.
+func _enter(tone: Color, heat: float, kind: int) -> void:
+	_panel.self_modulate = tone * lerpf(1.0, flare, heat)
+	_panel.scale = Vector2.ONE * (1.0 - pop_depth * heat)
+	_panel.position.y = top_margin - lerpf(6.0, drop_height, heat)
+	_type_out()
+
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	_tween = create_tween().set_parallel(true)
+	_tween.tween_property(_panel, "modulate:a", 1.0, fade_in)
+	_tween.tween_property(_panel, "position:y", top_margin, fade_in * 2.0) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_tween.tween_property(_panel, "scale", Vector2.ONE, fade_in * 2.2) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# 亮回本色比另外三条都慢：闪光退得太快就只是一帧噪点，读不出「亮了一下」
+	# The flare outlives the rest; a fast decay reads as a dropped frame, not a flash.
+	_tween.tween_property(_panel, "self_modulate", tone, fade_in * 3.5)
+
+	if kind == Tone.THREAT:
+		_shake = threat_shake
+		_shake_time = 0.0
+
+
+# 只弹缩放，不动位置。换句时用 / a spring with no drop, for follow-up lines
+func _bounce(heat: float) -> void:
+	if heat <= 0.0:
+		return
+	_panel.scale = Vector2.ONE * (1.0 - pop_depth * heat)
+	create_tween().tween_property(_panel, "scale", Vector2.ONE, fade_in * 1.8) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+# 逐字。visible_ratio 不影响 Label 的最小尺寸，所以框的宽度一次到位，
+# 不会跟着字一格一格长——那样整条横幅会抽搐
+# visible_ratio leaves the minimum size alone, so the pill sizes once instead of
+# growing a character at a time.
+func _type_out() -> void:
+	if _type_tween != null and _type_tween.is_valid():
+		_type_tween.kill()
+	if type_speed <= 0.0:
+		_label.visible_ratio = 1.0
+		return
+	_label.visible_ratio = 0.0
+	var seconds: float = minf(float(_label.text.length()) / type_speed, seconds_clamp.x * 0.6)
+	_type_tween = create_tween()
+	_type_tween.tween_property(_label, "visible_ratio", 1.0, seconds)
+
+
+# 横向抖。只抖 x：y 归入场那条 tween 管，两边都写就打架
+# Sideways only - the entry tween owns y, and both writing it would fight.
+func _tick_shake(delta: float) -> void:
+	if _shake <= 0.0:
+		return
+	_shake = maxf(_shake - delta * shake_decay, 0.0)
+	_shake_time += delta
+	_panel.position.x = _center_x + sin(_shake_time * TAU * 18.0) * _shake
+	if _shake <= 0.0:
+		_panel.position.x = _center_x
+
+
+# 只管透明度。入场和退场各有自己那条带位移/缩放的 tween，别再往这里塞
+# Alpha only - entry and exit own their own motion tweens.
+func _fade(to: float, seconds: float) -> void:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween()
-	_tween.set_parallel(true)
 	_tween.tween_property(_panel, "modulate:a", to, seconds)
-	if slide:
-		_tween.tween_property(_panel, "position:y", top_margin, seconds) \
-			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
 # Label 的 minimum size 要下一帧才更新，不等的话第一帧拿到的是旧宽度，横幅会跳一下
@@ -215,11 +321,28 @@ func _relayout() -> void:
 		await get_tree().process_frame
 
 	_panel.size = Vector2.ZERO   # 会被顶回 minimum size / clamped back up to the minimum
-	_panel.position.x = roundf((size.x - _panel.size.x) * 0.5)
+	_center_x = roundf((size.x - _panel.size.x) * 0.5)
+	_panel.position.x = _center_x
+	# 绕中心缩放。默认 pivot 在左上角，弹一下会把整条往左上角吸过去
+	# Scale about the centre; the default top-left pivot sucks it into the corner.
+	_panel.pivot_offset = _panel.size * 0.5
 	_laying_out = false
 	if _relayout_again:
 		_relayout_again = false
 		_relayout()
+
+
+# 语气 → 手感强度。传闻压到四成：它可能是假的，砸得跟真事一样重就是在骗玩家的注意力
+# A rumour may be a lie; landing it as hard as a fact would spend attention on nothing.
+func _tone_heat(tone: int) -> float:
+	match tone:
+		Tone.THREAT:
+			return 1.0
+		Tone.RITE:
+			return 1.0
+		Tone.LOSS:
+			return 0.8
+	return 0.4
 
 
 func _tone_color(tone: int) -> Color:

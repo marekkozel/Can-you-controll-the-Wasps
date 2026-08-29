@@ -1,0 +1,43 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/reveal_burst.gd" id="1_reveal"]
+[ext_resource type="Texture2D" path="res://Assets/Effects/particle_mote.png" id="2_mote"]
+
+[sub_resource type="Curve" id="Curve_shrink"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 0)
+
+[sub_resource type="CanvasItemMaterial" id="Material_add"]
+blend_mode = 1
+
+[node name="RevealBurst" type="CPUParticles2D"]
+material = SubResource("Material_add")
+z_index = 25
+emitting = false
+amount = 10
+lifetime = 1.2
+one_shot = true
+explosiveness = 0.85
+texture = ExtResource("2_mote")
+emission_shape = 1
+emission_sphere_radius = 11.0
+direction = Vector2(0, -1)
+spread = 50.0
+gravity = Vector2(0, -35)
+initial_velocity_min = 25.0
+initial_velocity_max = 60.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+angle_min = -180.0
+angle_max = 180.0
+damping_min = 15.0
+damping_max = 30.0
+scale_amount_min = 0.6
+scale_amount_max = 1.05
+scale_amount_curve = SubResource("Curve_shrink")
+color_ramp = SubResource("Gradient_fade")
+script = ExtResource("1_reveal")
