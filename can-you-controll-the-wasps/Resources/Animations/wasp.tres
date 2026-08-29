@@ -1,29 +1,26 @@
-[gd_resource type="Resource" script_class="SpriteAnimation" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="SpriteAnimation" format=3 uid="uid://daufovyskpf7q"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animation.gd" id="1_sheet"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_clip.gd" id="2_clip"]
+[ext_resource type="Script" uid="uid://ves08re4psor" path="res://Scripts/Mechanics/sprite_animation.gd" id="1_sheet"]
+[ext_resource type="Script" uid="uid://djaf61v2m5pu1" path="res://Scripts/Mechanics/sprite_clip.gd" id="2_clip"]
 
 [sub_resource type="Resource" id="Clip_fly"]
 script = ExtResource("2_clip")
-name = &"fly"
-row = 0
-start_column = 0
-frames = 8
-fps = 12.0
-loop = true
 
 [sub_resource type="Resource" id="Clip_attack"]
 script = ExtResource("2_clip")
 name = &"attack"
 row = 3
-start_column = 0
-frames = 8
 fps = 16.0
 loop = false
 
+[sub_resource type="Resource" id="Resource_onxnw"]
+script = ExtResource("2_clip")
+name = &"die"
+row = 5
+frames = 1
+hold_last = true
+metadata/_custom_type_script = "uid://djaf61v2m5pu1"
+
 [resource]
 script = ExtResource("1_sheet")
-hframes = 8
-vframes = 6
-default_clip = &"fly"
-clips = Array[ExtResource("2_clip")]([SubResource("Clip_fly"), SubResource("Clip_attack")])
+clips = Array[ExtResource("2_clip")]([SubResource("Clip_fly"), SubResource("Clip_attack"), SubResource("Resource_onxnw")])

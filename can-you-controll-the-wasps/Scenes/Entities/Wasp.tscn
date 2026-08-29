@@ -13,9 +13,9 @@
 [ext_resource type="Resource" uid="uid://duqit4ccm47rt" path="res://Resources/Behaviours/worker.tres" id="11_behaviour"]
 [ext_resource type="Resource" uid="uid://c73kqwhaw3f1m" path="res://Resources/Behaviours/false_queen.tres" id="12_queenbhv"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/OutlineComponent.tscn" id="13_outline"]
+[ext_resource type="Script" uid="uid://bi77k1iiofchc" path="res://Scripts/Mechanics/sprite_animator.gd" id="14_animator"]
+[ext_resource type="Resource" uid="uid://daufovyskpf7q" path="res://Resources/Animations/wasp.tres" id="15_waspanim"]
 [ext_resource type="Texture2D" uid="uid://c31jsu6cp8d25" path="res://Assets/Entities/good_wasp.png" id="ph_wasp"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animator.gd" id="14_animator"]
-[ext_resource type="Resource" path="res://Resources/Animations/wasp.tres" id="15_waspanim"]
 
 [sub_resource type="PhysicsMaterial" id="Material_wasp"]
 friction = 0.15
@@ -40,6 +40,7 @@ max_contacts_reported = 4
 linear_damp = 0.4
 angular_damp = 6.0
 script = ExtResource("1_wasp")
+max_fling_time = 5.0
 behaviour = ExtResource("11_behaviour")
 queen_behaviour = ExtResource("12_queenbhv")
 

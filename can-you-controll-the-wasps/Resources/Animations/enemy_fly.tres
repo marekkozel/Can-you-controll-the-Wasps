@@ -1,33 +1,26 @@
-[gd_resource type="Resource" script_class="SpriteAnimation" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SpriteAnimation" format=3 uid="uid://ccctt474hr8sw"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animation.gd" id="1_sheet"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_clip.gd" id="2_clip"]
+[ext_resource type="Script" uid="uid://ves08re4psor" path="res://Scripts/Mechanics/sprite_animation.gd" id="1_sheet"]
+[ext_resource type="Script" uid="uid://djaf61v2m5pu1" path="res://Scripts/Mechanics/sprite_clip.gd" id="2_clip"]
 
 [sub_resource type="Resource" id="Clip_walk"]
 script = ExtResource("2_clip")
 name = &"walk"
-row = 0
-start_column = 0
 frames = 4
 fps = 10.0
-loop = true
-hold_last = false
 
 [sub_resource type="Resource" id="Clip_attack"]
 script = ExtResource("2_clip")
 name = &"attack"
 row = 1
-start_column = 0
 frames = 4
 fps = 14.0
 loop = false
-hold_last = false
 
 [sub_resource type="Resource" id="Clip_death"]
 script = ExtResource("2_clip")
 name = &"death"
 row = 2
-start_column = 0
 frames = 1
 fps = 6.0
 loop = false

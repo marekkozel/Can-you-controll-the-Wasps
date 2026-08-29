@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://cpjfju8opl5or" path="res://Scenes/Mechanics/LootComponent.tscn" id="7_loot"]
 [ext_resource type="PackedScene" uid="uid://c4rr10nl00t01" path="res://Scenes/Entities/Carrion.tscn" id="8_carrion"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/HealthBarComponent.tscn" id="9_healthbar"]
-[ext_resource type="Script" path="res://Scripts/Mechanics/sprite_animator.gd" id="10_animator"]
+[ext_resource type="Script" uid="uid://bi77k1iiofchc" path="res://Scripts/Mechanics/sprite_animator.gd" id="10_animator"]
 
 [sub_resource type="PhysicsMaterial" id="Material_enemy"]
 friction = 0.2

@@ -581,22 +581,112 @@ func _on_died(_from: Vector2) -> void:
 
 	# 只有你摔死的才算处决。被猎手咬死的忠诚工蜂要是也记在你头上，
 	# unrest 白涨 0.2、周围的蜂白记一次仇，而玩家根本没动手
-	# Only a death you caused counts - a hunter's kill filed as your execution would
-	# charge you 0.2 unrest and a round of grudges for something you never did.
 	# 清叛军不算处决：它们是纯敌人，杀它们既不该推不安，也不该让旁观的蜂记仇
-	# Culling a rebel is not an execution - it must not raise unrest or earn a grudge.
 	if _slain_by_player and not _allegiance.is_rebel():
 		var director: BetrayalDirector = BetrayalDirector.find(get_tree())
 		if director != null:
-			# 用 was_false_queen 而不是当前立场：摔第一下她就变回工蜂了，
-			# 按当前立场算的话玩家抓对了人反而吃一次误杀惩罚
-			# The mask is already off by the first slam; current state would punish
-			# the player for getting it right.
 			director.report_execution(self, _allegiance.was_false_queen)
-	# queue_free 之前发。接收方要留住尸体的话得自己 instantiate 一个，
-	# 别指望在这只蜂身上做文章 / emit before freeing; listeners must spawn their own corpse
+
 	died.emit(self, global_position)
-	queue_free()
+	
+	# Turn off AI and interactions
+	_btree.active = false
+	if _draggable != null:
+		_draggable.set_deferred("input_pickable", false)
+		_draggable.set_deferred("monitorable", false)
+		_draggable.set_deferred("monitoring", false)
+		
+	# Stop custom steering and wandering
+	set_process(false)
+	set_physics_process(false)
+
+	# Stop flying animation, switch to the 1-frame death pose
+	if _animator != null:
+		if _animator.has_clip(&"die"):
+			_animator.play(&"die", true)
+		else:
+			_animator.set_process(false)
+	
+	# Remove from collision layer
+	set_deferred("collision_layer", 0)
+
+	# Wait 5 seconds while the corpse lies on the ground
+	await get_tree().create_timer(5.0).timeout
+
+	# Freeze physics completely before the fade
+	set_deferred("freeze", true)
+	set_deferred("collision_mask", 0)
+
+	# Pop and fade out taken from the enemy's juice, but slower
+	var pop_scale: float = 1.7
+	var fade_duration: float = 0.6
+	
+	var tween: Tween = create_tween().set_parallel(true)
+	
+	tween.tween_property(_visual, "scale", _juice.base_scale * pop_scale, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_visual, "modulate:a", 0.0, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(queue_free)
+		
+
+
+# Code for instant death animation as the enemy does
+
+# func _on_died(_from: Vector2) -> void:
+# 	_carry.drop()
+# 	_juice.burst()
+
+# 	# 只有你摔死的才算处决。被猎手咬死的忠诚工蜂要是也记在你头上，
+# 	# unrest 白涨 0.2、周围的蜂白记一次仇，而玩家根本没动手
+# 	# 清叛军不算处决：它们是纯敌人，杀它们既不该推不安，也不该让旁观的蜂记仇
+# 	if _slain_by_player and not _allegiance.is_rebel():
+# 		var director: BetrayalDirector = BetrayalDirector.find(get_tree())
+# 		if director != null:
+# 			director.report_execution(self, _allegiance.was_false_queen)
+
+# 	died.emit(self, global_position)
+	
+# 	# Turn off AI and interactions
+# 	_btree.active = false
+# 	if _draggable != null:
+# 		_draggable.set_deferred("input_pickable", false)
+# 		_draggable.set_deferred("monitorable", false)
+# 		_draggable.set_deferred("monitoring", false)
+		
+# 	set_process(false)
+# 	set_physics_process(false)
+
+# 	# 原地停住，不要飞出去 / stop dead, no ragdoll flight
+# 	linear_velocity = Vector2.ZERO
+# 	angular_velocity = 0.0
+# 	set_deferred("freeze", true)
+# 	set_deferred("collision_layer", 0)
+# 	set_deferred("collision_mask", 0)
+
+# 	# 死亡段停在最后一帧，尸体保持死的样子 / the corpse holds its last frame
+# 	var linger: float = 0.0
+# 	if _animator != null and _animator.has_clip(&"die"):
+# 		_animator.play(&"die", true)
+# 		# 强制多等 0.8 秒，确保你能看清这个只有 1 帧的动画
+# 		# Add 0.8 seconds to the clip duration so you can clearly see the death frame
+# 		linger = _animator.clip_duration(&"die") + 0.8
+
+# 	# 膨胀一下再消散。跟敌人的 juice 一样，但更慢
+# 	# Pop and fade out, using the same logic as the enemy but slower.
+# 	var pop_scale: float = 1.7
+# 	var fade_duration: float = 0.6 # Slower than the enemy's 0.32
+	
+# 	var tween: Tween = create_tween().set_parallel(true)
+# 	if linger > 0.0:
+# 		tween.tween_interval(linger)
+# 		tween = tween.chain().set_parallel(true)
+	
+# 	# 注意这里乘的是 _juice.base_scale，否则吃过蜂王浆的巨大黄蜂死时会瞬间缩水
+# 	# Multiply by _juice.base_scale so jelly-fed wasps keep their size when dying.
+# 	tween.tween_property(_visual, "scale", _juice.base_scale * pop_scale, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+# 	tween.tween_property(_visual, "modulate:a", 0.0, fade_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+# 	tween.chain().tween_callback(queue_free)
+		
+
 
 
 # center 给 INF 就绕自己的落点转；Idle 会把巢的位置传进来
