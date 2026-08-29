@@ -24,6 +24,9 @@ func is_alive() -> bool:
 
 # 返回这次伤害是否生效 / returns whether the hit landed
 func take_damage(amount: int = 1, from: Vector2 = Vector2.ZERO) -> bool:
+
+
+
 	if health <= 0 or amount <= 0:
 		return false
 
@@ -31,4 +34,5 @@ func take_damage(amount: int = 1, from: Vector2 = Vector2.ZERO) -> bool:
 	damaged.emit(amount, health, from)
 	if health == 0:
 		died.emit(from)
+		
 	return true

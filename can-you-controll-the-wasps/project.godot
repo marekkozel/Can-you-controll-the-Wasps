@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Signal_Debugger="*uid://bf6x3w2mh5vl0"
+AudioManager="*uid://bffa7nky0na4d"
 
 [display]
 
@@ -54,6 +55,7 @@ Enemy=""
 [physics]
 
 common/physics_jitter_fix=0.803
+2d/default_gravity=0.0
 
 [rendering]
 

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://34b8bnmy702p"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_2xfc1"]
+[ext_resource type="AudioStream" uid="uid://djuixqn8w4pha" path="res://Assets/Sounds/SFX/queen_pop.mp3" id="2_2xfc1"]
+
+[resource]
+script = ExtResource("1_2xfc1")
+limit = 1
+type = 23
+sound_effect = ExtResource("2_2xfc1")
+pitch_randomness = 0.2
+metadata/_custom_type_script = "uid://df6m72yt6clx7"

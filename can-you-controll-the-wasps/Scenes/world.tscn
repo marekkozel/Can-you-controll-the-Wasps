@@ -408,7 +408,7 @@ texture = ExtResource("41_jwdyn")
 [node name="HowToPlay" parent="UI" unique_id=672998586 instance=ExtResource("44_howto")]
 layout_mode = 3
 
-[node name="YearReport" parent="UI" unique_id=1579481889 instance=ExtResource("42_yearreport")]
+[node name="YearReport" parent="UI" unique_id=404287434 instance=ExtResource("42_yearreport")]
 
 [node name="Atmosphere" type="CanvasLayer" parent="." unique_id=549371485]
 layer = 5

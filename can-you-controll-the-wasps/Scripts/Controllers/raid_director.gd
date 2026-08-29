@@ -386,6 +386,9 @@ func _start() -> void:
 
 	_raiding = true
 	_time_left = raid_duration
+
+	AudioManager.create_audio(SoundEffect.SoundEffectType.RAID_WARNING)
+
 	raid_started.emit(wave, _raiders.size())
 
 

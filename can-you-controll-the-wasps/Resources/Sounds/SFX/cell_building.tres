@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundEffect" format=3 uid="uid://spukaabb0x54"]
+
+[ext_resource type="Script" uid="uid://df6m72yt6clx7" path="res://Scripts/Audio_managment/SoundEffectSetting.gd" id="1_vj57o"]
+[ext_resource type="AudioStream" uid="uid://bsy7afuip2846" path="res://Assets/Sounds/SFX/cell_building_cardboard.mp3" id="2_kyl6a"]
+
+[resource]
+script = ExtResource("1_vj57o")
+limit = 4
+sound_effect = ExtResource("2_kyl6a")
+pitch_randomness = 0.15
+metadata/_custom_type_script = "uid://df6m72yt6clx7"
