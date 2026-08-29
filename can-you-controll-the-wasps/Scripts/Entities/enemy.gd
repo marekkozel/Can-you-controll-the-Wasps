@@ -13,8 +13,10 @@ signal killed(enemy: Enemy)
 @export var variant: EnemyVariant
 
 @export_group("Combat")
-## 每次点击造成几点伤害 / damage per click
-@export_range(1, 20, 1) var click_damage: int = 1
+## 每次点击造成几点伤害。**必须明显高于一只蜂咬一口**（蜂是 1 点 / 0.6 秒）——
+## 给 1 的话点一下等于多派一只蜂站 0.6 秒，玩家伸手永远不划算，于是根本不点
+## Must clearly beat one wasp bite, or reaching in is strictly worse than doing nothing.
+@export_range(1, 20, 1) var click_damage: int = 4
 ## 击退力度，只对没被打死的生效。跟黄蜂一样 lock_rotation，所以只推不转——
 ## 打一下就转个角度的话贴图朝向会乱掉，也看不出它在往哪走
 ## Knockback on non-lethal hits. Rotation is locked like the wasp's: shoved, never spun.
@@ -171,6 +173,9 @@ func _apply_build() -> void:
 	# Chase speed used to stay at the component default for every breed.
 	if _hunt != null:
 		_hunt.fly_speed = variant.chase_speed
+		_hunt.damage = variant.bite_damage
+		_hunt.bite_cooldown = variant.bite_cooldown
+		_hunt.bite_radius = variant.bite_radius
 
 	# **判定距离必须大于两者碰撞半径之和，否则永远走不到。**
 	# 场景里的 reach 是照中型（半径 22）调的：蜘蛛半径 48，加上黄蜂 grab 的 23，

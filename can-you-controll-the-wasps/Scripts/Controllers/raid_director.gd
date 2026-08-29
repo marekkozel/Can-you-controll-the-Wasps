@@ -57,8 +57,34 @@ const ENTITIES_GROUP: StringName = &"entities"
 ## 强度递增体现在**构成**上，不改 EnemyVariant 的血量：同一种敌人血量不固定的话，
 ## 玩家没法对"这是什么东西"建立预期
 ## Later waves shift toward the heavier troop; per-breed health stays fixed so it stays learnable.
-@export_range(0.0, 1.0, 0.05) var heavy_share: float = 0.35
-@export_range(0.0, 0.4, 0.05) var heavy_share_step: float = 0.15
+## 波次原型的形状 / the shape of a wave
+##
+## 同样的预算，「8 只蚂蚁」和「1 只鸟 + 2 只苍蝇」考的是完全不同的东西：
+## 前者玩家点不过来（一次只能点一个），只能靠蜂群；后者集中一个目标正是点击最擅长的。
+## 玩家的输出手速封顶、且单目标，蜂群的输出随蜂数线性涨——两条曲线不一样，
+## 所以波次必须在这两端之间摆动，否则每一波考的都是同一件事
+## The player's damage is capped and single-target; the swarm's scales with the colony.
+## A wave has to swing between those two or every raid tests the same thing.
+enum Wave { SWARM, MIXED, ELITE }
+
+## 潮水波只用这个点数以下的品种 / a swarm is built from breeds this cheap
+@export_range(1, 6, 1) var swarm_cost_cap: int = 2
+## 精英波的门槛。预算不够就掷不出来——一只没有护卫的大家伙只是个血包
+## Below this an elite is a lone punching bag, not a wave.
+@export_range(4.0, 40.0, 1.0) var elite_min_budget: float = 8.0
+## 三种原型的相对权重，顺序同 Wave / relative odds, in Wave order
+@export var wave_odds: Vector3 = Vector3(0.3, 0.5, 0.2)
+## 蜂多过这个数，每波必须至少有一个会打人的。纯小偷波整局都考不到防守——
+## 这曾经是常态：编队只挑成本最高和最低的两个品种，两个恰好都是 THIEF
+## Every wave needs a hunter past this, or defence is never tested. It used to be the
+## norm: the old split only ever picked the dearest and cheapest breed, both thieves.
+@export_range(0, 30, 1) var hunter_floor_wasps: int = 5
+
+@export_group("Appetite")
+## 巢里每多一只幼虫/卵，小偷的权重涨多少 / thief weight per brood in the hive
+@export_range(0.0, 1.0, 0.01) var brood_appetite: float = 0.12
+## 场上每多一只蜂，猎手的权重涨多少 / hunter weight per wasp on the field
+@export_range(0.0, 1.0, 0.01) var wasp_appetite: float = 0.10
 
 @export_group("Schedule")
 ## 入侵窗口，按整年进度算：0 = 初春，0.25 = 入夏，0.5 = 入秋，0.75 = 入冬。
@@ -419,52 +445,188 @@ func _budget() -> float:
 	return clampf(colony_strength() * pressure, min_budget, max_budget)
 
 
-# 按预算编队。重的先填一部分，剩下全给轻的——**固定切分而不是每只 randf()**：
-# 随机会掷出"整波全是重的"，那一波巢完全没有压力，玩家学不到"入侵是来偷东西的"
-# A fixed split, not a per-raider roll: randomness produces waves that teach nothing.
+# 按预算编队 / spend the budget on a wave.
+#
+# **旧实现只取了成本最高和最低的两个品种**（`troops[0]` 和 `troops[-1]`），中间四个
+# 从来没被生成过；而那两端恰好都是 THIEF，于是整局没有一个会打人的敌人上过场。
+# 现在改成先掷原型定形状，再在整个名单上按权重花预算。
+# The old split only ever spawned the dearest and cheapest breed - and both were thieves,
+# so no hunter ever reached the field. Roll a shape first, then spend across the roster.
 func _plan_formation() -> Array[EnemyVariant]:
-	var out: Array[EnemyVariant] = []
-	var elites: Array[EnemyVariant] = []
-	var troops: Array[EnemyVariant] = []
+	var pool: Array[EnemyVariant] = []
 	for breed in breeds:
-		if breed == null:
-			continue
-		if breed.one_per_raid:
-			elites.append(breed)
-		else:
-			troops.append(breed)
-	if troops.is_empty():
-		return out
-	troops.sort_custom(func(a: EnemyVariant, b: EnemyVariant): return a.spawn_cost > b.spawn_cost)
+		if breed != null:
+			pool.append(breed)
+	if pool.is_empty():
+		return []
 
 	var budget: float = _budget()
+	var out: Array[EnemyVariant] = []
 
-	# 大家伙一波最多一只，而且要留得下几个小兵陪它——一只光杆蜘蛛只是个血包
-	# One at most, and only if there is budget left for an escort.
-	for elite in elites:
-		var escort: float = float(troops[troops.size() - 1].spawn_cost) * 2.0
-		if budget >= float(elite.spawn_cost) + escort:
-			out.append(elite)
-			budget -= float(elite.spawn_cost)
-			break
+	match _roll_wave(budget, pool):
+		Wave.ELITE:
+			var elite: EnemyVariant = _best_elite(pool, budget)
+			if elite != null:
+				out.append(elite)
+				budget -= float(elite.spawn_cost)
+			budget = _fill(out, _without_elites(pool), budget)
+		Wave.SWARM:
+			var cheap: Array[EnemyVariant] = []
+			for breed in _without_elites(pool):
+				if breed.spawn_cost <= swarm_cost_cap:
+					cheap.append(breed)
+			budget = _fill(out, cheap if not cheap.is_empty() else _without_elites(pool), budget)
+		_:
+			budget = _fill(out, _without_elites(pool), budget)
 
-	var heavy: EnemyVariant = troops[0]
-	var light: EnemyVariant = troops[troops.size() - 1]
-	if heavy != light:
-		var share: float = clampf(heavy_share + float(maxi(_raid_index, 1) - 1) * heavy_share_step, 0.0, 1.0)
-		var heavy_budget: float = budget * share
-		while heavy_budget >= float(heavy.spawn_cost) and out.size() < max_count:
-			out.append(heavy)
-			heavy_budget -= float(heavy.spawn_cost)
-			budget -= float(heavy.spawn_cost)
-
-	while budget >= float(light.spawn_cost) and out.size() < max_count:
-		out.append(light)
-		budget -= float(light.spawn_cost)
-
+	_guarantee_hunter(out, pool, _budget_of(out) + budget)
 	if out.is_empty():
-		out.append(light)  # 保底一只，空袭等于没袭 / a raid of nobody is not a raid
+		out.append(_cheapest(pool))  # 保底一只，空袭等于没袭 / a raid of nobody is not a raid
 	return out
+
+
+# 预算撑不起精英就别掷它 / an elite it cannot afford is not on the table
+func _roll_wave(budget: float, pool: Array[EnemyVariant]) -> int:
+	var odds: Vector3 = wave_odds
+	if budget < elite_min_budget or _best_elite(pool, budget) == null:
+		odds.z = 0.0
+	var total: float = maxf(odds.x + odds.y + odds.z, 0.0001)
+	var roll: float = randf() * total
+	if roll < odds.x:
+		return Wave.SWARM
+	if roll < odds.x + odds.y:
+		return Wave.MIXED
+	return Wave.ELITE
+
+
+# 挑得起、又留得下护卫的精英里**随机**一只。
+# **不能永远取最贵的**：那样鸟一旦买得起就把螳螂永久挤掉，而这两个恰恰是最有意思的
+# 两个敌人——实测后期 300 波里螳螂出场 0 次
+# Never "the dearest affordable": the bird would permanently crowd out the mantis, and
+# those two are the whole point. Measured 0 mantis in 300 late-game waves.
+func _best_elite(pool: Array[EnemyVariant], budget: float) -> EnemyVariant:
+	var cheapest: EnemyVariant = _cheapest(_without_elites(pool))
+	var escort: float = float(cheapest.spawn_cost) * 2.0 if cheapest != null else 0.0
+	var afford: Array[EnemyVariant] = []
+	for breed in pool:
+		if breed.one_per_raid and float(breed.spawn_cost) + escort <= budget:
+			afford.append(breed)
+	if afford.is_empty():
+		return null
+	return afford[randi() % afford.size()]
+
+
+func _without_elites(pool: Array[EnemyVariant]) -> Array[EnemyVariant]:
+	var out: Array[EnemyVariant] = []
+	for breed in pool:
+		if not breed.one_per_raid:
+			out.append(breed)
+	return out if not out.is_empty() else pool
+
+
+func _cheapest(pool: Array[EnemyVariant]) -> EnemyVariant:
+	var best: EnemyVariant = null
+	for breed in pool:
+		if best == null or breed.spawn_cost < best.spawn_cost:
+			best = breed
+	return best
+
+
+# 按权重把预算花完 / spend what is left, weighted
+func _fill(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float) -> float:
+	while out.size() < max_count:
+		# 每个空位分到多少预算。不给这个偏向的话，23 点预算也只是买六个杂兵——
+		# 实测 300 波平均只花掉 16.5，重的那几个根本轮不上
+		# Without this a 23-point budget just buys six cheap bodies: measured 16.5 spent.
+		var per_slot: float = budget / float(maxi(max_count - out.size(), 1))
+		var pick: EnemyVariant = _weighted_pick(pool, budget, per_slot)
+		if pick == null:
+			break
+		out.append(pick)
+		budget -= float(pick.spawn_cost)
+	return budget
+
+
+func _weighted_pick(pool: Array[EnemyVariant], budget: float, per_slot: float = 0.0) -> EnemyVariant:
+	var choices: Array[EnemyVariant] = []
+	var weights: Array[float] = []
+	var total: float = 0.0
+	for breed in pool:
+		if float(breed.spawn_cost) > budget:
+			continue
+		var w: float = _appetite(breed)
+		if per_slot > 0.0:
+			# 成本越接近「这个位置该花的钱」权重越高 / peaks where cost matches the slot
+			w /= 1.0 + absf(float(breed.spawn_cost) - per_slot) / maxf(per_slot, 1.0)
+		choices.append(breed)
+		weights.append(w)
+		total += w
+	if choices.is_empty():
+		return null
+	var roll: float = randf() * total
+	for i in choices.size():
+		roll -= weights[i]
+		if roll <= 0.0:
+			return choices[i]
+	return choices[choices.size() - 1]
+
+
+# 品种权重跟着**巢现在的样子**走，不只跟着预算走：有幼虫才值得派小偷，
+# 有蜂才值得派猎手。空巢里的小偷和空场上的猎手都只是在浪费一次入侵
+# Weighted by what the hive actually holds - a thief with nothing to steal, or a hunter
+# with nothing to fight, wastes the raid it was spent on.
+func _appetite(breed: EnemyVariant) -> float:
+	if breed.behavior == EnemyVariant.Behavior.THIEF:
+		return 1.0 + float(_brood_count()) * brood_appetite
+	return 1.0 + float(get_tree().get_nodes_in_group(WASP_GROUP).size()) * wasp_appetite
+
+
+func _brood_count() -> int:
+	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+	if hive == null:
+		return 0
+	return hive.egg_count() + hive.count_content(HexCell.Content.LARVA)
+
+
+# 蜂够多就必须有人来打它们 / past the floor, somebody has to come and fight.
+#
+# 换人不是简单替换最便宜那个：猎手比它贵，直接换会**当场超预算**——实测开局
+# 3 点预算的波有 153/400 花到了 4 点。所以从最便宜的开始撤，撤到装得下为止
+# A straight swap overruns the budget because the hunter costs more: 153/400 early waves
+# came out over. Shed the cheapest slots until it fits.
+func _guarantee_hunter(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float) -> void:
+	if get_tree().get_nodes_in_group(WASP_GROUP).size() < hunter_floor_wasps:
+		return
+	for breed in out:
+		if breed.behavior == EnemyVariant.Behavior.HUNTER:
+			return
+
+	var hunters: Array[EnemyVariant] = []
+	for breed in pool:
+		if breed.behavior == EnemyVariant.Behavior.HUNTER and not breed.one_per_raid:
+			hunters.append(breed)
+	var hunter: EnemyVariant = _cheapest(hunters)
+	# 连最便宜的猎手都买不起就算了。这一波本来就穷到只配来几只蚂蚁
+	# Too poor for even the cheapest hunter - this wave was only ever going to be ants.
+	if hunter == null or float(hunter.spawn_cost) > budget:
+		return
+
+	var spent: float = _budget_of(out)
+	while not out.is_empty() and (spent + float(hunter.spawn_cost) > budget or out.size() >= max_count):
+		var worst: int = 0
+		for i in out.size():
+			if out[i].spawn_cost < out[worst].spawn_cost:
+				worst = i
+		spent -= float(out[worst].spawn_cost)
+		out.remove_at(worst)
+	out.append(hunter)
+
+
+func _budget_of(plan: Array[EnemyVariant]) -> float:
+	var total: float = 0.0
+	for breed in plan:
+		total += float(breed.spawn_cost)
+	return total
 
 
 func _spawn_root() -> Node:

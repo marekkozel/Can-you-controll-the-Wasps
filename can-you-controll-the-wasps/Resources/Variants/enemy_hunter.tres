@@ -7,7 +7,6 @@
 [resource]
 script = ExtResource("1_enemy_variant")
 display_name = "Fly"
-chase_speed = 195.0
 behavior = 1
 loot_count = 2
 body_color = Color(0.42, 0.11, 0.12, 1)
@@ -18,5 +17,7 @@ outline_color = Color(0.15, 0.03, 0.04, 1)
 texture = ExtResource("2_1b66f")
 animation = ExtResource("3_anim")
 sprite_offset = Vector2(0, 1)
+chase_speed = 195.0
 show_health_bar = true
+bite_cooldown = 0.8
 spawn_cost = 2

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyVariant" format=3 uid="uid://b8vqx2ntbeetl"]
+
+[ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
+[ext_resource type="Texture2D" uid="uid://cjdmw6138awnb" path="res://Assets/Entities/Enemies/Beetle_enemy.png" id="2_sheet"]
+
+[resource]
+script = ExtResource("1_enemy_variant")
+display_name = "Beetle"
+behavior = 0
+max_health = 10
+loot_count = 5
+texture = ExtResource("2_sheet")
+show_health_bar = true
+spawn_cost = 4

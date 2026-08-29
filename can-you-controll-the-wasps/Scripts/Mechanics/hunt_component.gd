@@ -27,6 +27,9 @@ const WASP_GROUP: StringName = &"wasps"
 ## 两口之间的间隔。这个数**就是**玩家把伤蜂拖出来的窗口，改它等于改战斗手感
 ## This interval IS the player's window to drag a wounded wasp clear.
 @export_range(0.2, 10.0, 0.1) var bite_cooldown: float = 1.5
+## 一口扫到多大范围内的所有蜂，0 = 只咬目标那一只。由 EnemyVariant 写入
+## Cleave radius, 0 = single target. Written by EnemyVariant.
+@export_range(0.0, 160.0, 2.0) var bite_radius: float = 0.0
 
 @export_group("Leash")
 ## 离巢超过这个距离就丢下目标往回走 / drops the chase and heads back past this
@@ -137,9 +140,27 @@ func _physics_process(delta: float) -> void:
 		_drop_target()
 		return
 	victim.take_damage(damage, _body.global_position)
+	_cleave(victim)
 	_cooldown = bite_cooldown
 	_chase_time = 0.0  # 咬到了就不算追不上 / a landed bite is not a stalled chase
 	bit.emit(victim)
+
+
+# 横扫：同一口打到范围内其余的蜂。伤害和冷却都跟正主共用一次，
+# **不是**额外多咬一口——否则围得越多它打得越快，方向就反了
+# One bite, several victims: the damage and the cooldown are the bite's, not per victim.
+func _cleave(primary: Node2D) -> void:
+	if bite_radius <= 0.0:
+		return
+	var at: Vector2 = _body.global_position
+	for node in get_tree().get_nodes_in_group(WASP_GROUP):
+		var wasp: Node2D = node as Node2D
+		if wasp == null or wasp == primary or not is_instance_valid(wasp):
+			continue
+		if not wasp.has_method("take_damage"):
+			continue
+		if at.distance_to(wasp.global_position) <= bite_radius:
+			wasp.take_damage(damage, at)
 
 
 func _drop_target() -> void:

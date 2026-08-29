@@ -64,6 +64,22 @@ enum Behavior {
 ## 正是靠只有它有血条撑起来的 / only the big one earns a bar
 @export var show_health_bar: bool = false
 
+@export_group("Combat")
+## 一口几点伤害。**跟着品种走**——以前四种敌人共用 HuntComponent 的 1 点，
+## 螳螂咬得跟苍蝇一样疼，三种猎手除了血条以外是同一个敌人
+## Per breed: they all shared the component default, so a mantis bit like a fly and the
+## three hunters were one enemy wearing three sprites.
+@export_range(1, 10, 1) var bite_damage: int = 1
+## 两口之间的间隔。这个数**就是**玩家把伤蜂拖出来的窗口
+## This interval IS the player's window to drag a wounded wasp clear.
+@export_range(0.2, 10.0, 0.1) var bite_cooldown: float = 1.5
+## 一口扫到多大范围内的**所有**蜂，0 = 只咬选中的那一只。
+## 大型必须给：8 只蜂叠在螳螂身上和 1 只蜂承担的风险一样，所以"全压上去"永远是
+## 最优解、整场战斗没有任何决策。有了横扫，围攻才有代价
+## Zero means single target. The big ones need it: piling eight wasps on a mantis costs
+## exactly as much as sending one, so swarming is free and the fight has no decision in it.
+@export_range(0.0, 160.0, 2.0) var bite_radius: float = 0.0
+
 @export_group("Raids")
 ## 编队点数。一波的预算由玩家当前实力算出来，再用这个填满
 ## Formation cost - a wave's budget is derived from colony strength, then spent on these.

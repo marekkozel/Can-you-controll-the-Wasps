@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyVariant" format=3 uid="uid://cq7wn3mkbird1"]
+
+[ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
+[ext_resource type="Texture2D" uid="uid://dcltovuoe34gk" path="res://Assets/Entities/Enemies/Bird_big_enemy.png" id="2_sheet"]
+
+[resource]
+script = ExtResource("1_enemy_variant")
+display_name = "Bird"
+behavior = 1
+max_health = 20
+loot_count = 8
+texture = ExtResource("2_sheet")
+collision_radius = 40.0
+move_speed = 65.0
+chase_speed = 105.0
+body_mass = 3.5
+show_health_bar = true
+bite_damage = 3
+bite_cooldown = 1.8
+spawn_cost = 9
+one_per_raid = true
