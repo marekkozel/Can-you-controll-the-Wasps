@@ -82,6 +82,9 @@ var debug_attention: Vector2 = Vector2.INF
 
 var _queen: Wasp = null
 var _emerged_since: int = 0
+## 关掉就不再叫醒新的伪王后。教程期间由 TutorialDirector 关着
+## Held shut during the tutorial; nothing else touches it.
+var awakening_enabled: bool = true
 var _generation: int = 0
 var _hive: Hive = null
 
@@ -225,6 +228,12 @@ func _weighted_pick(candidates: Array) -> Wasp:
 
 func _on_wasp_emerged(_cell: HexCell, _wasp: Wasp) -> void:
 	if has_false_queen():
+		return
+	# 教程期间连计数都不走：只挡叫醒的话，教程一结束她可能当场就醒，
+	# 玩家刚学会喂幼虫就被丢进背叛机制里
+	# Not even counted while held - gating only the awakening would fire her the
+	# instant the tutorial ends.
+	if not awakening_enabled:
 		return
 	_emerged_since += 1
 	var needed: int = int(roundf(lerpf(float(awaken_after), float(awaken_after_unrest), unrest) * awaken_scale))

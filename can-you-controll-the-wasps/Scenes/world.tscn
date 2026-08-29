@@ -22,12 +22,10 @@
 [ext_resource type="Texture2D" uid="uid://c6dvtxt4yj1fl" path="res://Assets/UI/region_cardboard.png" id="17_ph_card"]
 [ext_resource type="Texture2D" uid="uid://c687eox8jpsx7" path="res://Assets/UI/region_enemies.png" id="18_ph_enemy"]
 [ext_resource type="Texture2D" uid="uid://chxh6423pkm2p" path="res://Assets/UI/region_food.png" id="19_ph_food"]
-[ext_resource type="Texture2D" uid="uid://cjdmw6138awnb" path="res://Assets/Entities/Enemies/Beetle_enemy.png" id="19_t6yt7"]
 [ext_resource type="Texture2D" uid="uid://c8w6w205ql85p" path="res://Assets/UI/region_info.png" id="20_ph_info"]
 [ext_resource type="Texture2D" uid="uid://dc5b6tp668gkf" path="res://Assets/UI/region_nest.png" id="21_ph_nest"]
 [ext_resource type="Texture2D" uid="uid://daaaman4bfiu1" path="res://Assets/UI/region_upgrades.png" id="22_ph_upgrade"]
 [ext_resource type="Script" uid="uid://bhfyfc82xueyc" path="res://Scripts/Controllers/raid_director.gd" id="23_raid"]
-[ext_resource type="Texture2D" uid="uid://dcltovuoe34gk" path="res://Assets/Entities/Enemies/Bird_big_enemy.png" id="23_xcb5n"]
 [ext_resource type="Resource" uid="uid://wn2d2okeodbq" path="res://Resources/Variants/enemy_thief.tres" id="24_thief"]
 [ext_resource type="Resource" uid="uid://c064ffit4w1tc" path="res://Resources/Variants/enemy_hunter.tres" id="25_hunter"]
 [ext_resource type="Resource" path="res://Resources/Variants/lime.tres" id="26_lime"]
@@ -48,6 +46,11 @@
 [ext_resource type="Texture2D" uid="uid://bf5d1qtxhern3" path="res://Assets/UI/upgrades_tagt.png" id="41_jwdyn"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/YearReport.tscn" id="42_yearreport"]
 [ext_resource type="PackedScene" uid="uid://bel6labif31jk" path="res://Scenes/Mechanics/JuiceComponent.tscn" id="43_juice"]
+[ext_resource type="PackedScene" uid="uid://dkojgk8nus6k6" path="res://Scenes/UI/Tutorial.tscn" id="43_tutorial"]
+[ext_resource type="Resource" uid="uid://b8vqx2ntbeetl" path="res://Resources/Variants/enemy_beetle.tres" id="44_beetle"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/HowToPlay.tscn" id="44_howto"]
+[ext_resource type="Resource" uid="uid://cq7wn3mkbird1" path="res://Resources/Variants/enemy_bird.tres" id="45_bird"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/AttentionRing.tscn" id="45_ring"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(1256, 24, 1256, 264, 1000, 264, 24, 24, 1000, 519, 999, 519, 282, 264, 999, 607, 1255.5, 607, 1255.5, 665, 282, 665, 24, 264)
@@ -57,29 +60,6 @@ parsed_geometry_type = 1
 source_geometry_mode = 1
 source_geometry_group_name = &"navigation_source"
 agent_radius = 24.0
-
-[sub_resource type="Resource" id="Resource_4t8d5"]
-script = ExtResource("32_enemyvariant")
-display_name = "Beetle"
-max_health = 10
-loot_count = 5
-texture = ExtResource("19_t6yt7")
-show_health_bar = true
-spawn_cost = 4
-metadata/_custom_type_script = "uid://plfkdm57opi8"
-
-[sub_resource type="Resource" id="Resource_6mm6r"]
-script = ExtResource("32_enemyvariant")
-display_name = "Bird"
-max_health = 20
-loot_count = 8
-texture = ExtResource("23_xcb5n")
-collision_radius = 40.0
-move_speed = 65.0
-body_mass = 3.5
-show_health_bar = true
-spawn_cost = 9
-metadata/_custom_type_script = "uid://plfkdm57opi8"
 
 [sub_resource type="RectangleShape2D" id="Shape_wall_top"]
 size = Vector2(1320, 40)
@@ -182,6 +162,8 @@ position = Vector2(0, -12)
 
 [node name="Entities" type="Node2D" parent="." unique_id=1986278641 groups=["entities"]]
 
+[node name="AttentionRing" parent="." unique_id=172142078 instance=ExtResource("45_ring")]
+
 [node name="Queen_controller" type="Node2D" parent="." unique_id=1306396035]
 
 [node name="BetrayalDirector" type="Node2D" parent="Queen_controller" unique_id=1241915486 groups=["betrayal_director"]]
@@ -191,7 +173,7 @@ brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtRe
 [node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
 script = ExtResource("23_raid")
 enemy_scene = ExtResource("11_enemy")
-breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), SubResource("Resource_4t8d5"), ExtResource("33_spider"), ExtResource("34_mantis"), SubResource("Resource_6mm6r")])
+breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), ExtResource("44_beetle"), ExtResource("33_spider"), ExtResource("34_mantis"), ExtResource("45_bird")])
 raids_per_year = Vector2i(5, 7)
 min_gap = 0.02
 raid_duration = 40.0
@@ -420,6 +402,11 @@ offset_top = 296.0
 offset_right = 1162.0
 offset_bottom = 336.0
 texture = ExtResource("41_jwdyn")
+
+[node name="Tutorial" parent="UI" unique_id=270077394 instance=ExtResource("43_tutorial")]
+
+[node name="HowToPlay" parent="UI" unique_id=672998586 instance=ExtResource("44_howto")]
+layout_mode = 3
 
 [node name="YearReport" parent="UI" unique_id=1579481889 instance=ExtResource("42_yearreport")]
 

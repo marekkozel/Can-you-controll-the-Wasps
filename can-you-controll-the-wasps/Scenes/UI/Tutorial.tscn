@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://dkojgk8nus6k6"]
+
+[ext_resource type="Script" uid="uid://crd82hu8p55qj" path="res://Scripts/UI/tutorial_director.gd" id="1_tut"]
+[ext_resource type="Script" uid="uid://3tpvlvwhn2ma" path="res://Scripts/Mechanics/tutorial_step.gd" id="2_step"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
+
+[sub_resource type="Resource" id="Step_obj0"]
+script = ExtResource("2_step")
+kind = 0
+trigger = 0
+text = "Drag a scrap onto an empty cell"
+order = 0
+
+[sub_resource type="Resource" id="Step_obj1"]
+script = ExtResource("2_step")
+kind = 0
+text = "Keep hauling until the cell is built"
+order = 1
+
+[sub_resource type="Resource" id="Step_obj2"]
+script = ExtResource("2_step")
+kind = 0
+trigger = 4
+text = "Drag food to the larva until she is full"
+order = 3
+
+[sub_resource type="Resource" id="Step_obj3"]
+script = ExtResource("2_step")
+kind = 0
+trigger = 5
+text = "Wait for her to emerge"
+order = 4
+
+[sub_resource type="Resource" id="Step_obj_egg"]
+script = ExtResource("2_step")
+kind = 0
+trigger = 2
+text = "Press and hold a built cell to lay an egg"
+order = 2
+
+[node name="Tutorial" type="Control" unique_id=2082654955]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_tut")
+steps = Array[ExtResource("2_step")]([SubResource("Step_obj_egg"), SubResource("Step_obj0"), SubResource("Step_obj1"), SubResource("Step_obj2"), SubResource("Step_obj3")])
+
+[node name="Objectives" type="PanelContainer" parent="." unique_id=1768167649]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -118.0
+offset_top = 15.0
+offset_right = 118.0
+offset_bottom = 203.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="Objectives" unique_id=964600768]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="Rows" type="VBoxContainer" parent="Objectives/Margin" unique_id=2131777337]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="Label" parent="Objectives/Margin/Rows" unique_id=1845229790]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4902, 0.30196, 0.34902, 1)
+theme_override_font_sizes/font_size = 12
+text = "THE YEAR HAS NOT BEGUN"
+
+[node name="Skip" type="Button" parent="Objectives/Margin/Rows" unique_id=949831211]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Skip"

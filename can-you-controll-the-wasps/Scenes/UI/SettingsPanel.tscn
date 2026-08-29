@@ -1,0 +1,140 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/settings_panel.gd" id="1_settings"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
+
+[node name="SettingsPanel" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_settings")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.043137, 0.031373, 0.043137, 0.62)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -150.0
+offset_right = 230.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 22
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="Label" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="Panel/Margin/Rows"]
+layout_mode = 2
+
+[node name="Master" type="HBoxContainer" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Master"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "Master"
+
+[node name="Slider" type="HSlider" parent="Panel/Margin/Rows/Master"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="Value" type="Label" parent="Panel/Margin/Rows/Master"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+text = "80%"
+horizontal_alignment = 2
+
+[node name="Music" type="HBoxContainer" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Music"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "Music"
+
+[node name="Slider" type="HSlider" parent="Panel/Margin/Rows/Music"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.7
+
+[node name="Value" type="Label" parent="Panel/Margin/Rows/Music"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+text = "70%"
+horizontal_alignment = 2
+
+[node name="SFX" type="HBoxContainer" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Name" type="Label" parent="Panel/Margin/Rows/SFX"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+text = "Sound"
+
+[node name="Slider" type="HSlider" parent="Panel/Margin/Rows/SFX"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="Value" type="Label" parent="Panel/Margin/Rows/SFX"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+text = "80%"
+horizontal_alignment = 2
+
+[node name="Note" type="Label" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.302, 0.376, 0.38, 1)
+theme_override_font_sizes/font_size = 12
+text = "Audio is still being wired up."
+horizontal_alignment = 1
+
+[node name="Sep2" type="HSeparator" parent="Panel/Margin/Rows"]
+layout_mode = 2
+
+[node name="Back" type="Button" parent="Panel/Margin/Rows"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Back"

@@ -49,9 +49,10 @@ const PERK_SLOTS: int = 4
 @export_group("Prompts")
 ## 光标停在蜂身上时说的话 / shown while merely hovering a wasp
 @export var hover_prompt: String = "LEFT-CLICK TO LIFT"
-## 已经托在手上时说的话。处决的入口只有这一处，玩家不看这里就永远学不会
-## The only place the execution verb is ever spelled out.
-@export var held_prompt: String = "RIGHT-CLICK TO STING"
+## 已经托在手上时说的话。右键处决那条路已经没了——StingComponent / HoldComponent
+## 都不在 Wasp.tscn 上，现在唯一的杀伤手段是甩向墙（wasp.gd 的 _take_impact_damage）
+## Right-click stinging is gone with StingComponent; a wall is the only weapon now.
+@export var held_prompt: String = "FLING HER AT A WALL"
 
 @onready var _name: Label = $Name
 @onready var _lineage: Label = $Lineage

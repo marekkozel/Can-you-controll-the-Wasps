@@ -1,0 +1,138 @@
+[gd_scene format=3 uid="uid://ccj20jsdd7sd1"]
+
+[ext_resource type="Script" uid="uid://cgjfodxaqjxs4" path="res://Scripts/UI/main_menu.gd" id="1_menu"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="3_settings"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/HowToPlay.tscn" id="7_howto"]
+[ext_resource type="Texture2D" uid="uid://bujq8j4cawuwv" path="res://Assets/UI/background_Main.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://di43gwv4le2u0" path="res://Assets/UI/title_plaque.png" id="5_plaque"]
+[ext_resource type="Shader" path="res://Assets/Shaders/menu_backdrop.gdshader" id="6_bgshader"]
+
+[sub_resource type="ShaderMaterial" id="Mat_backdrop"]
+shader = ExtResource("6_bgshader")
+shader_parameter/sway_pixels = 6.0
+shader_parameter/sway_speed = 1.0
+shader_parameter/sway_frequency = 3.0
+shader_parameter/sway_falloff = 1.8
+shader_parameter/dark_cutoff = 0.22
+shader_parameter/dark_feather = 0.04
+shader_parameter/breathe_tint = Color(0.77, 0.41, 0.16, 1)
+shader_parameter/breathe_amount = 0.11
+shader_parameter/breathe_period = 5.0
+
+[node name="MainMenu" type="Control" unique_id=860308722]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_menu")
+
+[node name="Backdrop" type="TextureRect" parent="." unique_id=126525426]
+material = SubResource("Mat_backdrop")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+
+[node name="TitlePlate" type="NinePatchRect" parent="." unique_id=1561480468]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -360.0
+offset_top = 104.0
+offset_right = 360.0
+offset_bottom = 196.0
+grow_horizontal = 2
+texture = ExtResource("5_plaque")
+patch_margin_left = 24
+patch_margin_top = 24
+patch_margin_right = 24
+patch_margin_bottom = 24
+
+[node name="Title" type="Label" parent="." unique_id=535275160]
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 116.0
+offset_bottom = 180.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.26275, 0.16078, 0.19608, 1)
+theme_override_font_sizes/font_size = 46
+text = "Can you controll the Wasps"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tagline" type="Label" parent="." unique_id=290788378]
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 208.0
+offset_bottom = 234.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.36078, 0.23922, 0.27451, 1)
+theme_override_font_sizes/font_size = 16
+text = "You think you are the one giving orders."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Buttons" type="VBoxContainer" parent="." unique_id=1844055207]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -184.0
+offset_top = 339.0
+offset_right = 184.0
+offset_bottom = 707.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Play" type="Button" parent="Buttons" unique_id=822312514]
+custom_minimum_size = Vector2(280, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Play"
+
+[node name="HowTo" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(280, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "How to Play"
+
+[node name="Settings" type="Button" parent="Buttons" unique_id=1740736788]
+custom_minimum_size = Vector2(280, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Settings"
+
+[node name="Quit" type="Button" parent="Buttons" unique_id=279734343]
+custom_minimum_size = Vector2(280, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Quit"
+
+[node name="Footer" type="Label" parent="." unique_id=749536579]
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -38.0
+offset_right = 400.0
+offset_bottom = -16.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.85098, 0.72549, 0.58039, 1)
+theme_override_font_sizes/font_size = 12
+text = "Drag a worker with the left mouse button."
+
+[node name="SettingsPanel" parent="." unique_id=984174700 instance=ExtResource("3_settings")]
+
+[node name="HowToPlay" parent="." instance=ExtResource("7_howto")]
+visible = false
+anchors_preset = 0
