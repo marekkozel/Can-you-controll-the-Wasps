@@ -134,7 +134,7 @@ theme_override_font_sizes/font_size = 12
 text = "Drag a worker with the left mouse button."
 
 [node name="SettingsPanel" parent="." unique_id=984174700 instance=ExtResource("3_settings")]
-anchors_preset = 0
+layout_mode = 3
 
 [node name="HowToPlay" parent="." unique_id=84778529 instance=ExtResource("7_howto")]
 layout_mode = 3

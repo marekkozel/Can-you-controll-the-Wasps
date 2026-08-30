@@ -4,6 +4,7 @@
 [ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
 
 [node name="PauseMenu" type="Control"]
+layout_mode = 3
 process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
