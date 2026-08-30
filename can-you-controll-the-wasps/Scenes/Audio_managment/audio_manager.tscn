@@ -25,7 +25,8 @@
 [ext_resource type="Resource" uid="uid://cbf3hy4mysw1a" path="res://Resources/Sounds/SFX/enemy_death.tres" id="23_3fs8q"]
 [ext_resource type="Resource" uid="uid://34b8bnmy702p" path="res://Resources/Sounds/SFX/queen_pop.tres" id="24_rxip0"]
 [ext_resource type="Resource" uid="uid://bgvhmc0wxiah5" path="res://Resources/Sounds/SFX/wasp_death.tres" id="25_cli8s"]
+[ext_resource type="Resource" uid="uid://c7cksbgjcfrpw" path="res://Resources/Sounds/SFX/mouse_click.tres" id="26_vcpjc"]
 
 [node name="AudioManager" type="Node2D" unique_id=1357175381]
 script = ExtResource("1_2rf2c")
-sound_effects = Array[ExtResource("2_mdtoy")]([ExtResource("3_mgyvm"), ExtResource("4_hfsih"), ExtResource("5_f8lie"), ExtResource("6_kyetv"), ExtResource("7_xga43"), ExtResource("8_v7018"), ExtResource("9_3fs8q"), ExtResource("10_rxip0"), ExtResource("20_rxip0"), ExtResource("11_cli8s"), ExtResource("12_vcpjc"), ExtResource("13_ufg7g"), ExtResource("14_ekar4"), ExtResource("15_fho7f"), ExtResource("16_tkhuk"), ExtResource("17_xga43"), ExtResource("18_v7018"), ExtResource("19_3fs8q"), ExtResource("21_cli8s"), ExtResource("22_v7018"), ExtResource("23_3fs8q"), ExtResource("24_rxip0"), ExtResource("25_cli8s")])
+sound_effects = Array[ExtResource("2_mdtoy")]([ExtResource("3_mgyvm"), ExtResource("4_hfsih"), ExtResource("5_f8lie"), ExtResource("6_kyetv"), ExtResource("7_xga43"), ExtResource("8_v7018"), ExtResource("9_3fs8q"), ExtResource("10_rxip0"), ExtResource("20_rxip0"), ExtResource("11_cli8s"), ExtResource("12_vcpjc"), ExtResource("13_ufg7g"), ExtResource("14_ekar4"), ExtResource("15_fho7f"), ExtResource("16_tkhuk"), ExtResource("17_xga43"), ExtResource("18_v7018"), ExtResource("19_3fs8q"), ExtResource("21_cli8s"), ExtResource("22_v7018"), ExtResource("23_3fs8q"), ExtResource("24_rxip0"), ExtResource("25_cli8s"), ExtResource("26_vcpjc")])

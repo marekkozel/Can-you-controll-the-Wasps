@@ -27,7 +27,8 @@ enum SoundEffectType {
 	POP,
 	HIT,
 	ENEMY_DEATH,
-	QUEEN_EAT
+	QUEEN_EAT,
+	MOUSE_CLICK,
 }
 
 @export_range(0, 10) var limit: int = 5 ## Maximum number of this SoundEffect to play simultaneously before culled.

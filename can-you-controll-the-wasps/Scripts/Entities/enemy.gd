@@ -325,6 +325,8 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	_strike_span_msec = maxi(int(click_cooldown * 1000.0), 1)
 	_strike_until_msec = Time.get_ticks_msec() + _strike_span_msec
 
+	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.MOUSE_CLICK)
+
 	_health.take_damage(click_damage, get_global_mouse_position())
 	get_viewport().set_input_as_handled()  # 别让点击穿到下面的东西 / don't let it fall through
 
