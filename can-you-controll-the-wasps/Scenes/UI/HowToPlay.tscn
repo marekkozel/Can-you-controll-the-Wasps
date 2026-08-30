@@ -1,9 +1,10 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bvlh5jk87k1gl"]
 
-[ext_resource type="Script" path="res://Scripts/UI/how_to_play.gd" id="1_howto"]
+[ext_resource type="Script" uid="uid://bnamftv8l35qf" path="res://Scripts/UI/how_to_play.gd" id="1_howto"]
 [ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
 
-[node name="HowToPlay" type="Control"]
+[node name="HowToPlay" type="Control" unique_id=851445248]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,15 +13,16 @@ grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_howto")
 
-[node name="Dim" type="ColorRect" parent="."]
-anchors_preset = 15
+[node name="Dim" type="ColorRect" parent="." unique_id=533260930]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.043137, 0.031373, 0.043137, 0.62)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=675502819]
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -32,31 +34,31 @@ offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=38898073]
 layout_mode = 2
 theme_override_constants/margin_left = 26
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 26
 theme_override_constants/margin_bottom = 20
 
-[node name="Rows" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin" unique_id=530761036]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Header" type="Label" parent="Panel/Margin/Rows"]
+[node name="Header" type="Label" parent="Panel/Margin/Rows" unique_id=1446221516]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "How to Play"
 horizontal_alignment = 1
 
-[node name="Sep" type="HSeparator" parent="Panel/Margin/Rows"]
+[node name="Sep" type="HSeparator" parent="Panel/Margin/Rows" unique_id=835794940]
 layout_mode = 2
 
-[node name="Build" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Build" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1310160426]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Build"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Build" unique_id=592875999]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -64,7 +66,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Build"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Build"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Build" unique_id=640029252]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -72,11 +74,11 @@ theme_override_font_sizes/font_size = 13
 text = "Cardboard becomes comb. Drop a worker beside a scrap and she hauls it to an empty cell."
 autowrap_mode = 3
 
-[node name="Brood" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Brood" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=77396328]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Brood"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Brood" unique_id=1899605472]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -84,7 +86,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Brood"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Brood"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Brood" unique_id=54571665]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -92,11 +94,11 @@ theme_override_font_sizes/font_size = 13
 text = "A finished cell takes an egg, and the egg becomes a larva."
 autowrap_mode = 3
 
-[node name="Feed" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Feed" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=336973624]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Feed"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Feed" unique_id=992555977]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -104,7 +106,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Feed"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Feed"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Feed" unique_id=2146187224]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -112,11 +114,11 @@ theme_override_font_sizes/font_size = 13
 text = "Three meals seal a larva in. Miss them and she starves, and the cell is wasted with her."
 autowrap_mode = 3
 
-[node name="Raise" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Raise" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=85129855]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Raise"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Raise" unique_id=683899232]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -124,7 +126,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Raise"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Raise"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Raise" unique_id=1030012813]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -132,11 +134,11 @@ theme_override_font_sizes/font_size = 13
 text = "The food point refines meat into royal jelly. Feed jelly in place of a meal and she emerges stronger - one trait, at random."
 autowrap_mode = 3
 
-[node name="Defend" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Defend" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=703829336]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Defend"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Defend" unique_id=163806413]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -144,7 +146,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Defend"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Defend"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Defend" unique_id=1935372443]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -152,11 +154,11 @@ theme_override_font_sizes/font_size = 13
 text = "Raiders come for your brood and gnaw at unfinished cells. Click one to strike it, or let your wasps rally. They leave when the wave is spent."
 autowrap_mode = 3
 
-[node name="Rebels" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="Rebels" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=247444767]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/Rebels"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Rebels" unique_id=779665791]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -164,7 +166,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "Rebels"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/Rebels"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Rebels" unique_id=82530827]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -172,11 +174,11 @@ theme_override_font_sizes/font_size = 13
 text = "Eggs of the wrong colour are not yours. Leave them unfed and they die, or fight what hatches."
 autowrap_mode = 3
 
-[node name="TheQueen" type="HBoxContainer" parent="Panel/Margin/Rows"]
+[node name="TheQueen" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1980456798]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/TheQueen"]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/TheQueen" unique_id=466425637]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
@@ -184,7 +186,7 @@ theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
 text = "The Queen"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/TheQueen"]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/TheQueen" unique_id=1846952494]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -192,17 +194,19 @@ theme_override_font_sizes/font_size = 13
 text = "One of them is not a worker. Lift a wasp with the left button and fling her into a wall - that knocks the mask off. Pick wrong and the swarm remembers."
 autowrap_mode = 3
 
-[node name="Sep2" type="HSeparator" parent="Panel/Margin/Rows"]
+[node name="Sep2" type="HSeparator" parent="Panel/Margin/Rows" unique_id=1616108872]
 layout_mode = 2
 
-[node name="Sting" type="Label" parent="Panel/Margin/Rows"]
+[node name="Sting" type="Label" parent="Panel/Margin/Rows" unique_id=1331190400]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4902, 0.30196, 0.34902, 1)
 theme_override_font_sizes/font_size = 13
 text = "You point. They decide."
 horizontal_alignment = 1
 
-[node name="Back" type="Button" parent="Panel/Margin/Rows"]
+[node name="Back" type="Button" parent="Panel/Margin/Rows" unique_id=1451419840]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "Back"
+
+[connection signal="button_down" from="Panel/Margin/Rows/Back" to="." method="_on_back_button_down"]

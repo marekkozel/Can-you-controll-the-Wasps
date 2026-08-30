@@ -215,7 +215,7 @@ func _close() -> void:
 	visible = false
 	get_tree().paused = false
 
-# --- MUSIC FADE-IN ---
+	AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
 	BackgroundMusic.volume_db = linear_to_db(0.01)
 	BackgroundMusic.play()
 	var tween: Tween = BackgroundMusic.create_tween()

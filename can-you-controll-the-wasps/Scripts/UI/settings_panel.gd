@@ -75,6 +75,7 @@ func open() -> void:
 
 
 func close() -> void:
+	AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
 	var tween: Tween = create_tween().set_parallel(true)
 	tween.tween_property(_dim, "modulate:a", 0.0, open_time * 0.7)
 	tween.tween_property(_panel, "scale", Vector2.ONE * open_pop, open_time * 0.7)

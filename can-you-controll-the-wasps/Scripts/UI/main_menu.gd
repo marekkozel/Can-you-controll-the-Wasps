@@ -124,3 +124,21 @@ func _crossfade_music(track_out: AudioStreamPlayer2D, track_in: AudioStreamPlaye
 	)
 		 
 	tween.chain().tween_callback(track_out.stop)
+
+
+func _on_play_button_down() -> void:
+	AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
+
+
+func _on_how_to_button_down() -> void:
+		AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
+
+
+
+func _on_settings_button_down() -> void:
+		AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
+
+
+
+func _on_quit_button_down() -> void:
+		AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)

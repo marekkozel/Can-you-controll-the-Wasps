@@ -4,12 +4,18 @@
 [ext_resource type="Script" uid="uid://3tpvlvwhn2ma" path="res://Scripts/Mechanics/tutorial_step.gd" id="2_step"]
 [ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
 
+[sub_resource type="Resource" id="Step_obj_egg"]
+script = ExtResource("2_step")
+kind = 0
+trigger = 2
+text = "Press and hold a built cell to lay an egg"
+order = 2
+
 [sub_resource type="Resource" id="Step_obj0"]
 script = ExtResource("2_step")
 kind = 0
 trigger = 0
 text = "Drag a scrap onto an empty cell"
-order = 0
 
 [sub_resource type="Resource" id="Step_obj1"]
 script = ExtResource("2_step")
@@ -30,13 +36,6 @@ kind = 0
 trigger = 5
 text = "Wait for her to emerge"
 order = 4
-
-[sub_resource type="Resource" id="Step_obj_egg"]
-script = ExtResource("2_step")
-kind = 0
-trigger = 2
-text = "Press and hold a built cell to lay an egg"
-order = 2
 
 [node name="Tutorial" type="Control" unique_id=2082654955]
 layout_mode = 3
@@ -86,3 +85,5 @@ custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Skip"
+
+[connection signal="button_down" from="Objectives/Margin/Rows/Skip" to="." method="_on_skip_button_down"]

@@ -369,3 +369,8 @@ func _payload_of(item: Node) -> StringName:
 		if &"payload" in child:
 			return child.payload
 	return &""
+
+
+func _on_skip_button_down() -> void:
+		AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
+

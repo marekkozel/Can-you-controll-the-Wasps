@@ -66,3 +66,7 @@ func close() -> void:
 	tween.tween_property(_panel, "scale", Vector2.ONE * open_pop, open_time * 0.7)
 	tween.chain().tween_callback(hide)
 	closed.emit()
+
+
+func _on_back_button_down() -> void:
+	AudioManager.create_audio(SoundEffect.SoundEffectType.FOOD_POP)
