@@ -440,16 +440,12 @@ func crown(wasp: Wasp) -> bool:
 	return true
 
 
-# 加冕那一下把画面停半拍。Enemy 的命中卡顿是同一套做法，计时器要用不吃
-# time_scale 的那种，否则 time_scale 越小它自己也越慢，永远回不来
-# Same trick the hit stop uses; the timer must ignore time_scale or it never fires back.
+# 加冕那一下把画面停半拍。跟 Enemy 的命中卡顿共用 HitStop，**不各写各的**：
+# 这半拍里场上随便一只敌人挨一下打，两处的存档-还原就会互相还原对方的减速值
+# Shares HitStop with the enemy hit stop; one enemy taking a hit during this beat used
+# to be enough to strand the whole game in slow motion.
 func _crown_hit_stop() -> void:
-	if crown_hit_stop <= 0.0:
-		return
-	var previous: float = Engine.time_scale
-	Engine.time_scale = crown_hit_stop_scale
-	await get_tree().create_timer(crown_hit_stop, true, false, true).timeout
-	Engine.time_scale = previous
+	HitStop.hold(get_tree(), crown_hit_stop, crown_hit_stop_scale)
 
 
 # 新皇随即下的一窝。走的是普通卵那条链（要喂、要封盖），

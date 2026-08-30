@@ -382,7 +382,9 @@ func cycle_time_scale() -> float:
 
 func reset_time_scale() -> void:
 	_time_index = 0
-	Engine.time_scale = 1.0
+	# 走 HitStop：卡顿正跑着的时候直接写 Engine.time_scale 会被它随后的还原覆盖掉
+	# Through HitStop, or a freeze in flight would restore over this.
+	HitStop.release()
 	_report("time scale x1")
 
 

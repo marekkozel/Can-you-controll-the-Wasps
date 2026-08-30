@@ -48,8 +48,6 @@ signal killed(enemy: Enemy)
 @onready var _loot: LootComponent = $LootComponent
 @onready var _animator: SpriteAnimator = get_node_or_null(^"SpriteAnimator") as SpriteAnimator
 
-## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
-static var _hit_stop_busy: bool = false
 
 # 光标底下有没有敌人。**巢室要查这个**：敌人趴在格子上时，一次点击要么被出手冷却
 # 挡掉、要么被敌人吃掉，剩下那一半会漏到格子上——玩家想打它，结果开始产卵
@@ -417,14 +415,9 @@ func _resume_wander_after_knockback() -> void:
 		_wander.enabled = true
 
 
-# 命中卡顿。用真实时间计时，不然自己会被自己的减速拖长
-# Hit stop. Timed in real seconds, otherwise it would stretch itself out.
+# 命中卡顿。**不自己动 Engine.time_scale**——加冕那一下也在停，两处各存各的原值
+# 再各还各的，重叠一次就永久停在减速里。所有权在 HitStop 那一个地方
+# Never touches Engine.time_scale directly: the coronation freezes too, and two
+# independent save/restore pairs leave the game in slow motion for good.
 func _hit_stop() -> void:
-	if hit_stop_duration <= 0.0 or _hit_stop_busy:
-		return
-	_hit_stop_busy = true
-	var previous: float = Engine.time_scale
-	Engine.time_scale = hit_stop_scale
-	await get_tree().create_timer(hit_stop_duration, true, false, true).timeout
-	Engine.time_scale = previous
-	_hit_stop_busy = false
+	HitStop.hold(get_tree(), hit_stop_duration, hit_stop_scale)
