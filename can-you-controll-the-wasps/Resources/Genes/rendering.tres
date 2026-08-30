@@ -6,6 +6,6 @@
 script = ExtResource("1_gene")
 id = &"rendering"
 display_name = "PROMOTION"
-description = "The refinery yields 2 royal jelly per 4 carrion instead of 1 per 3."
+description = "The Queen yields 2 royal jelly per 4 meat instead of 1 per 3."
 order = 6
 cost = 20

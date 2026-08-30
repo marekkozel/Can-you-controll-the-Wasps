@@ -784,7 +784,7 @@ func _on_hold_completed() -> void:
 
 	if is_rotten():
 		_clean()
-	else:
+	elif can_lay_egg():
 		_lay_egg()
 
 
