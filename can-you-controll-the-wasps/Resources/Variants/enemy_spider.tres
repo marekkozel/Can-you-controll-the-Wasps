@@ -8,7 +8,7 @@
 script = ExtResource("1_enemy_variant")
 display_name = "Spider"
 behavior = 1
-max_health = 16
+max_health = 14
 loot_count = 5
 texture = ExtResource("2_sheet")
 animation = ExtResource("3_anim")

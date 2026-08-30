@@ -180,16 +180,16 @@ enemy_scene = ExtResource("11_enemy")
 breeds = Array[ExtResource("32_enemyvariant")]([ExtResource("24_thief"), ExtResource("25_hunter"), ExtResource("44_beetle"), ExtResource("33_spider"), ExtResource("34_mantis"), ExtResource("45_bird")])
 elite_min_budget = 15.0
 wave_odds = Vector3(0.4, 0.5, 0.2)
-window_start = 0.105
-window_end = 0.7
-raids_per_year = Vector2i(7, 8)
+window_end = 0.74
+raids_per_year = Vector2i(5, 6)
 min_gap = 0.02
+cell_weight = 0.1
+brood_weight = 0.25
 base_pressure = 0.2
-pressure_step = 0.25
-generation_pressure = 0.4
+pressure_step = 0.12
+generation_pressure = 0.1
 max_budget = 80.0
-max_count = 9
-swarm_max_count = 20
+swarm_max_count = 18
 raid_duration = 30.0
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]

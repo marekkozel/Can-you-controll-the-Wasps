@@ -8,7 +8,7 @@
 script = ExtResource("1_enemy_variant")
 display_name = "Mantis"
 behavior = 1
-max_health = 18
+max_health = 17
 loot_count = 6
 texture = ExtResource("2_sheet")
 animation = ExtResource("3_anim")
