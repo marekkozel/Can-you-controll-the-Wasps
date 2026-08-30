@@ -8,12 +8,12 @@
 script = ExtResource("1_enemy_variant")
 display_name = "Spider"
 behavior = 1
-max_health = 75
+max_health = 16
 loot_count = 5
 texture = ExtResource("2_sheet")
 animation = ExtResource("3_anim")
 sprite_offset = Vector2(-5, 7)
-collision_radius = 44.0
+collision_radius = 35.0
 move_speed = 26.0
 chase_speed = 115.0
 body_mass = 18.0

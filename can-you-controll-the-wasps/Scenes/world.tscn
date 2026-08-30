@@ -184,7 +184,7 @@ window_start = 0.105
 window_end = 0.7
 raids_per_year = Vector2i(7, 8)
 min_gap = 0.02
-base_pressure = 0.25
+base_pressure = 0.2
 pressure_step = 0.25
 generation_pressure = 0.4
 max_budget = 80.0
@@ -207,7 +207,7 @@ dominant_variant = ExtResource("27_pure")
 
 [node name="GeneBank" type="Node2D" parent="Queen_controller" unique_id=923760956 groups=["gene_bank"]]
 script = ExtResource("28_gene")
-cells_per_extra_point = 5
+cells_per_extra_point = 4
 jelly_per_extra_point = 2
 
 [node name="Announcer" type="Node2D" parent="Queen_controller" unique_id=611226105]
@@ -386,7 +386,6 @@ offset_top = 16.000061
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 
 [node name="StrikeCooldown" parent="UI" unique_id=2129116786 instance=ExtResource("46_strike")]
-layout_mode = 3
 
 [node name="Tags" type="Control" parent="UI" unique_id=1260580879]
 layout_mode = 3
@@ -426,11 +425,9 @@ texture = ExtResource("41_jwdyn")
 [node name="Tutorial" parent="UI" unique_id=270077394 instance=ExtResource("43_tutorial")]
 
 [node name="PauseMenu" parent="UI" unique_id=1932292223 instance=ExtResource("47_pause")]
-layout_mode = 3
 
 [node name="SettingsPanel" parent="UI" unique_id=1723205478 instance=ExtResource("48_settings")]
 process_mode = 3
-layout_mode = 3
 
 [node name="HowToPlay" parent="UI" unique_id=672998586 instance=ExtResource("44_howto")]
 process_mode = 3
