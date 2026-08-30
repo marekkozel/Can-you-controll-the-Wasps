@@ -34,7 +34,14 @@ func _ready() -> void:
 	$Buttons/Settings.pressed.connect(_settings.open)
 	$Buttons/Quit.pressed.connect(_on_quit)
 
-	BackgroundMusic.stop()
+	# 菜单曲接回来。**`autoplay` 只在第一次进树时响一次**——从游戏里退回菜单时，
+	# 它早就被 Play 那次淡出停掉了，只 stop 背景乐的话菜单是一片安静
+	# Returning from a run lands on a silent menu otherwise: autoplay already fired once,
+	# and Play's crossfade stopped this track on the way out.
+	if StartMenuMusic.playing:
+		BackgroundMusic.stop()
+	else:
+		_crossfade_music(BackgroundMusic, StartMenuMusic, 0.5)
 
 	# 网页导出里退不出去，这个键点了什么都不会发生——干脆别让它出现
 	# quit() is a no-op on web, and a button that does nothing is worse than no button.

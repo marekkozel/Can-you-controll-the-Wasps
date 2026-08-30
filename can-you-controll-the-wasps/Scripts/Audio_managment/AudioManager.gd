@@ -11,6 +11,10 @@ var sound_effect_dict: Dictionary = {}
 
 
 func _ready() -> void:
+	# 暂停期间照常出声。不设的话按暂停菜单的按钮一点反馈都没有——
+	# 生成出来的播放器都是这个节点的子节点，跟着它一起被暂停
+	# The players are children of this node, so a pausable manager silences the pause menu.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	for sound_effect: SoundEffect in sound_effects:
 		sound_effect_dict[sound_effect.type] = sound_effect
 

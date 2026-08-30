@@ -3,6 +3,7 @@
 [ext_resource type="AudioStream" uid="uid://eyqairhwbcho" path="res://Assets/Sounds/Music/Start_menu_music.mp3" id="1_ct3vb"]
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" unique_id=314332183]
+process_mode = 3
 bus = &"Music"
 stream = ExtResource("1_ct3vb")
 autoplay = true

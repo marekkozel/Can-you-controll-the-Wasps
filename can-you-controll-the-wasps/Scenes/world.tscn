@@ -50,6 +50,8 @@
 [ext_resource type="Resource" uid="uid://b8vqx2ntbeetl" path="res://Resources/Variants/enemy_beetle.tres" id="44_beetle"]
 [ext_resource type="PackedScene" uid="uid://bvlh5jk87k1gl" path="res://Scenes/UI/HowToPlay.tscn" id="44_howto"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/StrikeCooldown.tscn" id="46_strike"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/PauseMenu.tscn" id="47_pause"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="48_settings"]
 [ext_resource type="Resource" uid="uid://cq7wn3mkbird1" path="res://Resources/Variants/enemy_bird.tres" id="45_bird"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/AttentionRing.tscn" id="45_ring"]
 
@@ -408,7 +410,13 @@ texture = ExtResource("41_jwdyn")
 
 [node name="Tutorial" parent="UI" unique_id=270077394 instance=ExtResource("43_tutorial")]
 
+[node name="PauseMenu" parent="UI" instance=ExtResource("47_pause")]
+
+[node name="SettingsPanel" parent="UI" instance=ExtResource("48_settings")]
+process_mode = 3
+
 [node name="HowToPlay" parent="UI" unique_id=672998586 instance=ExtResource("44_howto")]
+process_mode = 3
 
 [node name="YearReport" parent="UI" unique_id=404287434 instance=ExtResource("42_yearreport")]
 
@@ -426,3 +434,4 @@ color = Color(0.72, 0.09, 0.12, 0)
 script = ExtResource("16_unrest")
 
 [node name="DebugPanel" parent="." unique_id=1410055688 instance=ExtResource("10_debug")]
+process_mode = 3
