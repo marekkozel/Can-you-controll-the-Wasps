@@ -172,6 +172,8 @@ position = Vector2(0, -12)
 
 [node name="BetrayalDirector" type="Node2D" parent="Queen_controller" unique_id=1241915486 groups=["betrayal_director"]]
 script = ExtResource("12_betrayal")
+unrest_enabled = false
+strikes_enabled = false
 brood_variants = Array[ExtResource("6_7yui6")]([ExtResource("13_crimson"), ExtResource("14_violet"), ExtResource("15_teal"), ExtResource("26_lime")])
 
 [node name="RaidDirector" type="Node2D" parent="Queen_controller" unique_id=375847014 groups=["raid_director"]]
