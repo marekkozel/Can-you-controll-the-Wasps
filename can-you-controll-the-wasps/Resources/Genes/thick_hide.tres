@@ -8,5 +8,6 @@ id = &"thick_hide"
 display_name = "THICK HIDE"
 description = "Every wasp born from now on takes one more hit.
 Stacks twice."
-order = 5
+order = 4
+cost = 13
 max_rank = 2

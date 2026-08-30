@@ -44,7 +44,10 @@ const QUICK_LAY: StringName = &"quick_lay"
 ## 每代上限。**两条收入线就必须抬这个数**——留在 3 的话建巢一条线自己就顶满了，
 ## 蜂王浆那条加了等于没加，又变回每代恒定
 ## Two income lines need headroom: at 3 the cells alone cap it and jelly changes nothing.
-@export_range(0, 12, 1) var max_points_per_generation: int = 6
+@export_range(0, 99, 1) var max_points_per_generation: int = 40
+
+## 每多少只新蜂多给一点 / wasps born per extra point
+@export_range(1, 40, 1) var wasps_per_extra_point: int = 1
 
 # 每级给多少。数值放这里而不是散在使用方，调平衡只用看一个文件
 # The magnitudes live here, not scattered across the systems that read them.
@@ -150,15 +153,23 @@ func unlock(node: GeneNode) -> bool:
 	rank_changed.emit(node.id, ranks[node.id])
 	return true
 
+func lay_speed_scale() -> float:
+	return maxf(1.0 - float(rank_of(QUICK_LAY)) * quick_lay_bonus, 0.25)
+
 
 # 继位时结算。`built` / `jelly` 都是**这一年的累计数**，由调用方从账本里给，
 # 不能在这里现场数巢——冬天开场的 _ravage() 早就把巢推平了，读到的永远是残骸
 # The caller passes the year's tally: counting the live hive here reads the ruins
 # _ravage() just left, not the comb the generation actually built.
-func award(built: int, jelly: int) -> int:
+# Add the 'living_wasps' parameter to the function
+func award(built: int, jelly: int, living_wasps: int) -> int:
 	var gained: int = points_per_generation
+		
 	gained += built / cells_per_extra_point
 	gained += jelly / jelly_per_extra_point
+		
+	gained += living_wasps / wasps_per_extra_point
+		
 	gained = clampi(gained, 0, max_points_per_generation)
 	if gained <= 0:
 		return 0
@@ -166,6 +177,3 @@ func award(built: int, jelly: int) -> int:
 	points += gained
 	points_changed.emit(points)
 	return gained
-
-func lay_speed_scale() -> float:
-	return maxf(1.0 - float(rank_of(QUICK_LAY)) * quick_lay_bonus, 0.25)

@@ -8,5 +8,6 @@ id = &"quick_hatch"
 display_name = "QUICK HATCH"
 description = "Eggs and capped cells mature 25% faster.
 Stacks twice."
-order = 4
+order = 3
+cost = 10
 max_rank = 2

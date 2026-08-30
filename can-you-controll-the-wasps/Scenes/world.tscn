@@ -134,6 +134,7 @@ mode = 1
 payload = &"royal_jelly"
 scatter_radius = 32.0
 intake_payload = &"carrion"
+intake_required = 3
 intake_radius = 72.0
 output_scene = ExtResource("9_jelly")
 output_payload = &"royal_jelly"

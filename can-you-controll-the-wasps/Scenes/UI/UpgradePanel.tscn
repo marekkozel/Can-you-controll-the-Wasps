@@ -3,13 +3,22 @@
 [ext_resource type="Script" uid="uid://bk26eoci4xkxo" path="res://Scripts/UI/gene_tree.gd" id="1_tree"]
 [ext_resource type="Script" uid="uid://c1y3jqm4i0k27" path="res://Scripts/Mechanics/gene_node.gd" id="2_genenode"]
 [ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="3_theme"]
-[ext_resource type="Resource" uid="uid://bimc7ns3ant4n" path="res://Resources/Genes/all_perks.tres" id="4_all"]
 [ext_resource type="Resource" uid="uid://b7sx323p2syee" path="res://Resources/Genes/quick_lay.tres" id="10_a83a0"]
 [ext_resource type="Resource" uid="uid://ds7fppd7ouhja" path="res://Resources/Genes/fat_reserves.tres" id="fat_reserves"]
 [ext_resource type="Resource" uid="uid://bmihkvmdmifhn" path="res://Resources/Genes/quick_hatch.tres" id="quick_hatch"]
 [ext_resource type="Resource" uid="uid://bu0lpgh51okps" path="res://Resources/Genes/rendering.tres" id="rendering"]
 [ext_resource type="Resource" uid="uid://dh48lr10ghn5o" path="res://Resources/Genes/thick_comb.tres" id="thick_comb"]
 [ext_resource type="Resource" uid="uid://dilv48tay0noc" path="res://Resources/Genes/thick_hide.tres" id="thick_hide"]
+
+[sub_resource type="Resource" id="Resource_db76o"]
+script = ExtResource("2_genenode")
+id = &"all_perks"
+display_name = "ALL PERKS"
+description = "All perks +1 on every wasp born from now on.
+Stacks three times."
+order = 5
+cost = 15
+max_rank = 3
 
 [node name="UpgradePanel" type="Control" unique_id=1543963970 groups=["upgrade_panel"]]
 layout_mode = 3
@@ -65,5 +74,5 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("1_tree")
-nodes = Array[ExtResource("2_genenode")]([ExtResource("4_all"), ExtResource("thick_comb"), ExtResource("rendering"), ExtResource("fat_reserves"), ExtResource("quick_hatch"), ExtResource("thick_hide"), ExtResource("10_a83a0")])
+nodes = Array[ExtResource("2_genenode")]([SubResource("Resource_db76o"), ExtResource("thick_comb"), ExtResource("rendering"), ExtResource("fat_reserves"), ExtResource("quick_hatch"), ExtResource("thick_hide"), ExtResource("10_a83a0")])
 points_label = NodePath("../Points")

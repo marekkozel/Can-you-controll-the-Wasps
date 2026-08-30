@@ -6,7 +6,7 @@ extends Node2D
 # Owns the wheel, and with it the loop that actually matters - the winter succession.
 #
 # 冬天不是又一段玩法，是一次结算，分四拍走：
-#   毁坏 → 王座开放（拖一只进去，或者等蜂群自己推举一只飞进去）→ 集结 → 倒计时
+#	毁坏 → 王座开放（拖一只进去，或者等蜂群自己推举一只飞进去）→ 集结 → 倒计时
 # 冬天的长度由仪式决定，不由计时器决定——但每一拍都有硬超时兜底，
 # **仪式绝不允许卡住**：一只蜂卡在墙角就永远进不了春天，那是最贵的一种 bug。
 # Winter is a settlement in four beats and its length comes from the rite, not a clock -
@@ -417,9 +417,17 @@ func crown(wasp: Wasp) -> bool:
 	# From the ledger, not the hive - _ravage() flattened it before the throne even opened.
 	var bank: GeneBank = GeneBank.find(get_tree())
 	if bank != null:
+		# Count every living wasp on the board right now before they are culled
+		var living_wasp_count: int = 0
+		for node in get_tree().get_nodes_in_group(WASP_GROUP):
+			if is_instance_valid(node) and node is Wasp:
+				living_wasp_count += 1
+				
+		# Pass the count as the third argument to the GeneBank
 		_points_awarded = bank.award(
 			int(_ledger.get(&"built", 0)),
-			int(_ledger.get(&"jelly", 0)))
+			int(_ledger.get(&"jelly", 0)),
+			living_wasp_count)
 
 	# 继位就恢复生产，但整个冬天都不来 raid。两个开关各自只有一个意思：
 	# 冬天 = 不挨打，继位 = 重新开工

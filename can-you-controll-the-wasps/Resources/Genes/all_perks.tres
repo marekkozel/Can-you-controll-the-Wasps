@@ -8,4 +8,5 @@ id = &"all_perks"
 display_name = "ALL PERKS"
 description = "All perks +1 on every wasp born from now on.
 Stacks three times."
+cost = 8
 max_rank = 3

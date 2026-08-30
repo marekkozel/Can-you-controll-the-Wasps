@@ -25,6 +25,6 @@ extends Resource
 @export var requires: Array[StringName] = []
 
 @export_group("Cost")
-@export_range(1, 8, 1) var cost: int = 1
+@export_range(1, 20, 1) var cost: int = 1
 ## 能叠几级。1 = 一次性解锁 / 1 means a one-off unlock
 @export_range(1, 8, 1) var max_rank: int = 1

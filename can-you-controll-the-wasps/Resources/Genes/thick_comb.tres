@@ -7,5 +7,4 @@ script = ExtResource("1_gene")
 id = &"thick_comb"
 display_name = "THICK COMB"
 description = "Every cell needs one less piece of cardboard."
-order = 1
-cost = 2
+cost = 5
