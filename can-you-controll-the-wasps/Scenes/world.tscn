@@ -49,6 +49,7 @@
 [ext_resource type="PackedScene" uid="uid://dkojgk8nus6k6" path="res://Scenes/UI/Tutorial.tscn" id="43_tutorial"]
 [ext_resource type="Resource" uid="uid://b8vqx2ntbeetl" path="res://Resources/Variants/enemy_beetle.tres" id="44_beetle"]
 [ext_resource type="PackedScene" uid="uid://bvlh5jk87k1gl" path="res://Scenes/UI/HowToPlay.tscn" id="44_howto"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/StrikeCooldown.tscn" id="46_strike"]
 [ext_resource type="Resource" uid="uid://cq7wn3mkbird1" path="res://Resources/Variants/enemy_bird.tres" id="45_bird"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/AttentionRing.tscn" id="45_ring"]
 
@@ -102,7 +103,7 @@ position = Vector2(65, 222)
 texture = ExtResource("3_04jkj")
 
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
-position = Vector2(49, 238)
+position = Vector2(46, 236)
 mode = 1
 piece_scene = ExtResource("8_cardboard")
 reaction_path = NodePath("../Cardboard")
@@ -367,6 +368,8 @@ offset_top = 16.000061
 
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 layout_mode = 3
+
+[node name="StrikeCooldown" parent="UI" instance=ExtResource("46_strike")]
 
 [node name="Tags" type="Control" parent="UI" unique_id=1260580879]
 layout_mode = 3

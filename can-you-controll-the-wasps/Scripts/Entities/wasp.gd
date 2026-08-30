@@ -1048,7 +1048,12 @@ func attack_damage() -> int:
 	return damage * maxi(attack_units(), 1)
 
 
-func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08, brake_radius: float = -1.0) -> void:
+# ignore_avoidance：贴身时绕过 RVO 直接写速度。**追同类必须用它**——避让服务器把
+# 两只蜂的 radius 之和（20 + 20 = 40）当成要躲开的碰撞，隔着 40 像素就开始互推，
+# 咬击距离比这个短的话追一辈子也贴不上去。追敌人不需要，敌人根本不在 RVO 里
+# Chasing another wasp needs this: RVO treats 40px as a collision to dodge, so any reach
+# shorter than that can never be closed. Enemies are not avoidance agents, so Defend is fine.
+func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0, steering_weight: float = 0.08, brake_radius: float = -1.0, ignore_avoidance: bool = false) -> void:
 	if _is_flung:
 		return
 
@@ -1071,7 +1076,7 @@ func steer_towards(target_pos: Vector2, _delta: float, move_speed: float = 55.0,
 	var desired: Vector2 = heading * speed
 	# 开了避让就不能自己写速度，要等服务器把周围黄蜂算进去再回调
 	# With avoidance on, the server owns the velocity - we only submit what we want.
-	if _nav != null and _nav.avoidance_enabled:
+	if _nav != null and _nav.avoidance_enabled and not ignore_avoidance:
 		_steer_weight = steering_weight
 		_nav.velocity = desired
 		return

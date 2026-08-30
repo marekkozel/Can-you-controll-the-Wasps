@@ -54,6 +54,13 @@ folder_colors={
 
 Enemy=""
 
+[layer_names]
+
+2d_physics/layer_1="World"
+2d_physics/layer_2="Wasps"
+2d_physics/layer_3="Enemies"
+2d_physics/layer_4="Loose pieces"
+
 [physics]
 
 common/physics_jitter_fix=0.803

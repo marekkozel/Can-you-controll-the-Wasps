@@ -1,8 +1,17 @@
 class_name Defend
 extends BTAction
 
-## Wasps attacking range
+## 攻击判定距离，**照中型敌人（半径 22）写的**。别的体型按半径差往上补——
+## 黄蜂身体半径 16，甲虫 36 的话两个刚体最近只能贴到 52，写死 50 等于
+## 甲虫/蜘蛛/鸟对蜂群完全无敌：飞过去、被身体挡在 52、判定要 50、一口不咬地绕圈
+## Authored for the medium build and grown per breed: two bodies can never come closer
+## than the sum of their radii, so a flat 50 made the big raiders literally invulnerable.
 @export var attack_distance: float = 50.0
+## 围攻的站位半径 = 敌人半径 + 这个。每只蜂按自己的 id 分一个角度站，
+## 不然所有蜂都瞄同一个中心点，全挤在最近的那一侧靠 RVO 互相顶——
+## 那看起来是"绕圈"，不是"围攻"
+## Everyone aiming at one point piles onto the near side and reads as circling.
+@export var ring_gap: float = 20.0
 ## Wasps fly faster when angry
 @export var chase_speed: float = 150.0
 ## 平时敌人进到这个半径内才管 / peacetime engagement radius
@@ -13,6 +22,12 @@ extends BTAction
 ## 敌人摸到巢这么近，就算不在正式入侵期也当警报处理
 ## An enemy this close to the hive raises the alarm even outside a scheduled raid.
 @export var hive_alarm_radius: float = 260.0
+
+## 攻击距离照哪个体型写的 / the build attack_distance was authored for
+const REFERENCE_RADIUS: float = 22.0
+## 围圈分几个位置。取 12 是因为一波最多也就十来只蜂扑上来，再多就该有人站外圈了
+## Twelve slots: more wasps than that on one target should be standing further out.
+const RING_SLOTS: int = 12
 
 const HIVE_GROUP: StringName = &"hive"
 const ENEMY_GROUP: StringName = &"Enemy"
@@ -72,16 +87,46 @@ func _tick(delta: float) -> Status:
 		agent.drop_carried_resource()
 
 	var dist_to_enemy: float = agent.global_position.distance_to(agent.target_enemy.global_position)
+	var reach: float = _reach_of(agent.target_enemy)
 
 	if agent.has_method("steer_towards"):
-		agent.steer_towards(agent.target_enemy.global_position, delta, chase_speed)
+		# 飞的是围圈上属于自己的那个点，不是敌人的中心。
+		# 近身段不减速：默认 arrive_radius 是 45，最后那截会爬过去，一群蜂爬着更难看
+		# No braking on the last stretch - the default arrive radius makes them crawl.
+		var spot: Vector2 = _ring_spot(agent.target_enemy)
+		var closing: bool = dist_to_enemy <= reach * 1.6
+		agent.steer_towards(spot, delta, chase_speed, 0.08, 0.0 if closing else -1.0)
 
 	# 到位了就叮一下；冷却未好时继续 RUNNING 贴着敌人，不让树切走
 	# In range: sting. While on cooldown stay RUNNING and hover on the target.
-	if dist_to_enemy <= attack_distance and agent.attack_enemy():
+	if dist_to_enemy <= reach and agent.attack_enemy():
 		return SUCCESS
 
 	return RUNNING
+
+
+# 判定距离照体型放大，跟 Enemy._apply_build 里给 HuntComponent 补 reach 是同一套算法。
+# 参照体型是半径 22，每个品种在这个基础上按差值补，所有体型都留同样的 12 像素余量
+# Same growth Enemy._apply_build applies to the hunter's reach; every breed keeps the
+# same margin over "sum of the two radii" instead of only the medium one working.
+func _reach_of(enemy: Node2D) -> float:
+	var radius: float = enemy.body_radius() if enemy.has_method("body_radius") else REFERENCE_RADIUS
+	return attack_distance + maxf(0.0, radius - REFERENCE_RADIUS)
+
+
+# 围圈上属于这只蜂的位置。角度取自 instance id：同一只蜂每帧算出来都一样，
+# 不用存状态，也不用谁来分配号码 / stable per wasp, stateless, nobody hands out slots
+func _ring_spot(enemy: Node2D) -> Vector2:
+	var radius: float = enemy.body_radius() if enemy.has_method("body_radius") else REFERENCE_RADIUS
+	var slot: int = int(agent.get_instance_id() % RING_SLOTS)
+	var angle: float = float(slot) / float(RING_SLOTS) * TAU
+	# 站位半径也要按蜂错开，**不能都站在同一个圈上**：一圈等距的话，
+	# 横扫这类范围攻击就变成了要么全中要么全不中——螳螂要么一下清场，
+	# 要么一只都打不着，中间那个"围太紧的会被扫到"才是它存在的意义
+	# A perfect ring turns every cleave into all-or-nothing; the point of a cleave is
+	# that crowding in costs you, not that it wipes the swarm or misses it entirely.
+	var spread: float = 0.7 + 0.6 * float(slot % 5) / 4.0
+	return enemy.global_position + Vector2.from_angle(angle) * (radius + ring_gap * spread)
 
 func _exit() -> void:
 	# Clean up the target when we are done defending

@@ -7,10 +7,11 @@
 [resource]
 script = ExtResource("1_enemy_variant")
 display_name = "Ant"
-max_health = 1
+max_health = 3
 texture = ExtResource("2_sheet")
 animation = ExtResource("3_anim")
 sprite_offset = Vector2(1, -7)
 collision_radius = 10.0
 move_speed = 58.0
 body_mass = 0.5
+loot_count = 2

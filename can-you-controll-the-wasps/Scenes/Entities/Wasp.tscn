@@ -13,6 +13,7 @@
 [ext_resource type="Resource" uid="uid://duqit4ccm47rt" path="res://Resources/Behaviours/worker.tres" id="11_behaviour"]
 [ext_resource type="Resource" uid="uid://c73kqwhaw3f1m" path="res://Resources/Behaviours/false_queen.tres" id="12_queenbhv"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/OutlineComponent.tscn" id="13_outline"]
+[ext_resource type="PackedScene" path="res://Scenes/Mechanics/ShoveComponent.tscn" id="16_shove"]
 [ext_resource type="Script" uid="uid://bi77k1iiofchc" path="res://Scripts/Mechanics/sprite_animator.gd" id="14_animator"]
 [ext_resource type="Resource" uid="uid://daufovyskpf7q" path="res://Resources/Animations/wasp.tres" id="15_waspanim"]
 [ext_resource type="Texture2D" uid="uid://c31jsu6cp8d25" path="res://Assets/Entities/good_wasp.png" id="ph_wasp"]
@@ -31,6 +32,8 @@ radius = 23.0
 
 [node name="Wasp" type="RigidBody2D" unique_id=322438317 groups=["wasps"]]
 z_index = 20
+collision_layer = 2
+collision_mask = 7
 mass = 1.2
 physics_material_override = SubResource("Material_wasp")
 gravity_scale = 0.0
@@ -87,6 +90,8 @@ max_speed = 220.0
 [node name="JuiceComponent" parent="." unique_id=1935085118 instance=ExtResource("5_juice")]
 
 [node name="OutlineComponent" parent="." unique_id=148787988 instance=ExtResource("13_outline")]
+
+[node name="ShoveComponent" parent="." instance=ExtResource("16_shove")]
 
 [node name="SpriteAnimator" type="Node" parent="." unique_id=771204853]
 script = ExtResource("14_animator")

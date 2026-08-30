@@ -21,6 +21,8 @@ radius = 20.0
 
 [node name="Enemy" type="RigidBody2D" unique_id=602123265 groups=["Enemy"]]
 z_index = 10
+collision_layer = 4
+collision_mask = 7
 mass = 0.9
 physics_material_override = SubResource("Material_enemy")
 lock_rotation = true

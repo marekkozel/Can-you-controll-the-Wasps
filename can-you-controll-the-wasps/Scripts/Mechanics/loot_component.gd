@@ -14,7 +14,7 @@ signal dropped(pieces: Array[Node2D])
 ## 掉什么 / what falls out
 @export var loot_scene: PackedScene
 ## 掉几份。敌人品种会覆盖它 / how many; the breed overrides this
-@export_range(0, 8, 1) var count: int = 1
+@export_range(0, 32, 1) var count: int = 1
 ## 撒开的半径 / how far the pieces scatter
 @export_range(0.0, 120.0, 2.0) var scatter_radius: float = 18.0
 ## 撒出去的力道，让它们弹开一点而不是叠在一个点上

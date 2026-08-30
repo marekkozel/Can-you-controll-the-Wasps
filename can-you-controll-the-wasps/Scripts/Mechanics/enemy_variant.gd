@@ -27,7 +27,7 @@ enum Behavior {
 @export_range(1, 20, 1) var max_health: int = 3
 ## 死了掉几份战利品。猎手该给得多一点：它不偷东西，打死它没有"保住了什么"这层回报，
 ## 掉落就是打它的**全部**理由 / a hunter steals nothing, so loot is the only reason to fight it
-@export_range(0, 8, 1) var loot_count: int = 1
+@export_range(0, 32, 1) var loot_count: int = 1
 
 @export_group("Colours")
 @export var body_color: Color = Color(0.28, 0.32, 0.27)
@@ -48,6 +48,14 @@ enum Behavior {
 @export var animation: SpriteAnimation
 ## 图的内容不居中就用它补。蚂蚁那张内容全在下半部分 / Ant art sits in the lower half
 @export var sprite_offset: Vector2 = Vector2.ZERO
+## 贴图放大几倍。**只用整数倍**：贴图过滤是 nearest，2.0 是干净的像素放大，
+## 1.5 会切出半像素，边缘会一行一行地闪
+## Integer factors only - nearest filtering turns 1.5 into shimmering half-pixels.
+##
+## 它写在 Body 那张 Sprite2D 上，**不是** Visual：Visual 的 scale 被出场 tween
+## （0→1）和死亡膨胀占着，体型写那儿会被这两个 tween 打回 1 倍
+## Never on Visual - the spawn and death tweens own that scale and would reset it.
+@export_range(0.5, 4.0, 0.5) var sprite_scale: float = 1.0
 ## 按贴图**内容**的实际尺寸给，不是按图幅 / measured from the content, not the sheet
 @export_range(4.0, 80.0, 1.0) var collision_radius: float = 22.0
 ## 闲逛速度，不是追击速度 / idle drift, not the chase
@@ -79,6 +87,15 @@ enum Behavior {
 ## Zero means single target. The big ones need it: piling eight wasps on a mantis costs
 ## exactly as much as sending one, so swarming is free and the fight has no decision in it.
 @export_range(0.0, 160.0, 2.0) var bite_radius: float = 0.0
+## 一次出手连咬几口。1 = 老样子，一口一口地咬。
+## 连击是给**最大的那几只**留的读法：一阵猛的 + 一段明显的喘息，比单纯"一口很疼"
+## 好读得多——玩家能看见节奏，就能在喘息里把伤蜂拖走、把蜂群压上去
+## A burst plus a long recovery gives the fight a rhythm the player can read and use;
+## a single heavy bite is just a bigger number.
+@export_range(1, 8, 1) var burst_bites: int = 1
+## 连击内两口的间隔。整串打完才进 bite_cooldown
+## The gap inside one burst; the real cooldown starts after the last shot.
+@export_range(0.05, 1.0, 0.05) var burst_interval: float = 0.22
 
 @export_group("Raids")
 ## 编队点数。一波的预算由玩家当前实力算出来，再用这个填满

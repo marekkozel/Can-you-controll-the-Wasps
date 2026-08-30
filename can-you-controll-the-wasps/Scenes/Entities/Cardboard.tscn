@@ -10,10 +10,12 @@
 bounce = 0.1
 absorbent = true
 
-[sub_resource type="RectangleShape2D" id="Shape_cardboard"]
-size = Vector2(44, 32)
+[sub_resource type="CircleShape2D" id="Shape_cardboard"]
+radius = 14.0
 
 [node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
+collision_layer = 8
+collision_mask = 9
 z_index = 30
 mass = 0.6
 physics_material_override = SubResource("PhysicsMaterial_4t8d5")

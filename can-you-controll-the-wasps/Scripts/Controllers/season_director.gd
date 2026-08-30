@@ -234,6 +234,13 @@ func _bind_ledger() -> void:
 		_hive.cell_larva_starved.connect(func(_c): _tally(&"starved"))
 		_hive.cell_built.connect(func(_c): _tally(&"built"))
 
+	# 加工厂出的每一份蜂王浆。`intake_payload` 空的就不是加工厂，产出点和敌人刷新带
+	# 也在同一个组里 / an empty intake_payload means it is a plain post, not a refinery
+	for node in get_tree().get_nodes_in_group(SOURCE_GROUP):
+		var source: ItemSource = node as ItemSource
+		if source != null and source.intake_payload != &"":
+			source.refined.connect(func(_p): _tally(&"jelly"))
+
 	var betrayal: BetrayalDirector = BetrayalDirector.find(get_tree())
 	if betrayal != null:
 		betrayal.false_queen_unmasked.connect(func(_w): _tally(&"caught"))
@@ -249,7 +256,7 @@ func _tally(key: StringName, amount: int = 1) -> void:
 
 
 func _clear_ledger() -> void:
-	_ledger = {&"born": 0, &"starved": 0, &"built": 0,
+	_ledger = {&"born": 0, &"starved": 0, &"built": 0, &"jelly": 0,
 		&"caught": 0, &"executed": 0, &"repelled": 0, &"raided": 0}
 	_points_awarded = 0
 
@@ -405,9 +412,14 @@ func crown(wasp: Wasp) -> bool:
 
 	_lay_brood()
 
+	# 拿账本不拿现场：_open_winter() 的 _ravage() 已经把巢拆到只剩 cells_left 格，
+	# 这时候数 built_count() 每一代都是同一个数，建多建少发一样的点
+	# From the ledger, not the hive - _ravage() flattened it before the throne even opened.
 	var bank: GeneBank = GeneBank.find(get_tree())
 	if bank != null:
-		_points_awarded = bank.award()
+		_points_awarded = bank.award(
+			int(_ledger.get(&"built", 0)),
+			int(_ledger.get(&"jelly", 0)))
 
 	# 继位就恢复生产，但整个冬天都不来 raid。两个开关各自只有一个意思：
 	# 冬天 = 不挨打，继位 = 重新开工
@@ -712,6 +724,7 @@ func year_report() -> Dictionary:
 		&"rows": [
 			{&"label": "Wasps born", &"value": int(_ledger.get(&"born", 0))},
 			{&"label": "Cells finished", &"value": int(_ledger.get(&"built", 0))},
+			{&"label": "Royal jelly refined", &"value": int(_ledger.get(&"jelly", 0))},
 			{&"label": "Larvae starved", &"value": int(_ledger.get(&"starved", 0))},
 			{&"label": "Raids repelled", &"value": int(_ledger.get(&"repelled", 0))},
 			{&"label": "Raids that took something", &"value": int(_ledger.get(&"raided", 0))},

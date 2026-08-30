@@ -8,7 +8,7 @@
 script = ExtResource("1_enemy_variant")
 display_name = "Fly"
 behavior = 1
-loot_count = 2
+loot_count = 4
 body_color = Color(0.42, 0.11, 0.12, 1)
 sheen_color = Color(0.62, 0.24, 0.22, 1)
 head_color = Color(0.24, 0.06, 0.07, 1)
@@ -21,3 +21,5 @@ chase_speed = 195.0
 show_health_bar = true
 bite_cooldown = 0.8
 spawn_cost = 2
+collision_radius = 24.0
+max_health = 14

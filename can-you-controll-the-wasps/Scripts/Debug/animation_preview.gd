@@ -40,6 +40,9 @@ const EXTRA_ROWS: Array[Dictionary] = [
 @export_range(0.25, 4.0, 0.25) var zoom: float = 1.0: set = _set_zoom
 ## 每格底下写清楚这段是哪一行、几帧、多少 fps / row, frame count and fps under each cell
 @export var show_readout: bool = true: set = _set_show_readout
+## 摞到第几条就另起一列。七个品种竖着排会掉出 720 的视口下沿
+## Seven breeds stacked would run off the bottom of a 720-tall viewport.
+@export_range(1, 12, 1) var rows_per_column: int = 4: set = _set_rows_per_column
 
 ## 一次性段播完歇多久再重来。不留这个间隔的话攻击段接得太紧，看不出起止在哪
 ## A beat between repeats, or a one-shot reads as an unbroken loop.
@@ -81,20 +84,27 @@ func _rebuild() -> void:
 	add_child(_grid)
 	_cells.clear()
 
-	var row_y: float = 0.0
-	for row in _collect_rows():
+	var rows: Array[Dictionary] = _collect_rows()
+	# 一列多宽由最长的那张表定，不写死 / the widest table sets the block width
+	var widest: int = 1
+	for row in rows:
+		widest = maxi(widest, (row[&"table"] as SpriteAnimation).clips.size())
+	var block_width: float = cell_size * (float(widest) + 1.2)
+
+	for index in rows.size():
+		var row: Dictionary = rows[index]
 		var table: SpriteAnimation = row[&"table"]
 		var texture: Texture2D = row[&"texture"]
-		_add_label(String(row[&"label"]), Vector2(-cell_size * 0.9, row_y), 13)
+		var origin := Vector2(block_width * float(index / rows_per_column),
+			cell_size * 1.15 * float(index % rows_per_column))
+		_add_label(String(row[&"label"]), origin + Vector2(-cell_size * 0.9, 0.0), 13)
 
 		var column: int = 0
 		for clip in table.clips:
 			if clip == null:
 				continue
-			var at := Vector2(cell_size * float(column), row_y)
-			_add_cell(texture, table, clip, at)
+			_add_cell(texture, table, clip, origin + Vector2(cell_size * float(column), 0.0))
 			column += 1
-		row_y += cell_size * 1.15
 
 
 # 敌人扫目录，黄蜂走写死的那条。加一种敌人只要多一个 EnemyVariant，这里自己会长出来
@@ -207,4 +217,9 @@ func _set_zoom(value: float) -> void:
 
 func _set_show_readout(value: bool) -> void:
 	show_readout = value
+	_rebuild()
+
+
+func _set_rows_per_column(value: int) -> void:
+	rows_per_column = value
 	_rebuild()

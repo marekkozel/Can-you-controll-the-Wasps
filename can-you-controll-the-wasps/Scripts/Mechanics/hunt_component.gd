@@ -30,6 +30,10 @@ const WASP_GROUP: StringName = &"wasps"
 ## 一口扫到多大范围内的所有蜂，0 = 只咬目标那一只。由 EnemyVariant 写入
 ## Cleave radius, 0 = single target. Written by EnemyVariant.
 @export_range(0.0, 160.0, 2.0) var bite_radius: float = 0.0
+## 一次出手连咬几口，1 = 老样子。串内走 burst_interval，打完整串才进 bite_cooldown
+## Bites per volley; the real cooldown only starts after the last one.
+@export_range(1, 8, 1) var burst_bites: int = 1
+@export_range(0.05, 1.0, 0.05) var burst_interval: float = 0.22
 
 @export_group("Leash")
 ## 离巢超过这个距离就丢下目标往回走 / drops the chase and heads back past this
@@ -54,6 +58,8 @@ var hunting: bool = false
 var _body: RigidBody2D = null
 var _steering: NavSteering = null
 var _cooldown: float = 0.0
+## 这一串还剩几口没打完 / shots left in the current volley
+var _burst_left: int = 0
 var _chase_time: float = 0.0
 var _retarget_time: float = 0.0
 # 放弃过的目标：instance_id -> 还要忽略多久。存 id 不存引用，键不会变成悬空对象
@@ -105,7 +111,7 @@ func _physics_process(delta: float) -> void:
 		_steering.steer(home, delta, fly_speed, steering)
 		return
 
-	if is_instance_valid(_target):
+	if _still_prey(_target):
 		_chase_time += delta
 		# 追了这么久都没咬到，说明它比自己快。挂起来一会儿，去找够得着的
 		# Still out of reach means it is simply faster; shelve it and take a reachable one.
@@ -141,7 +147,17 @@ func _physics_process(delta: float) -> void:
 		return
 	victim.take_damage(damage, _body.global_position)
 	_cleave(victim)
-	_cooldown = bite_cooldown
+
+	# 连击：一串没打完就只等 burst_interval，打完最后一口才进正经冷却。
+	# 冷却写在**这里**而不是各算一个计时器——中途换目标、被打断都走 _drop_target，
+	# 那里会把串清掉，不然一只蜂挨了一口、下一只蜂上来就直接吃到剩下两口
+	# Resetting the volley on retarget matters: otherwise the next wasp walks into the
+	# tail of someone else's burst.
+	if _burst_left <= 0:
+		_burst_left = maxi(burst_bites, 1)
+	_burst_left -= 1
+	_cooldown = burst_interval if _burst_left > 0 else bite_cooldown
+
 	_chase_time = 0.0  # 咬到了就不算追不上 / a landed bite is not a stalled chase
 	bit.emit(victim)
 
@@ -163,8 +179,18 @@ func _cleave(primary: Node2D) -> void:
 			wasp.take_damage(damage, at)
 
 
+# 还值不值得追。**光看 is_instance_valid 不够**：蜂死了会退出 wasps 组，但尸体
+# 还要在地上躺 5 秒才消失，实例一直是有效的——只查有效性的话，猎手会锁着一具尸体
+# 咬到它消失为止，场上还活着的蜂一只都不管
+# A dead wasp leaves the group but its corpse lingers five seconds; validity alone keeps
+# the hunter chewing on it while every living wasp is ignored.
+func _still_prey(target) -> bool:
+	return is_instance_valid(target) and target.is_in_group(WASP_GROUP)
+
+
 func _drop_target() -> void:
 	_target = null
+	_burst_left = 0
 	_chase_time = 0.0
 	_retarget_time = retarget_interval
 

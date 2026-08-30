@@ -13,10 +13,16 @@ signal killed(enemy: Enemy)
 @export var variant: EnemyVariant
 
 @export_group("Combat")
-## 每次点击造成几点伤害。**必须明显高于一只蜂咬一口**（蜂是 1 点 / 0.6 秒）——
-## 给 1 的话点一下等于多派一只蜂站 0.6 秒，玩家伸手永远不划算，于是根本不点
-## Must clearly beat one wasp bite, or reaching in is strictly worse than doing nothing.
-@export_range(1, 20, 1) var click_damage: int = 4
+## 每次点击造成几点伤害。要略高于一只蜂咬一口（蜂是 1 点 / 0.6 秒），
+## 但**不能高到一手清场**：4 点无冷却时蚂蚁和苍蝇都是点一下就没，整套集结、
+## rally_bias、"入侵时谁没回来"全都没有了发生的场合
+## Above one bite, nowhere near a whole wave: at 4 with no cooldown the swarm's entire
+## defence layer - and the clue that rides on it - never gets to happen.
+@export_range(1, 20, 1) var click_damage: int = 2
+## 两次点击之间的冷却。**全局共享一份**，不是每只敌人一份——按敌人算的话，
+## 一波五只轮着点等于完全没有冷却
+## Shared across every enemy: a per-enemy timer is no timer at all with five on screen.
+@export_range(0.0, 5.0, 0.05) var click_cooldown: float = 0.8
 ## 击退力度，只对没被打死的生效。跟黄蜂一样 lock_rotation，所以只推不转——
 ## 打一下就转个角度的话贴图朝向会乱掉，也看不出它在往哪走
 ## Knockback on non-lethal hits. Rotation is locked like the wasp's: shoved, never spun.
@@ -50,6 +56,8 @@ var _is_dead: bool = false
 # 场景里那几个 reach 是照这个半径调的，别的体型按差值往上补
 # The scene's reach values are tuned for this radius; other builds scale off it.
 const BUILD_REFERENCE_RADIUS: float = 22.0
+## 击退力度是照这个质量调的，别的体型按比例补 / knockback_force was tuned at this mass
+const BUILD_REFERENCE_MASS: float = 0.9
 
 
 func _ready() -> void:
@@ -95,6 +103,24 @@ func begin_raid(exit_point: Vector2 = Vector2.INF) -> void:
 func retreat() -> void:
 	_hunt.stop()
 	_raid.retreat()
+
+
+# 摆着看 / posed for inspection: 关掉所有会写 linear_velocity 的东西，站在原地不动。
+# **只给调试面板用。** 调体型的时候六只敌人满地乱飞根本没法比大小，
+# 而 freeze 之外还要停组件——它们照样会每帧算路，只是算了没人听
+# Debug only: freeze alone leaves the components steering a body that ignores them.
+func pose() -> void:
+	_hunt.stop()
+	_raid.stop()
+	_wander.enabled = false
+	freeze = true
+
+
+# 身体半径。**任何判定距离都拿它算，别再写死数字**——品种半径从 10 到 58，
+# 一个写死的数最多只对其中一种成立，对别的要么够不着要么隔空咬
+# Every reach must derive from this: one hardcoded number fits exactly one breed.
+func body_radius() -> float:
+	return variant.collision_radius if variant != null else BUILD_REFERENCE_RADIUS
 
 
 func hunts() -> bool:
@@ -145,6 +171,14 @@ func _apply_build() -> void:
 		body.texture = variant.texture
 		body.offset = variant.sprite_offset  # 图的中心 = 实体原点 / art centre is the origin
 
+	# 放大写在 Body 上，**不能写 _visual**：_visual.scale 被出场 tween（0→1）和
+	# 死亡膨胀（→ death_pop_scale）占着，体型写那儿会被这两个 tween 打回 1 倍。
+	# 跟加工厂皇后要交 JuiceComponent.base_scale 是同一个坑
+	# Never _visual: the spawn and death tweens own that scale and would silently
+	# reset the build to 1x - the same trap as the refinery queen's base_scale.
+	if body != null:
+		body.scale = Vector2.ONE * variant.sprite_scale
+
 	# 图集切几列几行由动画表说了算，所以必须在贴图换完之后 / the table owns the grid
 	if _animator != null:
 		_animator.set_animation(variant.animation)
@@ -176,6 +210,8 @@ func _apply_build() -> void:
 		_hunt.damage = variant.bite_damage
 		_hunt.bite_cooldown = variant.bite_cooldown
 		_hunt.bite_radius = variant.bite_radius
+		_hunt.burst_bites = variant.burst_bites
+		_hunt.burst_interval = variant.burst_interval
 
 	# **判定距离必须大于两者碰撞半径之和，否则永远走不到。**
 	# 场景里的 reach 是照中型（半径 22）调的：蜘蛛半径 48，加上黄蜂 grab 的 23，
@@ -191,6 +227,11 @@ func _apply_build() -> void:
 	var bar: Node2D = get_node_or_null(^"HealthBarComponent") as Node2D
 	if bar != null:
 		bar.visible = variant.show_health_bar
+		# 血条的高度是照中型写死的（-62）。放大过的品种不抬的话，条会画在身体中间
+		# The authored height assumes a medium build; on a 2x bird it lands mid-body.
+		if body != null and body.texture != null:
+			var drawn: float = body.get_rect().size.y * body.scale.y
+			bar.offset_y = minf(bar.offset_y, -(drawn * 0.5 + 10.0))
 
 
 # 没接动画表的品种（还是静态图）就什么都不做，不刷警告
@@ -210,6 +251,28 @@ func _tint(node: Node, color: Color) -> void:
 		sprite.self_modulate = color  # 贴图画灰度，白 x 色 = 色 / greyscale sprites tint clean
 
 
+# ---------------- 玩家出手的冷却 / the player's strike cooldown ----------------
+# 存在**类**上，所有敌人共用一份，屏幕上那圈倒计时读的也是它。
+# 走引擎毫秒而不是每帧计时：敌人随生随死，计时器挂在谁身上都不对
+# Class-level because it is one shared cooldown; engine time because enemies come and go.
+
+static var _strike_until_msec: int = 0
+static var _strike_span_msec: int = 1
+
+
+static func strike_ready() -> bool:
+	return Time.get_ticks_msec() >= _strike_until_msec
+
+
+## 还剩多少冷却，1 = 刚出过手，0 = 好了。给屏幕上那圈读
+## 1 means just struck, 0 means ready - the cursor ring reads this.
+static func strike_ratio() -> float:
+	var left: int = _strike_until_msec - Time.get_ticks_msec()
+	if left <= 0:
+		return 0.0
+	return clampf(float(left) / float(maxi(_strike_span_msec, 1)), 0.0, 1.0)
+
+
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if _is_dead:
 		return
@@ -217,6 +280,14 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		return
 	if not event.pressed:
 		return
+	# 冷却里点了就是什么都不发生。**这一下必须看得见**，所以有那圈倒计时——
+	# 静默失效玩家只会以为自己点空了，然后接着点
+	# A silent no-op reads as a missed click; that is what the cursor ring is for.
+	if not strike_ready():
+		return
+
+	_strike_span_msec = maxi(int(click_cooldown * 1000.0), 1)
+	_strike_until_msec = Time.get_ticks_msec() + _strike_span_msec
 
 	_health.take_damage(click_damage, get_global_mouse_position())
 	get_viewport().set_input_as_handled()  # 别让点击穿到下面的东西 / don't let it fall through
@@ -245,7 +316,11 @@ func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 	# Wander must come back: this used to switch off for good, which only stayed invisible
 	# while one hit was always lethal.
 	_wander.enabled = false
-	apply_central_impulse(direction * knockback_force)
+	# 冲量除以质量才是速度，所以重的品种要按质量补回来，否则**越重的敌人挨打越没反应**：
+	# 大家伙的质量是拿来抗黄蜂推挤的（蜂每帧直接写 linear_velocity，等于推土机），
+	# 不该顺带把打击反馈也一起吃掉
+	# Mass is there to resist the swarm's shoving, not to eat the hit feedback with it.
+	apply_central_impulse(direction * knockback_force * (mass / BUILD_REFERENCE_MASS))
 	_juice.punch(0.65, 0.3)
 	_resume_wander_after_knockback()
 
@@ -253,6 +328,14 @@ func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 func _on_died(_from: Vector2) -> void:
 	_is_dead = true
 	input_pickable = false
+
+	# 退出 Enemy 组。尸体要在地上躺到死亡动画播完（鸟能躺一秒多），留在组里的话
+	# 所有扫这个组的地方都还把它当活敌人：**蜂群会围着尸体接着打**，
+	# 而且 Defend 的"敌人摸到巢了"也一直成立，警报解不掉、采集分支永远轮不到。
+	# 跟 wasp.gd 里那条是同一个道理，那边的尸体也要退组
+	# The corpse lingers for its death clip; anything scanning the group still counts it,
+	# so wasps keep swinging at it and the alarm never clears. Same fix as the wasp's.
+	remove_from_group(&"Enemy")
 	_wander.enabled = false
 	_raid.stop()  # 不停的话组件会继续给冻住的尸体写速度 / else it steers a frozen corpse
 	_hunt.stop()

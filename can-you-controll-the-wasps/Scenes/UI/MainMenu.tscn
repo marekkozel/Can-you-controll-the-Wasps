@@ -137,12 +137,8 @@ text = "Drag a worker with the left mouse button."
 anchors_preset = 0
 
 [node name="HowToPlay" parent="." unique_id=84778529 instance=ExtResource("7_howto")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
+layout_mode = 3
+visible = false
 
 [connection signal="button_down" from="Buttons/Play" to="." method="_on_play_button_down"]
 [connection signal="button_down" from="Buttons/HowTo" to="." method="_on_how_to_button_down"]

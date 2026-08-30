@@ -22,6 +22,13 @@ extends BTAction
 ## is unchanged, the readability is not.
 @export var bite_cooldown: float = 7.5
 
+## 咬完一口之后在巢边守多久。冷却期间不失败，而是飞到下一个目标上等着——
+## 没有这一段的话叛军每咬一口就掉到 Harass 去追蜂，追完回来再咬，
+## 玩家看到的是一只在巢和蜂群之间来回犹豫的虫子，读不出它到底在干什么
+## Without this the rebel drops to Harass after every single bite and the whole branch
+## reads as dithering. It should look like a thing that came here to wreck the comb.
+@export var focus_duration: float = 6.0
+
 @export_group("Killing")
 ## 弄死一只幼虫后要缓很久。这是重击，不该是持续碾压，
 ## 不然玩家还没找到伪王后巢就空了
@@ -37,7 +44,10 @@ var _killing: bool = false
 
 func _tick(delta: float) -> Status:
 	var allegiance: AllegianceComponent = agent.allegiance()
-	if allegiance.sabotage_cooldown > 0.0:
+	# 冷却中但停留窗口还没走完 = 守在下一个目标上等冷却好，而不是把控制权交出去
+	# On cooldown but still focused: hold station on the next target instead of leaving.
+	var waiting: bool = allegiance.sabotage_cooldown > 0.0
+	if waiting and allegiance.sabotage_focus <= 0.0:
 		return FAILURE
 
 	# 妈叫去哪就去哪，哪怕那儿更远 / an order from the queen overrides the nearest target
@@ -53,7 +63,9 @@ func _tick(delta: float) -> Status:
 			return FAILURE
 
 	agent.steer_towards(_cell.global_position, delta, fly_speed)
-	if agent.global_position.distance_to(_cell.global_position) > reach:
+	# 冷却好之前只是守着，到点就地咬——飞回来那一趟省掉了，一格接一格地没才读得出来
+	# Just holding station until the cooldown clears; no round trip back to the comb.
+	if waiting or agent.global_position.distance_to(_cell.global_position) > reach:
 		return RUNNING
 
 	var cell: HexCell = _cell
@@ -64,11 +76,13 @@ func _tick(delta: float) -> Status:
 		if not cell.destroy_occupant():
 			return FAILURE
 		allegiance.sabotage_cooldown = kill_cooldown
+		allegiance.sabotage_focus = focus_duration
 		return SUCCESS
 
 	if not cell.demolish():
 		return FAILURE
 	allegiance.sabotage_cooldown = bite_cooldown
+	allegiance.sabotage_focus = focus_duration
 	return SUCCESS
 
 

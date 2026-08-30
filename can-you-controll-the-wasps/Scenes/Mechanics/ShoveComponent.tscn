@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Mechanics/shove_component.gd" id="1_shove"]
+
+[sub_resource type="CircleShape2D" id="Shape_shove"]
+radius = 26.0
+
+[node name="ShoveComponent" type="Area2D"]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("1_shove")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_shove")

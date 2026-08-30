@@ -61,6 +61,15 @@ const QUEEN_RALLY: Vector2 = Vector2(0.62, 0.88)
 # queen can sit inside a multi-second Gather where its cooldown would stall.
 var lay_cooldown: float = 0.0
 var sabotage_cooldown: float = 0.0
+## 追丢之后歇多久再追下一只。放在这里而不是 Harass 里，是因为任务一 FAILURE 就退出，
+## 状态存在任务上等于每次重进都清零，缰绳就没了
+## Here rather than in Harass: a failing task exits, and a leash that resets on re-entry
+## is not a leash.
+var harass_cooldown: float = 0.0
+## 咬完一口之后还在巢边守多久。这段时间里不去追蜂，冷却一到就地咬下一格——
+## 没有它的话叛军每咬一口就飞出去追一次蜂，看着像犹豫不决
+## Keeps a rebel on the comb between bites instead of flying off after every one.
+var sabotage_focus: float = 0.0
 ## 伪王后下的"去那边闹一下"指令，调虎离山用 / a decoy order from the queen
 var decoy_cell: Node = null
 var decoy_until: float = 0.0
@@ -73,6 +82,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	lay_cooldown = maxf(lay_cooldown - delta, 0.0)
 	sabotage_cooldown = maxf(sabotage_cooldown - delta, 0.0)
+	sabotage_focus = maxf(sabotage_focus - delta, 0.0)
+	harass_cooldown = maxf(harass_cooldown - delta, 0.0)
 	decoy_until = maxf(decoy_until - delta, 0.0)
 	if decoy_until <= 0.0:
 		decoy_cell = null
@@ -159,6 +170,8 @@ func submit() -> void:
 		return
 	mother = null
 	sabotage_cooldown = 0.0
+	sabotage_focus = 0.0
+	harass_cooldown = 0.0
 	_change(State.SUBDUED)
 	submitted.emit()
 

@@ -16,9 +16,6 @@ const WASP_SCENE: PackedScene = preload("res://Scenes/Entities/Wasp.tscn")
 const CARDBOARD_SCENE: PackedScene = preload("res://Scenes/Entities/Cardboard.tscn")
 const FOOD_SCENE: PackedScene = preload("res://Scenes/Entities/Food.tscn")
 const ENEMY_SCENE: PackedScene = preload("res://Scenes/Entities/Enemy.tscn")
-const ANT: EnemyVariant = preload("res://Resources/Variants/enemy_thief.tres")
-const HUNTER: EnemyVariant = preload("res://Resources/Variants/enemy_hunter.tres")
-const SPIDER: EnemyVariant = preload("res://Resources/Variants/enemy_spider.tres")
 
 ## 时间倍率循环用的档位 / time scale steps cycled by the hotkey
 const TIME_SCALES: Array[float] = [1.0, 2.0, 4.0, 8.0, 0.25, 0.5]
@@ -141,42 +138,75 @@ func end_raid() -> void:
 	_report("raid called off")
 
 
-# 不参与入侵的散兵，一种体型一个按钮。用来对比大小、验证蜘蛛的血条和它够不够得着蜂
-# Loose wanderers, one button per build - for eyeballing the sizes and the spider's reach.
-func spawn_ant() -> void:
-	_spawn_breed(ANT)
+# 品种表直接从 RaidDirector 读，**不在这里 preload 一份**——面板上的按钮也是照它生成的，
+# 所以加第七种敌人只要往 world.tscn 的 breeds 里塞一个 .tres，调试面板自动多一行
+# Read from the director: a new breed needs no new constant and no new button here.
+func breeds() -> Array:
+	var director: RaidDirector = RaidDirector.find(get_tree())
+	if director == null:
+		return []
+	var list: Array = []
+	for breed in director.breeds:
+		if breed != null:
+			list.append(breed)
+	return list
 
 
-func spawn_hunter() -> void:
-	_spawn_breed(HUNTER)
-
-
-func spawn_spider() -> void:
-	_spawn_breed(SPIDER)
-
-
-func _spawn_breed(breed: EnemyVariant) -> void:
-	if breed == null:
-		_report("no breed resource")
+func spawn_breed_index(index: int) -> void:
+	var list: Array = breeds()
+	if index < 0 or index >= list.size():
+		_report("no breed %d" % index)
 		return
-	var enemy: Enemy = ENEMY_SCENE.instantiate()
-	# variant 必须在 add_child 之前写：_apply_variant() 在 _ready 里跑
-	# Must be set before the node enters the tree - _apply_variant() runs in _ready.
-	enemy.variant = breed
-	entities_root().add_child(enemy)
+	var breed: EnemyVariant = list[index]
 	# 按体型内缩，否则蜘蛛半个身子会生成在上带的墙里 / the spider would spawn half inside a wall
 	var margin: float = breed.collision_radius + 24.0
 	var spot: Vector2 = Vector2(
 		randf_range(280.0, 1000.0),
 		randf_range(40.0 + margin, 248.0 - margin))
-	enemy.global_position = spot
-	enemy.set_wander_home(spot)
+	var enemy: Enemy = _make_breed(breed, spot)
 	# 正式入侵的敌人是 begin_raid() 进场的，不叫它的话调试刷出来的敌人只会在上带游荡，
 	# 永远不靠近巢——测出来的"没人打架"是假的
 	# Without this a debug enemy just loiters in the top band and never approaches, so
 	# "nobody fights" reads as an AI bug when it is only a different code path.
 	enemy.begin_raid(spot)
-	_report("spawned a %s (r=%d, %d hp)" % [breed.display_name, int(breed.collision_radius), breed.max_health])
+	_report("spawned a %s (r=%d, %dx, %d hp)"
+		% [breed.display_name, int(breed.collision_radius), int(breed.sprite_scale), breed.max_health])
+
+
+# 一字排开，全部**冻住**。调体型要的是这个：六只满地乱飞根本没法比大小，
+# 而且大的那两只会当场把蜂群啃了，比着比着场上就没蜂了
+# The one that matters for tuning builds: frozen, in a row, and not eating the colony.
+func line_up_breeds() -> void:
+	for node in get_tree().get_nodes_in_group("Enemy"):
+		node.queue_free()
+
+	var list: Array = breeds()
+	if list.is_empty():
+		_report("no breeds on the RaidDirector")
+		return
+
+	# 按体型从小到大排，一眼看得出梯度对不对 / sorted by build, so the ramp is readable
+	list.sort_custom(func(a, b): return a.collision_radius < b.collision_radius)
+
+	var span: float = 1000.0 - 280.0
+	for i in list.size():
+		var breed: EnemyVariant = list[i]
+		var at: Vector2 = Vector2(
+			280.0 + span * (float(i) + 0.5) / float(list.size()),
+			150.0)
+		_make_breed(breed, at).pose()
+	_report("lined up %d breeds (frozen)" % list.size())
+
+
+func _make_breed(breed: EnemyVariant, at: Vector2) -> Enemy:
+	var enemy: Enemy = ENEMY_SCENE.instantiate()
+	# variant 必须在 add_child 之前写：_apply_variant() 在 _ready 里跑
+	# Must be set before the node enters the tree - _apply_variant() runs in _ready.
+	enemy.variant = breed
+	entities_root().add_child(enemy)
+	enemy.global_position = at
+	enemy.set_wander_home(at)
+	return enemy
 
 
 # ---------------- 季节 / seasons ----------------

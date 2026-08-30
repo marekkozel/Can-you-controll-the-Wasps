@@ -17,7 +17,6 @@ signal points_changed(points: int)
 signal rank_changed(id: StringName, rank: int)
 
 const GROUP: StringName = &"gene_bank"
-const HIVE_GROUP: StringName = &"hive"
 
 # 基因的 id。**效果分派在这个文件里，形状在 .tres 里** —— 加一条要动两处：
 # 这里加常量和查询函数，Resources/Genes/ 下加资源
@@ -35,7 +34,16 @@ const THICK_HIDE: StringName = &"thick_hide"
 ## 每多少个建成巢室多给一点。上一代经营得好，下一代才有得花
 ## Extra points scale with the hive you actually built - last generation pays for the next.
 @export_range(1, 40, 1) var cells_per_extra_point: int = 6
-@export_range(0, 8, 1) var max_points_per_generation: int = 3
+## 每多少份蜂王浆多给一点。第二条收入线，代表的是**打赢并且打扫了战场**——
+## 一份蜂王浆等于两份肉，而肉只从敌人尸体上来。经营和战斗各记各的，
+## 别拿纸板或食物再记一遍：纸板就是建巢数换个单位，食物就是出生数
+## The second income line stands for combat: jelly only exists because raids were beaten
+## and the field was cleared. Cardboard and food would merely restate cells and births.
+@export_range(1, 20, 1) var jelly_per_extra_point: int = 3
+## 每代上限。**两条收入线就必须抬这个数**——留在 3 的话建巢一条线自己就顶满了，
+## 蜂王浆那条加了等于没加，又变回每代恒定
+## Two income lines need headroom: at 3 the cells alone cap it and jelly changes nothing.
+@export_range(0, 12, 1) var max_points_per_generation: int = 6
 
 # 每级给多少。数值放这里而不是散在使用方，调平衡只用看一个文件
 # The magnitudes live here, not scattered across the systems that read them.
@@ -140,15 +148,14 @@ func unlock(node: GeneNode) -> bool:
 	return true
 
 
-# 继位时结算。给的是上一代留下的巢，不是这一代的承诺
-# Settled at the coronation, against the hive the last generation actually left behind.
-func award() -> int:
-	var built: int = 0
-	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
-	if hive != null:
-		built = hive.built_count()
-
-	var gained: int = points_per_generation + built / cells_per_extra_point
+# 继位时结算。`built` / `jelly` 都是**这一年的累计数**，由调用方从账本里给，
+# 不能在这里现场数巢——冬天开场的 _ravage() 早就把巢推平了，读到的永远是残骸
+# The caller passes the year's tally: counting the live hive here reads the ruins
+# _ravage() just left, not the comb the generation actually built.
+func award(built: int, jelly: int) -> int:
+	var gained: int = points_per_generation
+	gained += built / cells_per_extra_point
+	gained += jelly / jelly_per_extra_point
 	gained = clampi(gained, 0, max_points_per_generation)
 	if gained <= 0:
 		return 0

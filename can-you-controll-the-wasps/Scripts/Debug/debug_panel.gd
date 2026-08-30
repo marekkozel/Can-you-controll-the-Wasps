@@ -22,15 +22,17 @@ const ACTIONS: Array[Dictionary] = [
 	{"label": "     Crown someone now", "method": "crown_someone", "key": KEY_NONE},
 	{"label": "     Gene point +1", "method": "grant_gene_point", "key": KEY_NONE},
 	{"label": "     Call off the raid", "method": "end_raid", "key": KEY_NONE},
-	{"label": "     Spawn ant (small)", "method": "spawn_ant", "key": KEY_NONE},
-	{"label": "     Spawn hunter (medium)", "method": "spawn_hunter", "key": KEY_NONE},
-	{"label": "     Spawn spider (large)", "method": "spawn_spider", "key": KEY_NONE},
 	{"label": "     Reveal allegiances", "method": "reveal_allegiances", "key": KEY_NONE},
 	{"label": "     Unrest +0.2", "method": "bump_unrest", "key": KEY_NONE},
 	{"label": "     Clear unrest + grudges", "method": "clear_unrest", "key": KEY_NONE},
 	{"label": "     Clear wasps", "method": "clear_wasps", "key": KEY_NONE},
 	{"label": "     Clear enemies", "method": "clear_enemies", "key": KEY_NONE},
 ]
+
+## 按钮堆最高长到这里，超了就滚。**面板是会长的**——刷怪那几行照品种表生成，
+## 加一种敌人就多一行，早晚会顶到屏幕底下切掉一半
+## The stack grows with the breed table; without a cap it runs off a 720px screen.
+@export_range(160.0, 700.0, 10.0) var max_list_height: float = 520.0
 
 @onready var _actions: DebugActions = $DebugActions
 @onready var _buttons: VBoxContainer = $Root/Panel/Margin/Content/Buttons
@@ -49,6 +51,7 @@ func _ready() -> void:
 
 	_actions.action_done.connect(_on_action_done)
 	_build_buttons()
+	_cap_button_list()
 	# 性能读数常驻，按钮那一坨太占地方所以默认收起 / perf stays up, the button stack does not
 	_panel.visible = false
 
@@ -76,12 +79,51 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _build_buttons() -> void:
 	for entry in ACTIONS:
-		var button: Button = Button.new()
-		button.text = entry["label"]
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.add_theme_font_size_override("font_size", 12)
-		button.pressed.connect(_run.bind(entry["method"]))
-		_buttons.add_child(button)
+		_add_button(entry["label"], _run.bind(entry["method"]))
+
+	# 刷怪那几行是照 RaidDirector.breeds 现生成的，不写死在 ACTIONS 里——
+	# 加第七种敌人只要往 world.tscn 的 breeds 塞一个 .tres，这里自动多一行
+	# Generated from the director so a new breed needs no edit here.
+	var breeds: Array = _actions.breeds()
+	if breeds.is_empty():
+		return
+	_add_button("     Line up all breeds (frozen)", _actions.line_up_breeds)
+	for i in breeds.size():
+		var breed: EnemyVariant = breeds[i]
+		_add_button("     Spawn %s  r%d  %dx  %dhp" % [
+				breed.display_name, int(breed.collision_radius),
+				int(breed.sprite_scale), breed.max_health],
+			_actions.spawn_breed_index.bind(i))
+
+
+# 给按钮堆套一层滚动区。在代码里套而不是在场景里摆：场景里那棵树是手写的，
+# 多一层容器就要重连 @onready 路径，而这一层纯粹是长度问题，跟布局意图无关
+# Wrapped here rather than in the scene: it is a length fix, not a layout decision.
+func _cap_button_list() -> void:
+	var host: Node = _buttons.get_parent()
+	var slot: int = _buttons.get_index()
+
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.name = "ButtonScroll"
+	scroll.custom_minimum_size = Vector2(0.0, max_list_height)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+
+	host.remove_child(_buttons)
+	host.add_child(scroll)
+	host.move_child(scroll, slot)
+	scroll.add_child(_buttons)
+	# 不填满宽度的话按钮会缩成文字宽，一行一个长度都不一样
+	# Without this the buttons shrink to their text and every row is a different width.
+	_buttons.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+func _add_button(label: String, action: Callable) -> void:
+	var button: Button = Button.new()
+	button.text = label
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.add_theme_font_size_override("font_size", 12)
+	button.pressed.connect(action)
+	_buttons.add_child(button)
 
 
 # 少数要带参数的在这里转一下 / the few that need arguments are routed here
