@@ -39,7 +39,7 @@
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
 [ext_resource type="Script" uid="uid://diyfu5agmx1sk" path="res://Scripts/Controllers/selection_director.gd" id="33_selection"]
 [ext_resource type="Resource" uid="uid://bux21np6objl4" path="res://Resources/Variants/enemy_spider.tres" id="33_spider"]
-[ext_resource type="Resource" path="res://Resources/Variants/enemy_mantis.tres" id="34_mantis"]
+[ext_resource type="Resource" uid="uid://bcw3d53yo4vuf" path="res://Resources/Variants/enemy_mantis.tres" id="34_mantis"]
 [ext_resource type="Texture2D" uid="uid://dyxqw1tt2q5cw" path="res://Assets/UI/cardboard_tag.png" id="38_w5giw"]
 [ext_resource type="Texture2D" uid="uid://tccfgek40ki2" path="res://Assets/UI/food_tag.png" id="39_jwdyn"]
 [ext_resource type="Texture2D" uid="uid://d0e7vj7306nx0" path="res://Assets/UI/info_tag.png" id="40_t6yt7"]

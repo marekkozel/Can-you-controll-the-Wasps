@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://drfk6k4bwma2w"]
 
-[ext_resource type="Script" path="res://Scripts/UI/year_report.gd" id="1_report"]
+[ext_resource type="Script" uid="uid://c2umj46x5ufp2" path="res://Scripts/UI/year_report.gd" id="1_report"]
 
-[node name="YearReport" type="Control" groups=["year_report"]]
+[node name="YearReport" type="Control" unique_id=1949803716 groups=["year_report"]]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

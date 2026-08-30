@@ -214,6 +214,16 @@ func _play() -> void:
 func _close() -> void:
 	visible = false
 	get_tree().paused = false
+
+# --- MUSIC FADE-IN ---
+	BackgroundMusic.volume_db = linear_to_db(0.01)
+	BackgroundMusic.play()
+	var tween: Tween = BackgroundMusic.create_tween()
+	tween.tween_method(
+		func(vol: float): BackgroundMusic.volume_db = linear_to_db(vol),
+		0.01, 1.0, 1.5 # Fades in over 1.5 seconds
+	)
+
 	if _upgrade != null:
 		_upgrade.process_mode = _upgrade_mode
 		_upgrade = null

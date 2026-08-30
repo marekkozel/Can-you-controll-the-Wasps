@@ -34,6 +34,8 @@ func _ready() -> void:
 	$Buttons/Settings.pressed.connect(_settings.open)
 	$Buttons/Quit.pressed.connect(_on_quit)
 
+	BackgroundMusic.stop()
+
 	# 网页导出里退不出去，这个键点了什么都不会发生——干脆别让它出现
 	# quit() is a no-op on web, and a button that does nothing is worse than no button.
 	$Buttons/Quit.visible = not OS.has_feature("web")
@@ -98,8 +100,27 @@ func _scale_to(button: Button, amount: float) -> void:
 
 
 func _on_play() -> void:
+	_crossfade_music(StartMenuMusic, BackgroundMusic, 0.5)
 	get_tree().change_scene_to_file(WORLD_SCENE)
 
 
 func _on_quit() -> void:
 	get_tree().quit()
+
+func _crossfade_music(track_out: AudioStreamPlayer2D, track_in: AudioStreamPlayer2D, duration: float) -> void:
+	track_in.volume_db = linear_to_db(0.01)
+	track_in.play()
+		
+	var tween: Tween = track_in.create_tween().set_parallel(true)
+		
+	tween.tween_method(
+		func(vol: float): track_out.volume_db = linear_to_db(vol), 
+		1.0, 0.01, duration
+	)
+		
+	tween.tween_method(
+		func(vol: float): track_in.volume_db = linear_to_db(vol), 
+		0.01, 1.0, duration
+	)
+		 
+	tween.chain().tween_callback(track_out.stop)

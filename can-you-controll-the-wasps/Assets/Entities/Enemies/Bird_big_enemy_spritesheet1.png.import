@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coo5t8dhhi7um"
-path="res://.godot/imported/Bird_big_enemy_spritesheet.png-7e7cee088cc109ccd85790e02284c994.ctex"
+uid="uid://p23bkpxgo7l3"
+path="res://.godot/imported/Bird_big_enemy_spritesheet1.png-2e782e8c63cd2ecf736edaabfbbd762f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Entities/Enemies/Bird_big_enemy_spritesheet.png"
-dest_files=["res://.godot/imported/Bird_big_enemy_spritesheet.png-7e7cee088cc109ccd85790e02284c994.ctex"]
+source_file="res://Assets/Entities/Enemies/Bird_big_enemy_spritesheet1.png"
+dest_files=["res://.godot/imported/Bird_big_enemy_spritesheet1.png-2e782e8c63cd2ecf736edaabfbbd762f.ctex"]
 
 [params]
 

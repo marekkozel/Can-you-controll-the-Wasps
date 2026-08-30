@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://cgjfodxaqjxs4" path="res://Scripts/UI/main_menu.gd" id="1_menu"]
 [ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="3_settings"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/HowToPlay.tscn" id="7_howto"]
 [ext_resource type="Texture2D" uid="uid://bujq8j4cawuwv" path="res://Assets/UI/background_Main.png" id="4_bg"]
 [ext_resource type="Texture2D" uid="uid://di43gwv4le2u0" path="res://Assets/UI/title_plaque.png" id="5_plaque"]
-[ext_resource type="Shader" path="res://Assets/Shaders/menu_backdrop.gdshader" id="6_bgshader"]
+[ext_resource type="Shader" uid="uid://bkgy8k8lr3xmm" path="res://Assets/Shaders/menu_backdrop.gdshader" id="6_bgshader"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/HowToPlay.tscn" id="7_howto"]
 
 [sub_resource type="ShaderMaterial" id="Mat_backdrop"]
 shader = ExtResource("6_bgshader")
@@ -100,7 +100,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Play"
 
-[node name="HowTo" type="Button" parent="Buttons"]
+[node name="HowTo" type="Button" parent="Buttons" unique_id=312238984]
 custom_minimum_size = Vector2(280, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
@@ -132,7 +132,8 @@ theme_override_font_sizes/font_size = 12
 text = "Drag a worker with the left mouse button."
 
 [node name="SettingsPanel" parent="." unique_id=984174700 instance=ExtResource("3_settings")]
+anchors_preset = 0
 
-[node name="HowToPlay" parent="." instance=ExtResource("7_howto")]
+[node name="HowToPlay" parent="." unique_id=84778529 instance=ExtResource("7_howto")]
 visible = false
 anchors_preset = 0

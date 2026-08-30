@@ -23,6 +23,8 @@ config/icon="res://icon.svg"
 
 Signal_Debugger="*uid://bf6x3w2mh5vl0"
 AudioManager="*uid://bffa7nky0na4d"
+BackgroundMusic="*uid://bqml4a45hmmex"
+StartMenuMusic="*uid://cokes7y5ix5nt"
 
 [display]
 
