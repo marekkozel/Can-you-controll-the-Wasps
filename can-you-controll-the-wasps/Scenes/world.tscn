@@ -49,11 +49,11 @@
 [ext_resource type="PackedScene" uid="uid://dkojgk8nus6k6" path="res://Scenes/UI/Tutorial.tscn" id="43_tutorial"]
 [ext_resource type="Resource" uid="uid://b8vqx2ntbeetl" path="res://Resources/Variants/enemy_beetle.tres" id="44_beetle"]
 [ext_resource type="PackedScene" uid="uid://bvlh5jk87k1gl" path="res://Scenes/UI/HowToPlay.tscn" id="44_howto"]
+[ext_resource type="Resource" uid="uid://cq7wn3mkbird1" path="res://Resources/Variants/enemy_bird.tres" id="45_bird"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/AttentionRing.tscn" id="45_ring"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/StrikeCooldown.tscn" id="46_strike"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/PauseMenu.tscn" id="47_pause"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="48_settings"]
-[ext_resource type="Resource" uid="uid://cq7wn3mkbird1" path="res://Resources/Variants/enemy_bird.tres" id="45_bird"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/AttentionRing.tscn" id="45_ring"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_world"]
 vertices = PackedVector2Array(1256, 24, 1256, 264, 1000, 264, 24, 24, 1000, 519, 999, 519, 282, 264, 999, 607, 1255.5, 607, 1255.5, 665, 282, 665, 24, 264)
@@ -371,7 +371,8 @@ offset_top = 16.000061
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
 layout_mode = 3
 
-[node name="StrikeCooldown" parent="UI" instance=ExtResource("46_strike")]
+[node name="StrikeCooldown" parent="UI" unique_id=2129116786 instance=ExtResource("46_strike")]
+layout_mode = 3
 
 [node name="Tags" type="Control" parent="UI" unique_id=1260580879]
 layout_mode = 3
@@ -410,10 +411,12 @@ texture = ExtResource("41_jwdyn")
 
 [node name="Tutorial" parent="UI" unique_id=270077394 instance=ExtResource("43_tutorial")]
 
-[node name="PauseMenu" parent="UI" instance=ExtResource("47_pause")]
+[node name="PauseMenu" parent="UI" unique_id=1932292223 instance=ExtResource("47_pause")]
+layout_mode = 3
 
-[node name="SettingsPanel" parent="UI" instance=ExtResource("48_settings")]
+[node name="SettingsPanel" parent="UI" unique_id=1723205478 instance=ExtResource("48_settings")]
 process_mode = 3
+layout_mode = 3
 
 [node name="HowToPlay" parent="UI" unique_id=672998586 instance=ExtResource("44_howto")]
 process_mode = 3

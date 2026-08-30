@@ -71,7 +71,7 @@ custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "Cardboard becomes comb. Drop a worker beside a scrap and she hauls it to an empty cell."
+text = "Cardboard becomes a cell. Drop a worker beside a cardboard pile and she hauls it to an empty cell."
 autowrap_mode = 3
 
 [node name="Brood" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=77396328]
@@ -111,7 +111,7 @@ custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "Three meals seal a larva in. Miss them and she starves, and the cell is wasted with her."
+text = "Three meals seal a larva in. Miss them and she starves, and the cell is wasted."
 autowrap_mode = 3
 
 [node name="Raise" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=85129855]
@@ -131,7 +131,7 @@ custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "The food point refines meat into royal jelly. Feed jelly in place of a meal and she emerges stronger - one trait, at random."
+text = "The queen eats a meat and convert it into royal jelly. Feed jelly in place of a food to a larva and she emerges stronger and bigger."
 autowrap_mode = 3
 
 [node name="Defend" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=703829336]
@@ -151,7 +151,7 @@ custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "Raiders come for your brood and gnaw at unfinished cells. Click one to strike it, or let your wasps rally. They leave when the wave is spent."
+text = "Raiders are going for your offspring and nibbling on the unfinished cells. Click one to strike it, or let your wasps, do it for you."
 autowrap_mode = 3
 
 [node name="Rebels" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=247444767]
@@ -171,27 +171,47 @@ custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "Eggs of the wrong colour are not yours. Leave them unfed and they die, or fight what hatches."
+text = "Wasps are tricky, so watch their behavior and keep an eye out to see if they're laying eggs in your nest. You really don't want to end up raising someone else's eggs. Let them starve, or fight what hatches."
 autowrap_mode = 3
 
-[node name="TheQueen" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1980456798]
+[node name="Traitor" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1980456798]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Name" type="Label" parent="Panel/Margin/Rows/TheQueen" unique_id=466425637]
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Traitor" unique_id=466425637]
 custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
 theme_override_font_sizes/font_size = 15
-text = "The Queen"
+text = "Traitor"
 
-[node name="Text" type="Label" parent="Panel/Margin/Rows/TheQueen" unique_id=1846952494]
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Traitor" unique_id=1846952494]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
-text = "One of them is not a worker. Lift a wasp with the left button and fling her into a wall - that knocks the mask off. Pick wrong and the swarm remembers."
+text = "When you find a rebel, pick him up with the left button and throw him against the wall, he should come to his senses. Pick wrong and the swarm remembers."
+autowrap_mode = 3
+
+[node name="Winter" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1552300248]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Name" type="Label" parent="Panel/Margin/Rows/Winter" unique_id=382833944]
+custom_minimum_size = Vector2(92, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.7725, 0.4039, 0.16078, 1)
+theme_override_font_sizes/font_size = 15
+text = "Winter"
+
+[node name="Text" type="Label" parent="Panel/Margin/Rows/Winter" unique_id=205239590]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "As soon as winter arrives, your colony comes to an end. You must choose a successor to the throne, and you’ll receive as many genes as the number of wasps you managed to breed. You can then use those for some upgrades."
 autowrap_mode = 3
 
 [node name="Sep2" type="HSeparator" parent="Panel/Margin/Rows" unique_id=1616108872]
@@ -201,7 +221,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4902, 0.30196, 0.34902, 1)
 theme_override_font_sizes/font_size = 13
-text = "You point. They decide."
+text = "Show them who's the Ruler"
 horizontal_alignment = 1
 
 [node name="Back" type="Button" parent="Panel/Margin/Rows" unique_id=1451419840]
