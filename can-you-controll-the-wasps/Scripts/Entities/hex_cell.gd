@@ -274,7 +274,6 @@ func destroy_occupant() -> bool:
 	_juice.punch(0.82, 0.35)
 	_juice.burst()
 	occupant_destroyed.emit(self)
-	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.LARVA_DEATH)
 	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.CELL_DEATH)
 	return true
 

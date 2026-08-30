@@ -18,7 +18,7 @@ const HIVE_GROUP: StringName = &"hive"
 # 文案全在这一张表里，改词不用碰玩法代码 / every line lives here, and only here
 const LINES: Dictionary = {
 	&"raid_warning": {
-		"text": "Something is coming to the rim.",
+		"text": "Something is coming.",
 		"priority": 90, "tone": Herald.Tone.THREAT,
 	},
 	&"raid_lost": {
@@ -33,23 +33,23 @@ const LINES: Dictionary = {
 	# The rite is a verb, not a notification: nobody waits out a winter they can act on.
 	&"throne": {
 		"text": "Winter. Drag a worker into the glowing centre cell - she becomes your queen.",
-		"priority": 100, "tone": Herald.Tone.RITE,
+		"priority": 110, "tone": Herald.Tone.RITE,
 	},
 	&"throne_late": {
-		"text": "Still no heir. Carry one in now, or the comb picks its own.",
-		"priority": 100, "tone": Herald.Tone.RITE,
+		"text": "Still No successor. Carry one into the center cell now, or she picks herself.",
+		"priority": 120, "tone": Herald.Tone.RITE,
 	},
 	# 你摔对人了。**这是全局唯一一条确认性的播报**——她不变色、不倒下，
 	# 没有这句话玩家永远不知道自己刚才做对了没有
 	# The one confirming line in the game: she neither changes colour nor falls, so
 	# without it the player never learns whether the throw landed on the right wasp.
 	&"unmasked": {
-		"text": "She hits the wall and something goes out of her. That one will lay no more.",
+		"text": "She hits the wall and she'll remember it. That one will lay no more.",
 		"priority": 95, "tone": Herald.Tone.RITE,
 	},
 	&"crowned": {
 		"text": "She is crowned.",
-		"priority": 100, "tone": Herald.Tone.RITE,
+		"priority": 130, "tone": Herald.Tone.RITE,
 	},
 	# 你第一次把一只蜂拿在手上时说一次。挂在**玩家的动作**上，不是挂在她身上——
 	# 挂在伪王后醒来上的话，这句话本身就成了"她在场"的确认
@@ -61,24 +61,25 @@ const LINES: Dictionary = {
 	# ---- 以下是传闻 / rumours from here down ----
 	&"awaken": {
 		"pool": [
-			"The comb smells wrong tonight.",
-			"Something moves in the comb that answers to no one.",
+			"The nest feels weird today.",
+			"One of the workers is acting strange.",
 		],
 		"priority": 45, "tone": Herald.Tone.RUMOUR,
 	},
 	&"rebel_egg": {
 		"pool": [
-			"A cell was opened that no one remembers opening.",
-			"There is an egg here that the comb did not ask for.",
+			"Something is wrong with this cell.",
+			"There is an egg here that the queen did not ask for.",
+			"Do you remember laying that egg?",
 		],
 		"priority": 45, "tone": Herald.Tone.RUMOUR,
 	},
 	&"unrest": {
-		"text": "The workers are slow to answer.",
+		"text": "The workers are tired of the this mess. You should behave better.",
 		"priority": 40, "tone": Herald.Tone.RUMOUR,
 	},
 	&"innocent": {
-		"text": "That one had done nothing.",
+		"text": "That one had done nothing. Poor inocent little guy.",
 		"priority": 55, "tone": Herald.Tone.RUMOUR,
 	},
 }
