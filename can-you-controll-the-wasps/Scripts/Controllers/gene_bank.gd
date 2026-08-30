@@ -27,6 +27,7 @@ const RENDERING: StringName = &"rendering"
 const FAT_RESERVES: StringName = &"fat_reserves"
 const QUICK_HATCH: StringName = &"quick_hatch"
 const THICK_HIDE: StringName = &"thick_hide"
+const QUICK_LAY: StringName = &"quick_lay"
 
 @export_group("Income")
 ## 每代保底几点 / floor per generation
@@ -56,6 +57,8 @@ const THICK_HIDE: StringName = &"thick_hide"
 @export_range(0.0, 0.5, 0.05) var quick_hatch_bonus: float = 0.25
 ## THICK HIDE：每级新生蜂加几点血 / hit points per rank
 @export_range(1, 3, 1) var hide_bonus: int = 1
+## QUICK LAY：每级产卵速度加快几成 / laying speed increase per rank
+@export_range(0.0, 0.5, 0.05) var quick_lay_bonus: float = 0.25
 
 var points: int = 0
 ## id -> 已解锁的等级。没有的键就是 0 级（没解锁）/ absent means rank 0
@@ -163,3 +166,6 @@ func award(built: int, jelly: int) -> int:
 	points += gained
 	points_changed.emit(points)
 	return gained
+
+func lay_speed_scale() -> float:
+	return maxf(1.0 - float(rank_of(QUICK_LAY)) * quick_lay_bonus, 0.25)

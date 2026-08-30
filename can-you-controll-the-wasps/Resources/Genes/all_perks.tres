@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="GeneNode" format=3 uid="uid://bimc7ns3ant4n"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+[ext_resource type="Script" uid="uid://c1y3jqm4i0k27" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
 
 [resource]
 script = ExtResource("1_gene")
@@ -8,7 +8,4 @@ id = &"all_perks"
 display_name = "ALL PERKS"
 description = "All perks +1 on every wasp born from now on.
 Stacks three times."
-order = 0
-requires = Array[StringName]([])
-cost = 1
 max_rank = 3

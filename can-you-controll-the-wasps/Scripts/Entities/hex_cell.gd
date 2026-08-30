@@ -434,6 +434,10 @@ func lay_egg() -> bool:
 	_lay_egg()
 	return true
 
+func _lay_speed_scale() -> float:
+	var bank: GeneBank = genes()
+	return bank.lay_speed_scale() if bank != null else 1.0
+
 
 # ---------------- 内容槽 / content slot ----------------
 
@@ -671,7 +675,8 @@ func _update_hold() -> void:
 		_hold.hold_duration = clean_duration
 		_hold.enabled = true
 	elif can_lay_egg():
-		_hold.hold_duration = lay_duration
+		# Apply the gene bank scale here
+		_hold.hold_duration = lay_duration * _lay_speed_scale()
 		_hold.enabled = true
 	else:
 		_hold.enabled = false
@@ -789,7 +794,15 @@ func genes() -> GeneBank:
 	if not _bank_checked and not Engine.is_editor_hint() and is_inside_tree():
 		_bank_checked = true
 		_bank = GeneBank.find(get_tree())
+		
+		if _bank != null and not _bank.rank_changed.is_connected(_on_rank_changed):
+			_bank.rank_changed.connect(_on_rank_changed)
+			
 	return _bank
+
+func _on_rank_changed(id: StringName, _rank: int) -> void:
+	if id == _bank.QUICK_LAY:
+		_update_hold()
 
 
 # 建成这一格实际要几块纸板。THICK COMB 让它变便宜；至少留 1，不然一格白送

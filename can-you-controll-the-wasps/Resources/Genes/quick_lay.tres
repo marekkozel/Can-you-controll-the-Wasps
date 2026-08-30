@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GeneNode" format=3 uid="uid://b7sx323p2syee"]
+
+[ext_resource type="Script" uid="uid://c1y3jqm4i0k27" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+
+[resource]
+script = ExtResource("1_gene")
+id = &"quick_lay"
+display_name = "QUICK LAY"
+description = "Speeds up laying the eggs."
+order = 6
+cost = 2
+max_rank = 3

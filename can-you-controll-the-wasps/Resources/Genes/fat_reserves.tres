@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="GeneNode" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="GeneNode" format=3 uid="uid://ds7fppd7ouhja"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
+[ext_resource type="Script" uid="uid://c1y3jqm4i0k27" path="res://Scripts/Mechanics/gene_node.gd" id="1_gene"]
 
 [resource]
 script = ExtResource("1_gene")
@@ -9,6 +9,4 @@ display_name = "FAT RESERVES"
 description = "Larvae stay full 40% longer before they start begging.
 Stacks twice."
 order = 3
-requires = Array[StringName]([])
-cost = 1
 max_rank = 2

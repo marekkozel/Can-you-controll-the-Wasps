@@ -33,7 +33,7 @@
 [ext_resource type="Resource" uid="uid://vo7vuwqoub5" path="res://Resources/Variants/pure.tres" id="27_pure"]
 [ext_resource type="Script" uid="uid://cms3picejnr03" path="res://Scripts/Controllers/gene_bank.gd" id="28_gene"]
 [ext_resource type="Script" uid="uid://bmpj02h5wcn8" path="res://Scripts/Controllers/announcer.gd" id="29_announcer"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
+[ext_resource type="PackedScene" uid="uid://c6223nuq8vgl0" path="res://Scenes/UI/Herald.tscn" id="30_herald"]
 [ext_resource type="Texture2D" uid="uid://ba6eqkvjt5d01" path="res://Assets/UI/background.png" id="31_p5wkl"]
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="32_enemyvariant"]
 [ext_resource type="Texture2D" uid="uid://dfyna1cqlkgng" path="res://Assets/UI/panel_slot.png" id="32_slot"]
@@ -369,7 +369,6 @@ offset_left = 6.0
 offset_top = 16.000061
 
 [node name="Herald" parent="UI" unique_id=1500006695 instance=ExtResource("30_herald")]
-layout_mode = 3
 
 [node name="StrikeCooldown" parent="UI" unique_id=2129116786 instance=ExtResource("46_strike")]
 layout_mode = 3
