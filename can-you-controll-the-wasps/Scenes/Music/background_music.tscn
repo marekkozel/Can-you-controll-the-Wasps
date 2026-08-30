@@ -3,4 +3,5 @@
 [ext_resource type="AudioStream" uid="uid://dprncfusmo152" path="res://Assets/Sounds/Music/Background_music.mp3" id="1_peet1"]
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" unique_id=211150110]
+bus = &"Music"
 stream = ExtResource("1_peet1")
