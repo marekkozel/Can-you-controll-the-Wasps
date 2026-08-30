@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="EnemyVariant" load_steps=4 format=3 uid="uid://cq7wn3mkbird1"]
+[gd_resource type="Resource" script_class="EnemyVariant" format=3 uid="uid://cq7wn3mkbird1"]
 
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
 [ext_resource type="Texture2D" uid="uid://mrbwst5mk3ky" path="res://Assets/Entities/Enemies/Bird_big_enem_spritesheet.png" id="2_sheet"]
-[ext_resource type="Resource" path="res://Resources/Animations/enemy_bird.tres" id="3_anim"]
+[ext_resource type="Resource" uid="uid://dhsa6csrh4klk" path="res://Resources/Animations/enemy_bird.tres" id="3_anim"]
 
 [resource]
 script = ExtResource("1_enemy_variant")
@@ -12,15 +12,14 @@ max_health = 600
 loot_count = 12
 texture = ExtResource("2_sheet")
 animation = ExtResource("3_anim")
+sprite_scale = 2.0
 collision_radius = 58.0
 move_speed = 65.0
 chase_speed = 105.0
 body_mass = 20.0
 show_health_bar = true
-bite_damage = 1
 bite_cooldown = 2.0
-spawn_cost = 22
-one_per_raid = true
-sprite_scale = 2.0
 burst_bites = 3
 burst_interval = 0.25
+spawn_cost = 22
+one_per_raid = true

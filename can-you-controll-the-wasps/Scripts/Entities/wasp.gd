@@ -663,9 +663,14 @@ func _on_died(_from: Vector2) -> void:
 		else:
 			_animator.set_process(false)
 	
-	# Remove from collision layer
+# The corpse exists on NO layer, but scans Layer 1 (Walls)
 	set_deferred("collision_layer", 0)
-	
+	set_deferred("collision_mask", 8)
+
+	if _nav != null:
+		_nav.avoidance_enabled = false
+		
+
 	gravity_scale = 1.0
 	
 	# --- DISABLE JUICE ---
@@ -687,7 +692,8 @@ func _on_died(_from: Vector2) -> void:
 
 	# Freeze physics completely before the fade
 	set_deferred("freeze", true)
-	set_deferred("collision_mask", 0)
+
+
 
 	# Pop and fade out
 	var pop_scale: float = 1.7

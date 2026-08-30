@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://plfkdm57opi8" path="res://Scripts/Mechanics/enemy_variant.gd" id="1_enemy_variant"]
 [ext_resource type="Texture2D" uid="uid://bmeayokngx7la" path="res://Assets/Entities/Enemies/Spider_medium_enemy_spritesheet.png" id="2_sheet"]
-[ext_resource type="Resource" path="res://Resources/Animations/enemy_spider.tres" id="3_anim"]
+[ext_resource type="Resource" uid="uid://cfy5878pqe8vj" path="res://Resources/Animations/enemy_spider.tres" id="3_anim"]
 
 [resource]
 script = ExtResource("1_enemy_variant")
