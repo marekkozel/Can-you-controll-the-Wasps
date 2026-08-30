@@ -10,6 +10,9 @@ signal released(by: Node)
 
 var _holder: Node = null
 
+# of() 的缓存键，写在物件身上 / where of() parks its lookup, on the item itself
+const CACHE_KEY: StringName = &"claim_component"
+
 
 # 从任意节点身上找这个组件，找不到返回 null / null when the node has no claim slot
 # 参数不加类型：传进来的可能是已经被 free 掉的节点，类型化参数会在进函数前就报错
@@ -17,8 +20,21 @@ var _holder: Node = null
 static func of(node) -> ClaimComponent:
 	if not is_instance_valid(node):
 		return null
+	# 每帧都有几十只蜂 x 几十件散件走这里，现查现找的 get_children() 是实打实的开销。
+	# 组件在物件活着的这段时间里不会换人，找到就记在物件身上
+	# Hot path - an item's components never change while it lives, so cache the hit on it.
+	# **只缓存找到的**：没有的那种不写缓存，后加的组件仍然找得到
+	# Only hits are cached, so a component added later is still discoverable.
+	# **读出来不加类型也不 as**：缓存里那个可能已经被 free 了，转换会当场抛
+	# "Trying to cast a freed object" 并中断整个函数，后面的有效性检查根本轮不到
+	# Untyped and uncast on purpose - casting a freed object throws before the check runs.
+	if node.has_meta(CACHE_KEY):
+		var hit = node.get_meta(CACHE_KEY)
+		if is_instance_valid(hit):
+			return hit
 	for child in node.get_children():
 		if child is ClaimComponent:
+			node.set_meta(CACHE_KEY, child)
 			return child
 	return null
 
