@@ -30,6 +30,14 @@ enum Phase {
 ## Same rule as the rebels: one bite takes the whole cell, so the gap covers three.
 @export_range(0.2, 20.0, 0.1) var bite_cooldown: float = 5.0
 
+@export_group("Stealing")
+## 一爪子端掉几格。由 EnemyVariant 写入 / written by EnemyVariant
+@export_range(1, 12, 1) var steal_count: int = 1
+## 端到多远。照中型体型（半径 22）写的，别的体型在 Enemy._apply_build 里按差值补——
+## 不补的话鸟盖住六格、却只够得着中间那一格
+## Grown per build, or a bird covering six cells can still only reach the middle one.
+@export_range(20.0, 400.0, 5.0) var steal_radius: float = 96.0
+
 const HIVE_GROUP: StringName = &"hive"
 
 var phase: Phase = Phase.DORMANT
@@ -122,11 +130,16 @@ func _do_raid(delta: float) -> void:
 	# 有幼虫或者卵就是奔着这个来的，得手立刻撤——它不是叛军，不会赖在巢里慢慢碾
 	# Brood is what it came for: take one and leave. Unlike a rebel it does not linger.
 	if cell.content == HexCell.Content.LARVA or cell.content == HexCell.Content.EGG:
+		var took: int = 0
 		if cell.destroy_occupant():
+			took += 1
 			raided.emit(cell, true)
-			retreat()
-			return
+		# 一爪子连周围一起端掉。**得手就撤**这条不变，只是"得手"现在可能是好几格
+		# Still take-and-leave; a grab is just wider now.
+		took += _sweep(cell)
 		_cell = null
+		if took > 0:
+			retreat()
 		return
 
 	if cell.demolish():
@@ -158,6 +171,38 @@ func _despawn() -> void:
 	stop()
 	if is_instance_valid(_body):
 		_body.queue_free()
+
+
+# 中心那格之外再端几格，**从近到远**。抢远处的格子看起来像瞬移，
+# 而这一下的说服力全靠"它身子底下那一片全空了"
+# Nearest first: the grab has to read as the area the body actually covers.
+func _sweep(center: HexCell) -> int:
+	if steal_count <= 1:
+		return 0
+	var hive: Hive = get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
+	if hive == null:
+		return 0
+
+	var nearby: Array = []
+	for node in hive.all_cells():
+		var cell: HexCell = node as HexCell
+		if cell == null or cell == center:
+			continue
+		if cell.content != HexCell.Content.LARVA and cell.content != HexCell.Content.EGG:
+			continue
+		if center.global_position.distance_to(cell.global_position) <= steal_radius:
+			nearby.append(cell)
+	nearby.sort_custom(func(a, b):
+		return center.global_position.distance_to(a.global_position) 			< center.global_position.distance_to(b.global_position))
+
+	var took: int = 0
+	for cell in nearby:
+		if took >= steal_count - 1:
+			break
+		if cell.destroy_occupant():
+			took += 1
+			raided.emit(cell, true)
+	return took
 
 
 # 幼虫最痛，卵次之，实在没得抢才去啃墙 / brood first, masonry last

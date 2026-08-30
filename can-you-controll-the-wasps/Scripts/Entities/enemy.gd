@@ -22,7 +22,7 @@ signal killed(enemy: Enemy)
 ## 两次点击之间的冷却。**全局共享一份**，不是每只敌人一份——按敌人算的话，
 ## 一波五只轮着点等于完全没有冷却
 ## Shared across every enemy: a per-enemy timer is no timer at all with five on screen.
-@export_range(0.0, 5.0, 0.05) var click_cooldown: float = 0.8
+@export_range(0.0, 5.0, 0.05) var click_cooldown: float = 0.4
 ## 击退力度，只对没被打死的生效。跟黄蜂一样 lock_rotation，所以只推不转——
 ## 打一下就转个角度的话贴图朝向会乱掉，也看不出它在往哪走
 ## Knockback on non-lethal hits. Rotation is locked like the wasp's: shoved, never spun.
@@ -51,6 +51,22 @@ signal killed(enemy: Enemy)
 ## 同一帧多个敌人被打时只卡一次 / guard so overlapping hits don't stack
 static var _hit_stop_busy: bool = false
 
+# 光标底下有没有敌人。**巢室要查这个**：敌人趴在格子上时，一次点击要么被出手冷却
+# 挡掉、要么被敌人吃掉，剩下那一半会漏到格子上——玩家想打它，结果开始产卵
+# The comb asks this: a click meant for a raider otherwise falls through to the cell
+# underneath and starts laying an egg instead.
+#
+# 存一个列表而不是计数：敌人可能在被悬停时死掉，那时 mouse_exited 不一定会来，
+# 计数就永远回不去了。列表可以在查询时把失效的剔掉
+# A counter leaks when a hovered enemy dies before mouse_exited fires.
+static var _hovered: Array = []
+
+
+## 光标底下现在有没有活着的敌人 / is the cursor over a live raider
+static func hovered_any() -> bool:
+	_hovered = _hovered.filter(func(e): return is_instance_valid(e))
+	return not _hovered.is_empty()
+
 var _is_dead: bool = false
 
 # 场景里那几个 reach 是照这个半径调的，别的体型按差值往上补
@@ -66,8 +82,8 @@ func _ready() -> void:
 
 	input_pickable = true
 	input_event.connect(_on_input_event)
-	mouse_entered.connect(func(): if not _is_dead: _visual.modulate = hover_tint)
-	mouse_exited.connect(func(): if not _is_dead: _visual.modulate = Color.WHITE)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 
 	_health.damaged.connect(_on_damaged)
 	_health.died.connect(_on_died)
@@ -217,12 +233,18 @@ func _apply_build() -> void:
 	# 场景里的 reach 是照中型（半径 22）调的：蜘蛛半径 48，加上黄蜂 grab 的 23，
 	# 不放大的话它会贴着蜂原地转圈，一口也咬不着
 	# Scene reach is tuned for the medium build; the spider would never land a bite.
+	if _raid != null:
+		_raid.steal_count = variant.steal_count
+
 	var grew: float = maxf(0.0, variant.collision_radius - BUILD_REFERENCE_RADIUS)
 	if grew > 0.0:
 		if _hunt != null:
 			_hunt.reach += grew
 		if _raid != null:
 			_raid.reach += grew
+			# 端一片的范围也跟着体型走：盖住六格却只够得着中间一格说不通
+			# The grab has to cover what the body covers.
+			_raid.steal_radius += grew
 
 	var bar: Node2D = get_node_or_null(^"HealthBarComponent") as Node2D
 	if bar != null:
@@ -271,6 +293,20 @@ static func strike_ratio() -> float:
 	if left <= 0:
 		return 0.0
 	return clampf(float(left) / float(maxi(_strike_span_msec, 1)), 0.0, 1.0)
+
+
+func _on_mouse_entered() -> void:
+	if _is_dead:
+		return
+	_visual.modulate = hover_tint
+	if not _hovered.has(self):
+		_hovered.append(self)
+
+
+func _on_mouse_exited() -> void:
+	_hovered.erase(self)
+	if not _is_dead:
+		_visual.modulate = Color.WHITE
 
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -328,6 +364,7 @@ func _on_damaged(_amount: int, remaining: int, from: Vector2) -> void:
 func _on_died(_from: Vector2) -> void:
 	_is_dead = true
 	input_pickable = false
+	_hovered.erase(self)
 
 	# 退出 Enemy 组。尸体要在地上躺到死亡动画播完（鸟能躺一秒多），留在组里的话
 	# 所有扫这个组的地方都还把它当活敌人：**蜂群会围着尸体接着打**，

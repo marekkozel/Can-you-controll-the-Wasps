@@ -97,6 +97,11 @@ enum Behavior {
 ## The gap inside one burst; the real cooldown starts after the last shot.
 @export_range(0.05, 1.0, 0.05) var burst_interval: float = 0.22
 
+## 一爪子端掉几格。1 = 老样子，抢一只崽就撤。
+## 大块头按体型给：它压下来的时候盖住的就是那么大一片，只抢走一格读起来太轻
+## Sized by footprint: a thing that covers six cells taking one reads as a nibble.
+@export_range(1, 12, 1) var steal_count: int = 1
+
 @export_group("Raids")
 ## 编队点数。一波的预算由玩家当前实力算出来，再用这个填满
 ## Formation cost - a wave's budget is derived from colony strength, then spent on these.

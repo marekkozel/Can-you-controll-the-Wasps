@@ -547,13 +547,20 @@ func _on_egg_hatched(_egg: Egg) -> void:
 	larva_hatched.emit(self)
 
 
+# 三个进度回调都先认一遍当前内容。信号是上一任占用者发的、而它已经被换掉了，
+# 这时候画出来的读数属于一个不存在的东西——**画上去就再也没人清了**
+# A signal from a replaced occupant paints a readout nothing will ever clear.
 func _on_brood_progress(t: float) -> void:
+	if content != Content.EGG:
+		return
 	_brood.show_progress(t, MATURE_COLOR)
 
 
 # 饿着的时候才喊，饱腹那段用暗色，是预告不是警报
 # Only the rescue window shouts; the satiated stretch stays dim on purpose.
 func _on_larva_timer(t: float, critical: bool) -> void:
+	if content != Content.LARVA:
+		return
 	_brood.show_progress(t, HUNGRY_COLOR if critical else CALM_COLOR, true)
 
 
@@ -572,6 +579,8 @@ func _on_larva_satisfied(_larva: Larva) -> void:
 
 
 func _on_seal_progress(t: float) -> void:
+	if content != Content.SEALED:
+		return
 	_brood.show_progress(t, MATURE_COLOR)
 
 
@@ -625,6 +634,13 @@ func _set_occupant(node: Node2D, new_content: Content, keep_brood: bool = false)
 	if not keep_brood:
 		_clear_rebel()
 	if _occupant != null:
+		# **先停掉再释放。** queue_free() 是延迟的，节点会活到这一帧结束——期间它的
+		# _process 和计时器还能再发一次进度信号，把下面刚 clear 掉的读数条又画回来，
+		# 之后再没人来清。冬天拆完巢，空格子上飘着一排条就是这么来的
+		# queue_free is deferred: a dying occupant can still tick once and repaint the
+		# readout we clear below, leaving bars floating over cells that hold nothing.
+		_occupant.set_process(false)
+		_occupant.set_physics_process(false)
 		_occupant.queue_free()
 	_occupant = node
 	# 封盖计时必须跟着内容一起停，除非这次换的就是封盖。
@@ -665,6 +681,11 @@ func _update_hold() -> void:
 func _can_hold() -> bool:
 	if is_royal or DraggableComponent.is_dragging():
 		return false  # 手上拿着东西就不能按住 / a full hand can't hold a cell
+	# 光标指着敌人时这一格不接受按住。敌人趴在巢上时点它，出手在冷却里的那一半
+	# 点击会漏到格子上——玩家想打它，结果开始清理或者产卵
+	# A click meant for a raider standing on the comb otherwise starts a hold instead.
+	if Enemy.hovered_any():
+		return false
 	return is_rotten() or can_lay_egg()
 
 

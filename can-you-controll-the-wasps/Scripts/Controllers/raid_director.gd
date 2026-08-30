@@ -71,7 +71,7 @@ enum Wave { SWARM, MIXED, ELITE }
 @export_range(1, 6, 1) var swarm_cost_cap: int = 2
 ## 精英波的门槛。预算不够就掷不出来——一只没有护卫的大家伙只是个血包
 ## Below this an elite is a lone punching bag, not a wave.
-@export_range(4.0, 40.0, 1.0) var elite_min_budget: float = 8.0
+@export_range(4.0, 40.0, 1.0) var elite_min_budget: float = 10.0
 ## 三种原型的相对权重，顺序同 Wave / relative odds, in Wave order
 @export var wave_odds: Vector3 = Vector3(0.3, 0.5, 0.2)
 ## 蜂多过这个数，每波必须至少有一个会打人的。纯小偷波整局都考不到防守——
@@ -117,8 +117,17 @@ enum Wave { SWARM, MIXED, ELITE }
 @export_range(0.0, 0.5, 0.01) var pressure_step: float = 0.05
 @export_range(0.0, 0.5, 0.01) var generation_pressure: float = 0.04
 @export_range(1.0, 40.0, 0.5) var min_budget: float = 2.0
-@export_range(2.0, 80.0, 1.0) var max_budget: float = 26.0
+@export_range(2.0, 80.0, 1.0) var max_budget: float = 34.0
+## 一波最多几只。**这个数同时是"每个位置该花多少钱"的分母**（预算 / 剩余位置），
+## 所以调大它会让每一种波都偏向廉价单位，重的那几个反而轮不上——真要更多敌人
+## 就动下面那个只作用于蜂群波的上限
+## It doubles as the denominator for per-slot spending, so raising it quietly biases
+## every wave cheap. Use swarm_max_count instead.
 @export_range(1, 16, 1) var max_count: int = 6
+## 蜂群波的上限单开一个。蜂群波只买得起最便宜的两种，6 只的话预算有一半花不掉，
+## 一个叫 "swarm" 的波次出来六只虫
+## The cheap-only pool cannot spend a real budget in six slots; a "swarm" of six is not one.
+@export_range(1, 30, 1) var swarm_max_count: int = 14
 ## 进场位置的散布，别让一波敌人叠在同一个点上 / keeps a wave from stacking on one pixel
 @export_range(0.0, 200.0, 5.0) var entry_scatter: float = 40.0
 
@@ -478,11 +487,14 @@ func _plan_formation() -> Array[EnemyVariant]:
 			for breed in _without_elites(pool):
 				if breed.spawn_cost <= swarm_cost_cap:
 					cheap.append(breed)
-			budget = _fill(out, cheap if not cheap.is_empty() else _without_elites(pool), budget)
+			budget = _fill(out, cheap if not cheap.is_empty() else _without_elites(pool),
+				budget, swarm_max_count)
 		_:
 			budget = _fill(out, _without_elites(pool), budget)
 
-	_guarantee_hunter(out, pool, _budget_of(out) + budget)
+	# 上限跟着这一波的形状走：蜂群波已经填了十几只，拿 max_count 去卡会把它砍回六只
+	# The cap must match the shape, or a swarm gets trimmed back to six on the way out.
+	_guarantee_hunter(out, pool, _budget_of(out) + budget, maxi(out.size(), max_count))
 	if out.is_empty():
 		out.append(_cheapest(pool))  # 保底一只，空袭等于没袭 / a raid of nobody is not a raid
 	return out
@@ -536,12 +548,13 @@ func _cheapest(pool: Array[EnemyVariant]) -> EnemyVariant:
 
 
 # 按权重把预算花完 / spend what is left, weighted
-func _fill(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float) -> float:
-	while out.size() < max_count:
+func _fill(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float, cap: int = 0) -> float:
+	var slots: int = cap if cap > 0 else max_count
+	while out.size() < slots:
 		# 每个空位分到多少预算。不给这个偏向的话，23 点预算也只是买六个杂兵——
 		# 实测 300 波平均只花掉 16.5，重的那几个根本轮不上
 		# Without this a 23-point budget just buys six cheap bodies: measured 16.5 spent.
-		var per_slot: float = budget / float(maxi(max_count - out.size(), 1))
+		var per_slot: float = budget / float(maxi(slots - out.size(), 1))
 		var pick: EnemyVariant = _weighted_pick(pool, budget, per_slot)
 		if pick == null:
 			break
@@ -597,7 +610,8 @@ func _brood_count() -> int:
 # 3 点预算的波有 153/400 花到了 4 点。所以从最便宜的开始撤，撤到装得下为止
 # A straight swap overruns the budget because the hunter costs more: 153/400 early waves
 # came out over. Shed the cheapest slots until it fits.
-func _guarantee_hunter(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float) -> void:
+func _guarantee_hunter(out: Array[EnemyVariant], pool: Array[EnemyVariant], budget: float, cap: int = 0) -> void:
+	var slots: int = cap if cap > 0 else max_count
 	if get_tree().get_nodes_in_group(WASP_GROUP).size() < hunter_floor_wasps:
 		return
 	for breed in out:
@@ -615,7 +629,7 @@ func _guarantee_hunter(out: Array[EnemyVariant], pool: Array[EnemyVariant], budg
 		return
 
 	var spent: float = _budget_of(out)
-	while not out.is_empty() and (spent + float(hunter.spawn_cost) > budget or out.size() >= max_count):
+	while not out.is_empty() and (spent + float(hunter.spawn_cost) > budget or out.size() >= slots):
 		var worst: int = 0
 		for i in out.size():
 			if out[i].spawn_cost < out[worst].spawn_cost:
