@@ -31,13 +31,21 @@ const LINES: Dictionary = {
 	},
 	# 教学句：新皇是**拖进去**的，不是自动来的。第一次玩看不懂这条就整局都在等
 	# The rite is a verb, not a notification: nobody waits out a winter they can act on.
+	# 冬天的四条是整局最重的一段说明文：巢刚被拆、蜂群马上要死绝、而玩家要挑一只。
+	# 这三件事没讲明白，冬天在玩家眼里就只是"卡了一下然后蜂全没了"
+	# The heaviest copy in the game: the comb just came apart, the swarm is about to die,
+	# and one choice decides which of them doesn't. Unexplained, winter reads as a glitch.
+	&"assemble": {
+		"text": "Winter. The comb is coming apart, and the swarm is drawing in around the empty throne to wait for your choice.",
+		"hold": true, "priority": 105, "tone": Herald.Tone.RITE,
+	},
 	&"throne": {
-		"text": "Winter. Drag a worker into the glowing centre cell - she becomes your queen.",
-		"priority": 110, "tone": Herald.Tone.RITE,
+		"text": "Choose your heir: drag one worker into the glowing centre cell. She alone lives to see spring.",
+		"hold": true, "priority": 110, "tone": Herald.Tone.RITE,
 	},
 	&"throne_late": {
-		"text": "Still No successor. Carry one into the center cell now, or she picks herself.",
-		"priority": 120, "tone": Herald.Tone.RITE,
+		"text": "Still no heir. Carry one into the centre cell now, or the swarm will crown one of its own choosing.",
+		"hold": true, "priority": 120, "tone": Herald.Tone.RITE,
 	},
 	# 你摔对人了。**这是全局唯一一条确认性的播报**——她不变色、不倒下，
 	# 没有这句话玩家永远不知道自己刚才做对了没有
@@ -48,8 +56,8 @@ const LINES: Dictionary = {
 		"priority": 95, "tone": Herald.Tone.RITE,
 	},
 	&"crowned": {
-		"text": "She is crowned.",
-		"priority": 130, "tone": Herald.Tone.RITE,
+		"text": "She is crowned. Her bloodline is the colony's now, and hers is the only one that opens the spring.",
+		"hold": true, "priority": 130, "tone": Herald.Tone.RITE,
 	},
 	# 你第一次把一只蜂拿在手上时说一次。挂在**玩家的动作**上，不是挂在她身上——
 	# 挂在伪王后醒来上的话，这句话本身就成了"她在场"的确认
@@ -206,7 +214,8 @@ func _say(key: StringName) -> void:
 	if not pool.is_empty():
 		text = String(pool[randi() % pool.size()])
 
-	_herald.push(key, text, int(line["priority"]), int(line["tone"]), line.get("repeat", ""))
+	_herald.push(key, text, int(line["priority"]), int(line["tone"]),
+		line.get("repeat", ""), bool(line.get("hold", false)))
 
 
 # 传闻：先等一段随机时间，再等横幅安静下来。
@@ -243,12 +252,25 @@ func _on_raid_ended(cleared: bool) -> void:
 		_say(&"raid_lost")
 
 
+# 仪式那几拍的文案是**状态**不是事件：换拍就作废，不能留在队列里等着轮到自己
+# The beat lines describe a present tense that ends with the beat.
+const RITE_KEYS: Array[StringName] = [&"assemble", &"throne", &"throne_late", &"crowned"]
+
+
 func _on_rite_changed(rite: int) -> void:
+	if _herald != null:
+		for key in RITE_KEYS:
+			_herald.drop(key)
 	match rite:
+		SeasonDirector.Rite.GATHER:
+			_say(&"assemble")
 		SeasonDirector.Rite.THRONE:
 			_say(&"throne")
 			_watch_throne()
-		SeasonDirector.Rite.GATHER:
+		# **"她加冕了"要挂在 COUNTDOWN 上，不能再挂 GATHER**——集结现在跑在挑选
+		# 之前，挂在那儿等于蜂群刚围好就宣布有了新皇
+		# Crowning is announced on the countdown now: the gathering happens first.
+		SeasonDirector.Rite.COUNTDOWN:
 			_say(&"crowned")
 
 

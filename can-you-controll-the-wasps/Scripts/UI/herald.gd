@@ -32,7 +32,11 @@ const QUEUE_LIMIT: int = 3
 @export_range(0.5, 5.0, 0.1) var base_seconds: float = 2.0
 ## 长句多留一会儿，读得完 / longer lines get longer on screen
 @export_range(0.0, 0.2, 0.005) var seconds_per_char: float = 0.045
-@export var seconds_clamp: Vector2 = Vector2(2.5, 5.5)
+## 上限决定了一条能写多长：公式是 2.0 + 字数 x 0.045，5.5 秒等于把文案锁死在 78 字以内。
+## 冬天那几条要把"巢被拆了、只有一只活到春天"讲清楚，78 字装不下
+## The cap is a length budget: at 5.5s nothing longer than 78 characters can be read in
+## full, and winter needs more room than that to explain what it just took.
+@export var seconds_clamp: Vector2 = Vector2(2.5, 9.0)
 @export_range(0.05, 1.0, 0.01) var fade_in: float = 0.15
 @export_range(0.05, 1.0, 0.01) var fade_out: float = 0.25
 ## 换句时不整条闪掉，只压一下透明度——闪没再出来太吵
@@ -109,7 +113,12 @@ func is_busy() -> bool:
 
 # 唯一的入口。repeat 里的 {n} 会被重复次数替换，留空则重复只是续命不改字
 # repeat's {n} becomes the merge count; leave it empty and a repeat only refreshes the ttl.
-func push(key: StringName, text: String, priority: int, tone: int, repeat: String = "") -> void:
+## hold = 常驻。**只给冬天的仪式用**：那几条不是"发生了什么"，是"你现在该做什么"，
+## 说完就走的话玩家转头就不知道该干嘛了。常驻行不会自己过期，由 drop() 收走；
+## 期间有别的话要说照样让位，说完自己回来
+## Only the winter rite uses this: those lines are instructions, not events, and an
+## instruction that scrolls away leaves the player with nothing to act on.
+func push(key: StringName, text: String, priority: int, tone: int, repeat: String = "", hold: bool = false) -> void:
 	if text.is_empty():
 		return
 
@@ -119,7 +128,8 @@ func push(key: StringName, text: String, priority: int, tone: int, repeat: Strin
 		if not repeat.is_empty():
 			_current[&"text"] = repeat.replace("{n}", str(_current[&"count"]))
 			_apply(_current, false)
-		_time_left = _duration_for(String(_current[&"text"]))
+		if not bool(_current.get(&"hold", false)):
+			_time_left = _duration_for(String(_current[&"text"]))
 		return
 	for entry in _queue:
 		if entry[&"key"] == key:
@@ -135,6 +145,7 @@ func push(key: StringName, text: String, priority: int, tone: int, repeat: Strin
 		&"priority": priority,
 		&"tone": tone,
 		&"count": 1,
+		&"hold": hold,
 	}
 
 	# 更要紧的事当场插进来，不等前一句说完 / the urgent one cuts in
@@ -151,6 +162,22 @@ func push(key: StringName, text: String, priority: int, tone: int, repeat: Strin
 	_queue.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return int(a[&"priority"]) > int(b[&"priority"]))
 	_trim()
+
+
+## 撤掉一条已经过期的话，不管它是正在说还是还在排队。
+## **状态类的播报需要这个**：仪式那几拍的文案描述的是"现在"，插队被压回队列之后，
+## 它会在状态已经翻过去之后才被说出来——玩家读到的是一个不存在的现在
+## Beat copy is present-tense: pushed back by a cut-in, it resurfaces describing a
+## state that has already ended. Events want the queue; state does not.
+func drop(key: StringName) -> void:
+	for i in range(_queue.size() - 1, -1, -1):
+		if _queue[i][&"key"] == key:
+			_queue.remove_at(i)
+	if _current.get(&"key", &"") != key:
+		return
+	_current = {}
+	_time_left = 0.0
+	_leave()
 
 
 func clear() -> void:
@@ -185,6 +212,13 @@ func _process(delta: float) -> void:
 		return
 	_time_left -= delta
 	if _time_left > 0.0:
+		# 常驻那条是底噪，不是霸位：有别的话排着就先让位，那条说完自己回来。
+		# 不让位的话 _time_left 永远为正，队列里的东西一句都出不来
+		# It yields instead of hogging; an infinite timer would starve the queue.
+		if _queue.is_empty() or not bool(_current.get(&"hold", false)):
+			return
+		_queue.push_back(_current)
+		_show(_queue.pop_front(), false)
 		return
 	if _queue.is_empty():
 		_current = {}
@@ -199,7 +233,7 @@ func _duration_for(text: String) -> float:
 
 func _show(item: Dictionary, from_hidden: bool) -> void:
 	_current = item
-	_time_left = _duration_for(String(item[&"text"]))
+	_time_left = INF if bool(item.get(&"hold", false)) else _duration_for(String(item[&"text"]))
 	_apply(item, from_hidden)
 
 
@@ -207,6 +241,17 @@ func _apply(item: Dictionary, from_hidden: bool) -> void:
 	var tone: Color = _tone_color(int(item[&"tone"]))
 	var heat: float = _tone_heat(int(item[&"tone"]))
 	_label.text = String(item[&"text"])
+	# **量之前必须先把上一句的打字机停掉并露出整句**。Label 的 minimum size 是按
+	# *当前可见的字* 算的，而上一条 tween 还在往同一个 Label 上写 visible_ratio——
+	# 于是 _relayout() 量到的宽度取决于"这一帧正好打到第几个字"，长句时有时无地不折行。
+	# 加冕那句必现：它是唯一一条在卡顿（time_scale 0.15）里推出来的，打字机被拖慢
+	# 六倍，量到的是五个字的宽度，整句当场被切掉
+	# Godot sizes a Label to its *visible* text, and the previous line's tween is still
+	# driving visible_ratio here. Measuring mid-type measures however far it happened to
+	# get - and under a hit stop that is almost nothing.
+	if _type_tween != null and _type_tween.is_valid():
+		_type_tween.kill()
+	_label.visible_ratio = 1.0
 	# 等布局落定再动。缩放绕 pivot 转，pivot 要拿最终宽度算——不等的话入场第一帧
 	# 是按上一句的宽度缩的，横幅会横着跳一下
 	# The pop pivots on the final width; entering a frame early makes the pill jump.

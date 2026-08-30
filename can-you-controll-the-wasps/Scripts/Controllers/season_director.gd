@@ -31,11 +31,16 @@ signal dominant_changed(variant: WaspVariant)
 enum Season { SPRING, SUMMER, AUTUMN, WINTER }
 
 # 冬天内部的四拍 / the four beats inside winter
+# **顺序是 GATHER -> THRONE -> COUNTDOWN**：蜂群先围到王座边，你在围成一圈的
+# 这群蜂里挑人。散在全图的蜂没法互相比较，站成一圈才有「这只跟别的不太一样」——
+# 挑选这一步放在舞台摆好之后，推理才有得做
+# Gathering comes first on purpose: the ring is the stage, and the choice only means
+# something once every candidate is standing on it side by side.
 enum Rite {
 	NONE,       ## 不是冬天 / not winter
-	THRONE,     ## 王座开着，等一个继承人 / waiting for an heir
-	GATHER,     ## 新皇已立，蜂群正在围过来 / the swarm is closing in
-	COUNTDOWN,  ## 到齐了，冬天在倒数 / winter is counting itself out
+	THRONE,     ## 蜂群已就位，王座开着等你挑一只 / the ring is set, now choose
+	GATHER,     ## 蜂群正在围到王座边 / the swarm is closing in on the empty throne
+	COUNTDOWN,  ## 加冕完成，冬天在倒数 / crowned, winter is counting itself out
 }
 
 const GROUP: StringName = &"season_director"
@@ -50,13 +55,16 @@ const CARRIABLE_GROUP: StringName = &"carriable"
 const GOOD_SHEET: Texture2D = preload("res://Assets/Entities/good_wasp.png")
 const EVIL_SHEET: Texture2D = preload("res://Assets/Entities/evil_wasp.png")
 const SEASON_COUNT: int = 4
+## 黄金角 137.5 度。每圈转这么多，相邻圈的位置永远错得最开
+## The golden angle: turning each ring by it keeps neighbouring rings maximally offset.
+const GOLDEN_ANGLE: float = PI * (3.0 - sqrt(5.0))
 
 # 冬天在季节条上那一格里，三拍各自占多少。冬天的长度是仪式跑出来的，
 # 预估不了，所以进度按"走到第几拍"算——条永远在走，走到头正好进春天
 # Winter has no predictable length, so its slice is measured in beats, not seconds.
 const RITE_SPAN: Dictionary = {
-	Rite.THRONE: Vector2(0.0, 0.45),
-	Rite.GATHER: Vector2(0.45, 0.8),
+	Rite.GATHER: Vector2(0.0, 0.35),
+	Rite.THRONE: Vector2(0.35, 0.8),
 	Rite.COUNTDOWN: Vector2(0.8, 1.0),
 }
 
@@ -148,21 +156,50 @@ const RITE_SPAN: Dictionary = {
 
 # 这四个数跟两件事绑死：**王座格子的尺寸**和**黄蜂的碰撞直径**。
 # 任一个改了都要回来重算，否则要么圈压在巢室上，要么位置物理上挤不下蜂。
-# 当前：王座格 66x60（半宽 33），黄蜂碰撞直径 22
+# 当前：王座格 66x60（半宽 33），**黄蜂画出来是 64x64，整帧都是不透明像素**。
+# 间距要按画出来的大小配，不是按碰撞直径（22）——按 22 配出来的圈，蜂会叠掉半个身子
 # Tied to the throne cell's size and the wasp's collision diameter - retune on either.
+#
+# **往外扩是有天花板的**：王座在巢中心 (641, 508)，可走区下沿 y≈665，导航面还按
+# agent_radius 内缩 24，所以向下只剩约 133 的余量。排到 130 开外的位子落在导航面之外，
+# 那几只永远走不到，到场率就只能等 gather_timeout 兜底
+# There is a ceiling: only ~133px of headroom below the throne once the navmesh inset is
+# counted. Slots past ~130 are unreachable and the gathering can only time out.
 @export_group("Attendance ring")
-## 第一圈半径。要落在王座格外沿：33（格半宽）+ 11（蜂半径）+ 余量
-## Just outside the throne cell, or the front row stands on top of the new queen.
-@export_range(20.0, 300.0, 1.0) var first_ring_radius: float = 55.0
-@export_range(15.0, 120.0, 1.0) var ring_spacing: float = 30.0
+## 第一圈的**横**半径。竖半径 = 它 x ring_squash，而竖向才是紧的那一头：
+## 王座格半高 30 + 蜂半身 32 = 62 是下限，112 x 0.60 = 67，刚好让开
+## The vertical is the tight one: 30 (cell) + 32 (wasp) = 62 minimum, and 112 x 0.60 = 67.
+@export_range(20.0, 300.0, 1.0) var first_ring_radius: float = 112.0
+## 圈与圈的间距。跟 attendant_spacing 取一样，径向和切向才是同一种疏密
+## Matched to attendant_spacing so the packing reads the same in both directions.
+@export_range(15.0, 120.0, 1.0) var ring_spacing: float = 56.0
 ## 同一圈上两只蜂的间距，决定一圈站得下几只。**必须大于黄蜂直径（22）**，
 ## 否则排出来的位置物理上挤不下，蜂会互相顶开，到场率永远上不去
 ## Must exceed the wasp diameter or the slots are physically impossible to occupy.
-@export_range(15.0, 120.0, 1.0) var attendant_spacing: float = 28.0
+## **按贴图 64 配，不是按碰撞直径 22 配**。给到 34 时两只蜂中心只隔 34、身子 64 宽，
+## 重叠 30 像素——那就不是围了一圈，是堆成一坨。56 让相邻两只只轻微贴边
+## Sized against the 64px sprite, not the 22px collider: at 34 they overlap by half a
+## body and the ring reads as a pile.
+@export_range(15.0, 120.0, 1.0) var attendant_spacing: float = 56.0
+## 最外圈的半径上限。**这条不是美术偏好，是硬约束**：王座在巢中心 (641, 508)，
+## 可走区下沿 y≈665，导航面还按 agent_radius 24 内缩，排到这个半径以外的位子
+## 蜂根本走不到，集结就只能每次都等 gather_timeout 兜底
+## Not a taste knob: slots past this are outside the baked navmesh and unreachable,
+## which can only ever time the gathering out.
+## 最外圈的**竖向**半径上限。实测从王座往各方向探导航面：正上 360、左右 360~398、
+## 斜角 222，而正下只有 158——空间根本不是圆的，卡在最窄那一头等于把左右全浪费掉
+## Probed from the throne: 360 up, ~380 sideways, 158 down. The room is not a circle,
+## and a circle sized to its narrowest bearing throws the rest away.
+@export_range(40.0, 400.0, 1.0) var max_ring_radius: float = 148.0
+## 竖向压扁多少。圈是横宽竖扁的椭圆，形状跟巢本身（396x270）和可走区都对得上
+## The ring is an ellipse, matching both the comb (396x270) and the room around it.
+@export_range(0.3, 1.0, 0.01) var ring_squash: float = 0.60
 ## 离自己的位置多近算到位。取间距的六成左右：太松会把邻座算成到位，
 ## 太紧则永远够不到阈值，集结每次都只能等超时
+## **改 attendant_spacing 就要跟着改这个**，两者是绑死的
 ## Roughly 0.6 of the spacing - looser counts a neighbour's slot, tighter never converges.
-@export_range(5.0, 120.0, 1.0) var attend_tolerance: float = 17.0
+## Move it whenever attendant_spacing moves; the pair is load-bearing.
+@export_range(5.0, 120.0, 1.0) var attend_tolerance: float = 32.0
 
 var season: int = Season.SUMMER
 var generation: int = 1
@@ -436,7 +473,7 @@ func crown(wasp: Wasp) -> bool:
 
 	heir_crowned.emit(wasp, was_queen)
 	_summon()
-	_set_rite(Rite.GATHER, gather_timeout)
+	_set_rite(Rite.COUNTDOWN, coronation_countdown)
 	return true
 
 
@@ -478,8 +515,7 @@ func _send_heir() -> void:
 		# 没有王座（没有蜂巢）就没有继位，但仪式还是得往下走完
 		# No throne means no coronation - the rite still has to reach spring.
 		_crowned = true
-		_summon()
-		_set_rite(Rite.GATHER, gather_timeout)
+		_set_rite(Rite.COUNTDOWN, coronation_countdown)
 		return
 
 	var candidates: Array = []
@@ -490,8 +526,7 @@ func _send_heir() -> void:
 	if candidates.is_empty():
 		# 一只能用的蜂都没有，这一代就没有继位 / nobody left to crown
 		_crowned = true
-		_summon()
-		_set_rite(Rite.GATHER, gather_timeout)
+		_set_rite(Rite.COUNTDOWN, coronation_countdown)
 		return
 
 	_heir = _weighted_pick(candidates)
@@ -535,25 +570,96 @@ func _summon() -> void:
 	attending.sort_custom(func(a, b):
 		return a.global_position.distance_to(throne_at) < b.global_position.distance_to(throne_at))
 
+	var layout: Array = _ring_layout(attending.size())
 	for i in attending.size():
-		var slot: Vector2 = _slot_position(i)
+		var slot: Vector2 = layout[i]
 		_slots[attending[i]] = slot
 		attending[i].attend(slot)
 
 
-# 一圈一圈往外排，内圈先满 / concentric rings, inner ones fill first
-func _slot_position(index: int) -> Vector2:
-	var placed: int = 0
-	for ring in 8:
-		var radius: float = first_ring_radius + float(ring) * ring_spacing
-		var capacity: int = maxi(int(floor(TAU * radius / attendant_spacing)), 1)
-		if index < placed + capacity:
-			var i: int = index - placed
-			# 每圈错开一点，免得排成一条直线 / stagger each ring so they don't line up
-			var angle: float = TAU * float(i) / float(capacity) + float(ring) * 0.4
-			return _throne.global_position + Vector2(cos(angle), sin(angle)) * radius
-		placed += capacity
-	return _throne.global_position
+# 一圈一圈往外排，内圈先满 / concentric rings, inner ones fill first.
+#
+# **角度要按这一圈实际坐了几只来分，不能按它能坐几只。** 按容量分的话，没坐满的那一圈
+# 会在圆周上留一道豁口——六只蜂挤在 150 度里，剩下 210 度空着，看着不像围了一圈，
+# 像是一半的蜂没来
+# Divide the circle by who is actually in the ring, never by its capacity: a half-filled
+# ring then bunches into an arc and reads as "half the swarm did not show up".
+func _ring_layout(count: int) -> Array:
+	var out: Array = []
+	if count <= 0 or _throne == null:
+		return out
+
+	# 先把每一圈的半径和人数定下来，再落点。**边排边落的话，最外那一圈会被上限
+	# 夹成一条紧贴前一圈的窄环** / decided up front, or the capped ring gets squeezed
+	# against the one inside it.
+	var radii: Array[float] = []
+	var counts: Array[int] = []
+	var left: int = count
+	var ring: int = 0
+	while left > 0:
+		var rx: float = first_ring_radius + float(ring) * ring_spacing
+		if rx * ring_squash > max_ring_radius:
+			# 再往外就出导航面了。剩下的并进最外那一圈：站得挤一点，好过发一个
+			# 谁都走不到的位子——那种位子只会让集结每次都等超时
+			# Crowded beats unreachable; a slot past the navmesh only times the rite out.
+			counts[counts.size() - 1] += left
+			break
+		var here: int = mini(ring_capacity(rx), left)
+		radii.append(rx)
+		counts.append(here)
+		left -= here
+		ring += 1
+
+	var centre: Vector2 = _throne.global_position
+	for r in radii.size():
+		# 每圈转一个黄金角，相邻两圈互相插空而不是连成辐条——向日葵的籽是同一个道理
+		# Turned by the golden angle so rings interleave instead of forming spokes.
+		out.append_array(_ellipse_points(
+			centre, radii[r], radii[r] * ring_squash, counts[r], float(r) * GOLDEN_ANGLE))
+	return out
+
+
+# 椭圆上按**弧长**均分取点。按角度均分是不行的：同样的角度增量在长轴两端对应的弧长更短，
+# 蜂会在左右两头挤成一堆，中间反而稀
+# Equal angles are not equal spacing on an ellipse - they bunch at the ends of the major
+# axis and thin out along the sides.
+func _ellipse_points(centre: Vector2, rx: float, ry: float, count: int, offset: float) -> Array:
+	var out: Array = []
+	if count <= 0:
+		return out
+
+	const STEPS: int = 256
+	var cum: PackedFloat32Array = PackedFloat32Array()
+	cum.resize(STEPS + 1)
+	var prev: Vector2 = Vector2(rx, 0.0)
+	for i in range(1, STEPS + 1):
+		var t: float = TAU * float(i) / float(STEPS)
+		var p: Vector2 = Vector2(cos(t) * rx, sin(t) * ry)
+		cum[i] = cum[i - 1] + prev.distance_to(p)
+		prev = p
+
+	var total: float = cum[STEPS]
+	var shift: float = fposmod(offset, TAU) / TAU * total
+	for k in count:
+		var want: float = fposmod(total * float(k) / float(count) + shift, total)
+		var lo: int = 0
+		var hi: int = STEPS
+		while lo < hi:
+			var mid: int = (lo + hi) / 2
+			if cum[mid] < want:
+				lo = mid + 1
+			else:
+				hi = mid
+		var t: float = TAU * float(lo) / float(STEPS)
+		out.append(centre + Vector2(cos(t) * rx, sin(t) * ry))
+	return out
+
+
+## 这一圈站得下几只。椭圆周长走 Ramanujan 近似 / ellipse perimeter, Ramanujan's formula
+func ring_capacity(rx: float) -> int:
+	var ry: float = rx * ring_squash
+	var perimeter: float = PI * (3.0 * (rx + ry) - sqrt((3.0 * rx + ry) * (rx + 3.0 * ry)))
+	return maxi(int(floor(perimeter / attendant_spacing)), 1)
 
 
 # 到场率。公开的：仪式卡不卡住全看这个数，调试读数和以后的 UI 都要用
@@ -775,7 +881,11 @@ func _open_winter() -> void:
 	_set_sources(false)
 	_open_throne()
 	_ravage()
-	_set_rite(Rite.THRONE, throne_timeout)
+	# 先把蜂群叫到王座边。王座这时还是空的，也还不收人——
+	# _feed_throne() 只在 THRONE 那一拍跑，所以圈没围好之前王座不会亮
+	# The throne stays dark and closed until the ring is formed.
+	_summon()
+	_set_rite(Rite.GATHER, gather_timeout)
 
 
 func _close_winter() -> void:
@@ -816,8 +926,10 @@ func _tick_rite(_delta: float) -> void:
 			_send_heir()
 
 		Rite.GATHER:
+			# 围好了就把王座打开。**超时也要开**——一只蜂卡在墙角不能让整局停在这里
+			# Opens on timeout too: one wasp stuck in a corner must not hang the rite.
 			if attendance() >= attendance_share or _time_left <= 0.0:
-				_set_rite(Rite.COUNTDOWN, coronation_countdown)
+				_set_rite(Rite.THRONE, throne_timeout)
 
 		Rite.COUNTDOWN:
 			if _time_left <= 0.0:
