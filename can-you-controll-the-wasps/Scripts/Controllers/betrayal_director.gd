@@ -37,6 +37,16 @@ const WASP_GROUP: StringName = &"wasps"
 ## Generations to full cunning: the first is meant to be findable, later ones are not.
 @export_range(1, 10, 1) var cunning_ramp: int = 3
 
+@export_group("Toggles")
+## 关掉群体不安。红色调、全体减速、以及"你越粗暴下一个来得越快"那条加速全部停摆。
+## **伪王后和叛军不受影响**，她们改成按安定时的固定节奏出现（awaken_after 只)
+## Kills the tint, the colony-wide slowdown and the unrest-driven pacing.
+## False queens and rebels keep coming, just at the calm-colony rate.
+@export var unrest_enabled: bool = true
+## 关掉罢工。个人 betrayal 照记（伪王后人选仍然偏向被你虐待过的那几只），
+## 只是不再拿它停工 / grudges are still tallied, they just no longer stop anyone working
+@export var strikes_enabled: bool = true
+
 @export_group("Unrest")
 ## 处决一只忠诚工蜂 / executing a loyal worker
 @export var execute_loyal: float = 0.20
@@ -121,6 +131,10 @@ func has_false_queen() -> bool:
 
 
 func add_unrest(amount: float) -> void:
+	# 唯一入口，所以挡这一处就等于挡住 report_* 和 _process 里全部的加减
+	# The only way in, so one gate covers every caller.
+	if not unrest_enabled:
+		return
 	var before: float = unrest
 	unrest = clampf(unrest + amount, 0.0, 1.0)
 	if not is_equal_approx(unrest, before):
@@ -284,18 +298,24 @@ func _next_variant() -> WaspVariant:
 # ---------------- 士气 / morale ----------------
 
 func _process(delta: float) -> void:
-	var rotten: int = 0
-	for cell in _hive.all_cells():
-		if cell.is_rotten():
-			rotten += 1
-
-	add_unrest((rot_per_second * float(rotten) - decay_per_second) * delta)
+	# 关掉不安时连巢室都不用扫 / nothing to accumulate, so skip the cell sweep too
+	if unrest_enabled:
+		var rotten: int = 0
+		for cell in _hive.all_cells():
+			if cell.is_rotten():
+				rotten += 1
+		add_unrest((rot_per_second * float(rotten) - decay_per_second) * delta)
 
 	# 不安的蜂群干活慢，单独恨上你的那几只直接罢工
 	# An uneasy colony works slower; the individually aggrieved stop working at all.
-	var morale: float = lerpf(1.0, morale_floor, unrest)
+	# 两个值都是**每帧覆盖写**的，所以开关运行时翻转也立刻生效
+	# Both are overwritten every frame, so flipping either switch takes effect at once.
+	var morale: float = lerpf(1.0, morale_floor, unrest) if unrest_enabled else 1.0
+	# 罢工关掉就把门槛推到够不着的地方，betrayal 照涨但永远越不过
+	# An unreachable threshold: the grudge still accrues, it just never trips.
+	var threshold: float = strike_threshold if strikes_enabled else INF
 	for node in get_tree().get_nodes_in_group(WASP_GROUP):
 		var wasp: Wasp = node as Wasp
 		if wasp != null:
 			wasp.morale_scale = morale
-			wasp.allegiance().strike_threshold = strike_threshold
+			wasp.allegiance().strike_threshold = threshold

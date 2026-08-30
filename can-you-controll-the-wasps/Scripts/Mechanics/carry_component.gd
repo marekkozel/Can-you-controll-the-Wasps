@@ -19,6 +19,10 @@ var _saved_gravity: float = 1.0
 var _saved_layer: int = 0
 var _saved_mask: int = 0
 
+# 组件查找的缓存键，写在货物身上 / where the lookups below park their result
+const DRAG_CACHE_KEY: StringName = &"draggable_component"
+const DELIVER_CACHE_KEY: StringName = &"deliverable_component"
+
 
 # 物件手上拿的是什么，空手返回 &"" / payload of an item, &"" when it has none
 static func payload_of(item) -> StringName:
@@ -121,11 +125,20 @@ func _sync_cargo() -> void:
 	_item.linear_velocity = Vector2.ZERO
 
 
+# 下面两个查找每帧被采集任务打上千次，所以跟 ClaimComponent.of() 一个待遇：
+# 找到的结果记在物件身上，只缓存命中。**读缓存不加类型**，理由见 ClaimComponent.of()
+# Cached like ClaimComponent.of(); the read stays untyped for the same reason.
+# Both are called thousands of times a frame by Gather; hits get cached on the item.
 func _draggable_of(item) -> Node:
 	if not is_instance_valid(item):
 		return null
+	if item.has_meta(DRAG_CACHE_KEY):
+		var hit = item.get_meta(DRAG_CACHE_KEY)
+		if is_instance_valid(hit):
+			return hit
 	for child in item.get_children():
 		if child is DraggableComponent:
+			item.set_meta(DRAG_CACHE_KEY, child)
 			return child
 	return null
 
@@ -133,7 +146,12 @@ func _draggable_of(item) -> Node:
 static func _deliverable_of(item) -> DeliverableComponent:
 	if not is_instance_valid(item):
 		return null
+	if item.has_meta(DELIVER_CACHE_KEY):
+		var hit = item.get_meta(DELIVER_CACHE_KEY)
+		if is_instance_valid(hit):
+			return hit
 	for child in item.get_children():
 		if child is DeliverableComponent:
+			item.set_meta(DELIVER_CACHE_KEY, child)
 			return child
 	return null

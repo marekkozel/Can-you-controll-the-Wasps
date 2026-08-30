@@ -110,10 +110,22 @@ func _acquire(carry: CarryComponent) -> Node2D:
 	var hive: Hive = agent.get_tree().get_first_node_in_group(HIVE_GROUP) as Hive
 	var best: Node2D = null
 	var best_dist: float = INF
+	# 去处只跟 payload 有关，跟是哪一件东西无关。放在循环里等于把同一个答案重算几十遍，
+	# 而每算一遍就是一次组查询 / hoisted: one lookup per payload, not one per item
+	var sinks: Dictionary = {}
 
+	# 这个循环是全场最热的一段：每只采集蜂每帧都要走一遍全部散件，代价是
+	# 蜂数 x 散件数。所以筛子按「便宜且筛得多」的顺序排，贵的查询排最后
+	# The hottest loop in the game - it costs wasps x loose pieces every frame, so the
+	# cheap, high-rejection tests go first and the expensive lookups go last.
 	for node in agent.get_tree().get_nodes_in_group(CARRIABLE_GROUP):
 		var item: Node2D = node as Node2D
-		if not _is_usable(carry, item):
+		if item == null:
+			continue
+		# 已经比现在最近的还远，后面查什么都白查——它不可能当选
+		# Farther than the current best can never win, so stop before paying for it.
+		var dist: float = agent.global_position.distance_to(item.global_position)
+		if dist >= best_dist:
 			continue
 		# 看不见的就当不存在。不加这道门每只蜂都在扫全场，采食蜂会为了地上一块
 		# 战利品横穿整张地图——那不是聪明，那是开了全图
@@ -125,12 +137,14 @@ func _acquire(carry: CarryComponent) -> Node2D:
 			continue
 		# 捡起来没处送的别捡：巢建满时那堆纸板就该躺着
 		# Don't pick up what has nowhere to go, or it gets carried in circles.
-		if not _has_sink(hive, payload):
+		if not sinks.has(payload):
+			sinks[payload] = _has_sink(hive, payload)
+		if not sinks[payload]:
 			continue
-		var dist: float = agent.global_position.distance_to(item.global_position)
-		if dist < best_dist:
-			best_dist = dist
-			best = item
+		if not _is_usable(carry, item):
+			continue
+		best_dist = dist
+		best = item
 
 	if best == null:
 		return null
