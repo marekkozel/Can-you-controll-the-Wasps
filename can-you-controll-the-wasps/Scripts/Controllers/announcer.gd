@@ -36,11 +36,11 @@ const LINES: Dictionary = {
 	# The heaviest copy in the game: the comb just came apart, the swarm is about to die,
 	# and one choice decides which of them doesn't. Unexplained, winter reads as a glitch.
 	&"assemble": {
-		"text": "Winter. The comb is coming apart, and the swarm is drawing in around the empty throne to wait for your choice.",
+		"text": "Winter. This is the END.",
 		"hold": true, "priority": 105, "tone": Herald.Tone.RITE,
 	},
 	&"throne": {
-		"text": "Choose your heir: drag one worker into the glowing centre cell. She alone lives to see spring.",
+		"text": "Choose your heir: drag one worker into the glowing centre cell. She will inherit the throne.",
 		"hold": true, "priority": 110, "tone": Herald.Tone.RITE,
 	},
 	&"throne_late": {
