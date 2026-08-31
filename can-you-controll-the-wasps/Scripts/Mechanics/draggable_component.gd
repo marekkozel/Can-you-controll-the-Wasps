@@ -7,6 +7,17 @@ extends Area2D
 signal grabbed
 signal released
 
+@export_group("Drag Collision")
+## Automatically switch collision layers/masks while dragging
+@export var change_collision_while_dragged: bool = true
+## Default 8 = Layer 4 (Unit)
+@export_flags_2d_physics var drag_collision_layer: int = 8 
+## Default 9 = Layer 1 + Layer 4 (Walls) - EXCLUDES Layer 2 (Wasps)
+@export_flags_2d_physics var drag_collision_mask: int = 9  
+
+var _saved_collision_layer: int = 1
+var _saved_collision_mask: int = 1
+
 @export var profile:DragProfile
 
 # 同一时刻只允许一个，重叠的物体不会被一起抓起来 / only one at a time
@@ -154,16 +165,24 @@ func _grab() -> void:
 	_saved_linear_damp = _body.linear_damp
 	_saved_z_index = _body.z_index
 	_saved_ccd = _body.continuous_cd
+		
+	# Save original collisions
+	_saved_collision_layer = _body.collision_layer
+	_saved_collision_mask = _body.collision_mask
 
 	_body.gravity_scale = 0.0
 	if profile.drag_linear_damp >= 0.0:
 		_body.linear_damp = profile.drag_linear_damp
 	_body.z_index = _saved_z_index + profile.grab_z_offset
-	_body.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE  # 高速拖拽别穿墙 / continuous collision so it can't tunnel
+	_body.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
+		
+	# Apply drag collisions
+	if change_collision_while_dragged:
+		_body.collision_layer = drag_collision_layer
+		_body.collision_mask = drag_collision_mask
 
 	set_physics_process(true)
 	grabbed.emit()
-
 
 func _release(notify: bool = true) -> void:
 	if not _is_grabbed:
@@ -179,13 +198,15 @@ func _release(notify: bool = true) -> void:
 		_body.linear_damp = _saved_linear_damp
 		_body.z_index = _saved_z_index
 		_body.continuous_cd = _saved_ccd
-		# 用手速甩出去，不用刚体当前速度——后者被弹簧带偏了 / spring-skewed velocity feels wrong
+		
+		# Restore original collisions
+		_body.collision_layer = _saved_collision_layer
+		_body.collision_mask = _saved_collision_mask
+		
 		var throw: Vector2 = _smoothed_mouse_velocity * profile.throw_multiplier
 		_body.linear_velocity = throw.limit_length(profile.max_throw_speed)
 		_body.angular_velocity *= profile.spin_retention
 
-	# 拆树时不发：兄弟组件的 get_tree() 已经是 null，监听方一查全场就炸
-	# Not while tearing down - siblings are already detached and any group lookup is null
 	if notify:
 		released.emit()
 

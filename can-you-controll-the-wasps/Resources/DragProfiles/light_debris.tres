@@ -1,18 +1,15 @@
-[gd_resource type="Resource" script_class="DragProfile" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="DragProfile" format=3 uid="uid://crc7e1elv4e3q"]
 
-[ext_resource type="Script" path="res://Scripts/Mechanics/drag_profile.gd" id="1_dragprofile"]
+[ext_resource type="Script" uid="uid://bgve43s555mmu" path="res://Scripts/Mechanics/drag_profile.gd" id="1_dragprofile"]
 
 [resource]
 script = ExtResource("1_dragprofile")
 stiffness = 30.0
 damping = 0.5
 max_speed = 3000.0
-mass_scaling = false
 throw_multiplier = 1.2
 max_throw_speed = 2600.0
 wobble_multiplier = 0.002
 max_wobble_angle = 1.0
 rotation_stiffness = 6.0
 spin_retention = 0.8
-drag_linear_damp = -1.0
-grab_z_offset = 100

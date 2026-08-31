@@ -60,6 +60,7 @@ frame = 40
 shape = SubResource("Shape_wasp_body")
 
 [node name="DraggableComponent" parent="." unique_id=998298851 instance=ExtResource("2_draggable")]
+change_collision_while_dragged = false
 
 [node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
 shape = SubResource("Shape_wasp_grab")

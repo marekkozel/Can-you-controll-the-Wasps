@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="1_draggable"]
 [ext_resource type="Texture2D" uid="uid://bsafldeweffq2" path="res://Assets/Entities/Food_unit.png" id="1_uqq3g"]
-[ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
+[ext_resource type="Resource" uid="uid://crc7e1elv4e3q" path="res://Resources/DragProfiles/light_debris.tres" id="2_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="3_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="4_claim"]
 
@@ -13,9 +13,9 @@ bounce = 0.26
 radius = 12.0
 
 [node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
+z_index = 30
 collision_layer = 8
 collision_mask = 9
-z_index = 30
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_aqjq3")
 continuous_cd = 2
