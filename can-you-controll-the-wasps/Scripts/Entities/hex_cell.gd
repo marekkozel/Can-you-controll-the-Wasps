@@ -529,6 +529,9 @@ func _lay_egg() -> void:
 	egg.hatched.connect(_on_egg_hatched)
 	egg.progress_changed.connect(_on_brood_progress)
 
+	if _hold_player != null and _hold_player.playing:
+		_hold_player.stop()
+
 	AudioManager.create_2d_audio_at_location(global_position, SoundEffect.SoundEffectType.EGG_LAID)
 
 	egg_laid.emit(self)
@@ -626,6 +629,9 @@ func _clean() -> void:
 	# What you clear is bare ground: the brood that died in here took the cell with it.
 	demolish(true)
 	_refresh_visual()
+
+	if _hold_player != null and _hold_player.playing:
+		_hold_player.stop()
 
 	cleaned.emit(self)
 
@@ -773,14 +779,13 @@ func _on_hold_tick(_index: int) -> void:
 
 
 func _on_hold_completed() -> void:
-	# --- AUDIO: Stop holding sound on success ---
-	if _hold_player != null and _hold_player.playing:
-		_hold_player.stop()
 		
 	_juice.shake_amount = 0.0
 	_juice.punch(1.22, 0.45)
 	_juice.flash(_cell, flash_color, _base_tint())
 	_juice.burst()
+
+
 
 	if is_rotten():
 		_clean()

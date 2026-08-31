@@ -101,7 +101,7 @@ navigation_polygon = SubResource("NavPoly_world")
 [node name="Resource_layer" type="Node2D" parent="." unique_id=962112675]
 
 [node name="Cardboard" type="Sprite2D" parent="Resource_layer" unique_id=1041903529]
-position = Vector2(65, 222)
+position = Vector2(61, 224)
 texture = ExtResource("3_04jkj")
 
 [node name="CardboardSource" parent="Resource_layer" unique_id=388430937 groups=["item_source"] instance=ExtResource("7_source")]
