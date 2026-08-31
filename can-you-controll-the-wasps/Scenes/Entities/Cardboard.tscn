@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b5k84tum1idq1" path="res://Assets/Entities/Cardboard_unit.png" id="1_r52kr"]
 [ext_resource type="PackedScene" uid="uid://bbfb4amhb0udc" path="res://Scenes/Mechanics/Draggable_component.tscn" id="2_draggable"]
-[ext_resource type="Resource" path="res://Resources/DragProfiles/light_debris.tres" id="3_profile"]
+[ext_resource type="Resource" uid="uid://crc7e1elv4e3q" path="res://Resources/DragProfiles/light_debris.tres" id="3_profile"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/DeliverableComponent.tscn" id="4_deliver"]
 [ext_resource type="PackedScene" path="res://Scenes/Mechanics/ClaimComponent.tscn" id="5_claim"]
 
@@ -11,12 +11,12 @@ bounce = 0.1
 absorbent = true
 
 [sub_resource type="CircleShape2D" id="Shape_cardboard"]
-radius = 14.0
+radius = 12.0
 
 [node name="Cardboard" type="RigidBody2D" unique_id=2087921357 groups=["carriable"]]
-collision_layer = 8
-collision_mask = 9
 z_index = 30
+collision_layer = 16
+collision_mask = 17
 mass = 0.6
 physics_material_override = SubResource("PhysicsMaterial_4t8d5")
 continuous_cd = 2
@@ -30,6 +30,8 @@ texture = ExtResource("1_r52kr")
 shape = SubResource("Shape_cardboard")
 
 [node name="DraggableComponent" parent="." unique_id=436565058 instance=ExtResource("2_draggable")]
+drag_collision_layer = 1
+drag_collision_mask = 1
 profile = ExtResource("3_profile")
 
 [node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]

@@ -10,12 +10,11 @@
 bounce = 0.26
 
 [sub_resource type="CircleShape2D" id="Shape_food"]
-radius = 12.0
 
 [node name="Food" type="RigidBody2D" unique_id=858387073 groups=["carriable"]]
 z_index = 30
-collision_layer = 8
-collision_mask = 9
+collision_layer = 16
+collision_mask = 17
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_aqjq3")
 continuous_cd = 2
@@ -23,6 +22,7 @@ linear_damp = 2.0
 angular_damp = 3.0
 
 [node name="Fill" type="Sprite2D" parent="." unique_id=212954041]
+position = Vector2(1, 0)
 texture = ExtResource("1_uqq3g")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=724941469]
@@ -30,6 +30,8 @@ shape = SubResource("Shape_food")
 
 [node name="DraggableComponent" parent="." unique_id=839332788 instance=ExtResource("1_draggable")]
 profile = ExtResource("2_profile")
+drag_collision_layer = 1
+drag_collision_mask = 1
 
 [node name="CollisionShape2D" parent="DraggableComponent" index="0" unique_id=1834313657]
 shape = SubResource("Shape_food")
