@@ -4,6 +4,7 @@
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" unique_id=314332183]
 process_mode = 3
-bus = &"Music"
 stream = ExtResource("1_ct3vb")
+volume_db = 3.175
 autoplay = true
+bus = &"Music"

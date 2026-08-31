@@ -83,6 +83,9 @@ func is_paused() -> bool:
 func open() -> void:
 	if not _can_open():
 		return
+
+	BackgroundMusic.stop()
+
 	get_tree().paused = true
 	_dim.visible = true
 	_panel.visible = true
@@ -101,6 +104,9 @@ func open() -> void:
 func close() -> void:
 	if not _panel.visible:
 		return
+
+	BackgroundMusic.play()
+
 	var tween: Tween = create_tween().set_parallel(true)
 	tween.tween_property(_dim, "modulate:a", 0.0, open_time * 0.7)
 	tween.tween_property(_panel, "scale", Vector2.ONE * open_pop, open_time * 0.7)

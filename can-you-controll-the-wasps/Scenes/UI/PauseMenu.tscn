@@ -1,11 +1,11 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://drfvq1nesf8qp"]
 
-[ext_resource type="Script" path="res://Scripts/UI/pause_menu.gd" id="1_pause"]
-[ext_resource type="Theme" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://bpjmswhxdivxu" path="res://Scripts/UI/pause_menu.gd" id="1_pause"]
+[ext_resource type="Theme" uid="uid://cuaar2tatvj74" path="res://Resources/UI/ui_theme.tres" id="2_theme"]
 
-[node name="PauseMenu" type="Control"]
-layout_mode = 3
+[node name="PauseMenu" type="Control" unique_id=1476912452]
 process_mode = 3
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -15,7 +15,7 @@ mouse_filter = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_pause")
 
-[node name="PauseButton" type="Button" parent="."]
+[node name="PauseButton" type="Button" parent="." unique_id=1200068388]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -28,7 +28,7 @@ grow_horizontal = 0
 tooltip_text = "Pause (Esc)"
 text = "II"
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="Dim" type="ColorRect" parent="." unique_id=2046275135]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -38,7 +38,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.06, 0.04, 0.06, 0.62)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=2143880100]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -53,51 +53,51 @@ offset_bottom = 186.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=889525747]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 18
 
-[node name="Rows" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin" unique_id=1156256502]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="Panel/Margin/Rows"]
+[node name="Title" type="Label" parent="Panel/Margin/Rows" unique_id=51823802]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="Sep" type="HSeparator" parent="Panel/Margin/Rows"]
+[node name="Sep" type="HSeparator" parent="Panel/Margin/Rows" unique_id=6102165]
 layout_mode = 2
 
-[node name="Resume" type="Button" parent="Panel/Margin/Rows"]
+[node name="Resume" type="Button" parent="Panel/Margin/Rows" unique_id=979867839]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Resume"
 
-[node name="Settings" type="Button" parent="Panel/Margin/Rows"]
+[node name="Settings" type="Button" parent="Panel/Margin/Rows" unique_id=246537804]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Settings"
 
-[node name="HowTo" type="Button" parent="Panel/Margin/Rows"]
+[node name="HowTo" type="Button" parent="Panel/Margin/Rows" unique_id=88357480]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "How to Play"
 
-[node name="Menu" type="Button" parent="Panel/Margin/Rows"]
+[node name="Menu" type="Button" parent="Panel/Margin/Rows" unique_id=1796855990]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Back to Menu"
 
-[node name="Quit" type="Button" parent="Panel/Margin/Rows"]
+[node name="Quit" type="Button" parent="Panel/Margin/Rows" unique_id=1755542035]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
