@@ -449,23 +449,6 @@ func crown(wasp: Wasp) -> bool:
 
 	_lay_brood()
 
-	# 拿账本不拿现场：_open_winter() 的 _ravage() 已经把巢拆到只剩 cells_left 格，
-	# 这时候数 built_count() 每一代都是同一个数，建多建少发一样的点
-	# From the ledger, not the hive - _ravage() flattened it before the throne even opened.
-	var bank: GeneBank = GeneBank.find(get_tree())
-	if bank != null:
-		# Count every living wasp on the board right now before they are culled
-		var living_wasp_count: int = 0
-		for node in get_tree().get_nodes_in_group(WASP_GROUP):
-			if is_instance_valid(node) and node is Wasp:
-				living_wasp_count += 1
-				
-		# Pass the count as the third argument to the GeneBank
-		_points_awarded = bank.award(
-			int(_ledger.get(&"built", 0)),
-			int(_ledger.get(&"jelly", 0)),
-			living_wasp_count)
-
 	# 继位就恢复生产，但整个冬天都不来 raid。两个开关各自只有一个意思：
 	# 冬天 = 不挨打，继位 = 重新开工
 	# Two switches, one meaning each: winter means no raid, a coronation means work resumes.
@@ -767,7 +750,25 @@ func _settle() -> void:
 	_cull()
 	# 顺序不能反：蜂死的时候 _on_died 会把叼着的货丢在地上，先清就漏了那一批
 	# After the cull - dying wasps drop their cargo, and that lot needs sweeping too.
+
 	_clear_ground()
+	# 拿账本不拿现场：_open_winter() 的 _ravage() 已经把巢拆到只剩 cells_left 格，
+	# 这时候数 built_count() 每一代都是同一个数，建多建少发一样的点
+	# From the ledger, not the hive - _ravage() flattened it before the throne even opened.
+	var bank: GeneBank = GeneBank.find(get_tree())
+	if bank != null:
+		# Count every living wasp on the board right now before they are culled
+		var living_wasp_count: int = 0
+		for node in get_tree().get_nodes_in_group(WASP_GROUP):
+			if is_instance_valid(node) and node is Wasp:
+				living_wasp_count += 1
+				
+		# Pass the count as the third argument to the GeneBank
+		_points_awarded = bank.award(
+			int(_ledger.get(&"built", 0)),
+			int(_ledger.get(&"jelly", 0)),
+			living_wasp_count)
+
 
 	var panel: Node = get_tree().get_first_node_in_group(REPORT_GROUP)
 	# 没有面板（headless、或者面板被删了）就直接进春天。
@@ -779,6 +780,8 @@ func _settle() -> void:
 
 	_awaiting_report = true
 	panel.present(year_report())
+
+	
 
 
 # 面板按完"继续"回调这里 / called back when the player dismisses the report

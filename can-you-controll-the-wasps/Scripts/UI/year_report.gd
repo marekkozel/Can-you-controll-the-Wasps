@@ -123,7 +123,7 @@ func _fill(report: Dictionary) -> void:
 	_add_title("Year %d ends" % int(report.get(&"generation", 1)), 22)
 	var line: String = "No heir. The comb goes into spring on its own."
 	if queen != "":
-		line = "%s is your queen. Everything else stays in the winter." % queen
+		line = "%s is your queen. Everything else dies in the winter." % queen
 	_add_title(line, 12)
 	_add_separator()
 
@@ -134,7 +134,7 @@ func _fill(report: Dictionary) -> void:
 	var gained: int = int(report.get(&"points", 0))
 	_add_row("Gene points earned", gained, points_color, 18)
 	if gained > 0:
-		_add_title("Spend them on the right - they only reach wasps born after you do.", 11)
+		_add_title("5 genes per year \n1 gene for each living wasp\n1 for each 4 build cells\n1 for each 2 royal jelly", 11)
 
 	_button = Button.new()
 	_button.name = "Continue"

@@ -185,14 +185,14 @@ wave_odds = Vector3(0.4, 0.5, 0.2)
 window_end = 0.74
 raids_per_year = Vector2i(5, 6)
 min_gap = 0.02
-cell_weight = 0.15
-brood_weight = 0.15
-base_pressure = 0.15000000000000002
+cell_weight = 0.05
+brood_weight = 0.05
+base_pressure = 0.1
 pressure_step = 0.17
-generation_pressure = 0.25
+generation_pressure = 0.22
 max_budget = 80.0
 max_count = 7
-swarm_max_count = 19
+swarm_max_count = 17
 raid_duration = 30.0
 
 [node name="EntryLeft" type="Marker2D" parent="Queen_controller/RaidDirector" unique_id=337520683]
@@ -210,6 +210,7 @@ dominant_variant = ExtResource("27_pure")
 
 [node name="GeneBank" type="Node2D" parent="Queen_controller" unique_id=923760956 groups=["gene_bank"]]
 script = ExtResource("28_gene")
+points_per_generation = 5
 cells_per_extra_point = 4
 jelly_per_extra_point = 2
 
