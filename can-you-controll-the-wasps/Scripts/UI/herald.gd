@@ -77,6 +77,7 @@ const QUEUE_LIMIT: int = 3
 @export var rumour_color: Color = Color(0.600, 0.510, 0.620)
 
 @onready var _panel: PanelContainer = $Panel
+@onready var _margin: MarginContainer = $Panel/Margin
 @onready var _label: Label = $Panel/Margin/Row/Label
 
 ## 每项 {key, text, repeat, priority, tone, count}
@@ -103,6 +104,12 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.modulate.a = 0.0
 	_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	# 视口变了就重新居中。桌面版窗口不动，web 的 canvas 是自适应的：加载、进全屏、切后台
+	# 都会重新量一次，而 _center_x 只在换句子时算——不听这个信号的话，正在说的那条会一直
+	# 停在按旧宽度算出来的位置上
+	# The web canvas resizes on its own; _center_x is only computed when a line changes,
+	# so without this the line on screen keeps a stale seat.
+	get_viewport().size_changed.connect(_on_viewport_resized)
 	set_process(true)
 
 
@@ -241,14 +248,10 @@ func _apply(item: Dictionary, from_hidden: bool) -> void:
 	var tone: Color = _tone_color(int(item[&"tone"]))
 	var heat: float = _tone_heat(int(item[&"tone"]))
 	_label.text = String(item[&"text"])
-	# **量之前必须先把上一句的打字机停掉并露出整句**。Label 的 minimum size 是按
-	# *当前可见的字* 算的，而上一条 tween 还在往同一个 Label 上写 visible_ratio——
-	# 于是 _relayout() 量到的宽度取决于"这一帧正好打到第几个字"，长句时有时无地不折行。
-	# 加冕那句必现：它是唯一一条在卡顿（time_scale 0.15）里推出来的，打字机被拖慢
-	# 六倍，量到的是五个字的宽度，整句当场被切掉
-	# Godot sizes a Label to its *visible* text, and the previous line's tween is still
-	# driving visible_ratio here. Measuring mid-type measures however far it happened to
-	# get - and under a hit stop that is almost nothing.
+	# 上一句的打字机得先停掉并露出整句，否则它会继续往同一个 Label 上写 visible_ratio，
+	# 新句子的字数从上一句那个进度开始接着长。**排版本身不受影响**——_relayout() 量的是
+	# _label.text 整句，不是当前可见的那几个字
+	# The previous line's tween is still driving visible_ratio on this same label.
 	if _type_tween != null and _type_tween.is_valid():
 		_type_tween.kill()
 	_label.visible_ratio = 1.0
@@ -354,19 +357,29 @@ func _relayout() -> void:
 		return
 	_laying_out = true
 
-	_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_label.custom_minimum_size.x = 0.0
+	# 折不折行**自己量整句**，不问 Control 的 minimum size：后者要等 Label 重排完才有效，
+	# 而它落地是第几帧各平台不一样，而且它算的是**当前可见的字**（打字机正写着就更不准）
+	# Measure the whole string ourselves - a Control's minimum size only settles after the
+	# label re-shapes, and it counts visible characters, not the text.
+	var chrome: float = _chrome_width()
+	if _text_width() + chrome > max_width:
+		# 折行：把 Label 钉在剩下的宽度上，高度自己长 / pin the label, let the height grow
+		_label.custom_minimum_size.x = maxf(max_width - chrome, 0.0)
+		_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	else:
+		_label.custom_minimum_size.x = 0.0
+		_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	await get_tree().process_frame
 
-	var wanted: float = _panel.get_combined_minimum_size().x
-	if wanted > max_width:
-		# 折行：把 Label 钉在剩下的宽度上，高度自己长 / pin the label, let the height grow
-		_label.custom_minimum_size.x = max_width - (wanted - _label.get_combined_minimum_size().x)
-		_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		await get_tree().process_frame
-
+	# 屏幕宽度以视口为准。**别只信自己的 size**：web 的 canvas 会自适应重排，
+	# 中间读到一帧 0 宽就会把 _center_x 算成一个大负数，整条药丸挂到屏幕左边只剩右半截，
+	# 而且再也不会自己回来——这个值只在换句子时算一次
+	# Trusting our own size cost the crowned line half its width off the left edge on web.
+	var avail: float = maxf(size.x, get_viewport_rect().size.x)
 	_panel.size = Vector2.ZERO   # 会被顶回 minimum size / clamped back up to the minimum
-	_center_x = roundf((size.x - _panel.size.x) * 0.5)
+	var pill: float = minf(_panel.size.x, avail)
+	# 夹到 0：宁可贴着左边，也不允许有一半在屏幕外 / never hang off the left edge
+	_center_x = roundf(maxf((avail - pill) * 0.5, 0.0))
 	_panel.position.x = _center_x
 	# 绕中心缩放。默认 pivot 在左上角，弹一下会把整条往左上角吸过去
 	# Scale about the centre; the default top-left pivot sucks it into the corner.
@@ -375,6 +388,33 @@ func _relayout() -> void:
 	if _relayout_again:
 		_relayout_again = false
 		_relayout()
+
+
+# 框自己吃掉的宽度：九宫格的内边距 + MarginContainer 那圈。文字能用的是 max_width 减掉它
+# The pill's own chrome; the text gets max_width minus this.
+func _chrome_width() -> float:
+	var chrome: float = 0.0
+	var box: StyleBox = _panel.get_theme_stylebox(&"panel")
+	if box != null:
+		chrome += box.get_minimum_size().x
+	if _margin != null:
+		chrome += _margin.get_theme_constant(&"margin_left") + _margin.get_theme_constant(&"margin_right")
+	return chrome
+
+
+# 整句不折行时有多宽。跟 Label 用的是同一套字体度量 / same metrics the label uses
+func _text_width() -> float:
+	var font: Font = _label.get_theme_font(&"font")
+	if font == null:
+		return 0.0
+	var px: int = _label.get_theme_font_size(&"font_size")
+	return font.get_string_size(_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+
+
+func _on_viewport_resized() -> void:
+	if _current.is_empty():
+		return
+	_relayout()
 
 
 # 语气 → 手感强度。传闻压到四成：它可能是假的，砸得跟真事一样重就是在骗玩家的注意力
